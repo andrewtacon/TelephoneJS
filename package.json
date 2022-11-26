@@ -1,0 +1,8 @@
+{
+  "dependencies": {
+    "google-closure-library": "^20221102.0.0",
+    "node-fetch": "^2.6.7",
+    "sync-fetch": "^0.4.2",
+    "xml-js": "^1.6.11"
+  }
+}

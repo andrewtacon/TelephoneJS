@@ -1,0 +1,53 @@
+#|
+$JSON
+{
+    "authURL": [
+        "ai2.appinventor.mit.edu"
+    ],
+    "YaVersion": "219",
+    "Source": "Form",
+    "Properties": {
+        "$Name": "Screen1",
+        "$Type": "Form",
+        "$Version": "30",
+        "AppName": "yail1",
+        "Title": "Screen1",
+        "Uuid": "0",
+        "$Components": [
+            {
+                "$Name": "HorizontalArrangement1",
+                "$Type": "HorizontalArrangement",
+                "$Version": "4",
+                "AlignVertical": "2",
+                "BackgroundColor": "&HFFFF00FF",
+                "Height": "-2",
+                "Width": "-1100",
+                "Uuid": "974413648",
+                "$Components": [
+                    {
+                        "$Name": "Label1",
+                        "$Type": "Label",
+                        "$Version": "5",
+                        "Text": "Text for Label1",
+                        "Uuid": "-2081077823"
+                    },
+                    {
+                        "$Name": "Label2",
+                        "$Type": "Label",
+                        "$Version": "5",
+                        "Text": "Text for Label2",
+                        "Uuid": "-869703629"
+                    },
+                    {
+                        "$Name": "Button1",
+                        "$Type": "Button",
+                        "$Version": "7",
+                        "Text": "Text for Button1",
+                        "Uuid": "-1401798148"
+                    }
+                ]
+            }
+        ]
+    }
+}
+|#

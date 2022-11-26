@@ -1,0 +1,4 @@
+    <horizontal alignVertical="2" backgroundColor="#AABB00">
+        <label>Label</label>
+        <button>Button Text</button>
+    </horizontal>
