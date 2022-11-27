@@ -15,7 +15,8 @@ const TYPES = {
     "screen": undefined,
     "label": "com.google.appinventor.components.runtime.Label",
     "button": "com.google.appinventor.components.runtime.Button",
-    "text":"'"
+    "text":"'",
+    "notifier": "com.google.appinventor.components.runtime.Notifier"
 }
 
 //this helps name objects without a name
@@ -88,6 +89,7 @@ function traverse(object, parent = '') {
     if (type === "screen") { createScreen(object.attributes) }
     if (type === "button") { createButton(object.attributes, parent, object.elements) }
     if (type === "label") { createLabel(object.attributes, parent, object.elements) }
+    if (type === "notifier") { createNotifier(object.attributes, parent, object.elements) }
 
     //generate the assetList
     if (object.attributes) {
@@ -150,6 +152,14 @@ function createLabel(attributes, parent, elements) {
     let template = `
     (add-component ${parent} com.google.appinventor.components.runtime.Label ${attributes.name} 
         (set-and-coerce-property! '${attributes.name} 'Text "${elements[0].text}" 'text)
+    )
+    `
+    output(template)
+}
+
+function createNotifier(attributes, parent, elements) {
+    let template = `
+    (add-component ${parent} com.google.appinventor.components.runtime.Notifier ${attributes.name} 
     )
     `
     output(template)

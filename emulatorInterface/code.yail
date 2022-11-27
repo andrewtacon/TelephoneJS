@@ -19,4 +19,7 @@
     (add-component Screen1 com.google.appinventor.components.runtime.Label label_2 
         (set-and-coerce-property! 'label_2 'Text "Label" 'text)
     )
-    (init-runtime)(call-Initialize-of-components 'Screen1 'button_1 'label_2  )
+    
+    (add-component Screen1 com.google.appinventor.components.runtime.Notifier note1 
+    )
+    (init-runtime)(call-Initialize-of-components 'Screen1 'button_1 'label_2 'note1  )

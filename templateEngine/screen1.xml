@@ -1,0 +1,5 @@
+<screen name="Screen1" AppName="yail" Title="Great Title!" BackgroundImage="smile.png">
+    <button name="Button1">Button Text</button>
+    <label>Label</label>
+    <notifier name="note1"></notifier>
+</screen>
