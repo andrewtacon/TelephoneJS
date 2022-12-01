@@ -1,3 +1,5 @@
+let a = 1
+
 /*
 
 (define-event Button1 Click()
@@ -7,11 +9,12 @@
 
 */
 
-
+/*
 button("Button1").click = function() {
     notifier("Note1").alert("Message")
 }
 
+*/
 
 
 

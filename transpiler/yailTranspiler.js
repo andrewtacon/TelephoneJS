@@ -1,34 +1,23 @@
-const { parse, find } = require('abstract-syntax-tree')
 const fs = require('fs')
+const {SCANNER} = require("./scanner")
 
-const dashAst = require('dash-ast')
-const isIdentifier = require('estree-is-identifier')
- 
+let sourceCode = fs.readFileSync("source/test.yas", "utf8")
+let hadError = false
 
+function run(source) {
+  let scanner = new SCANNER(source)
+  let tokens = scanner.scanTokens()
 
-const source = fs.readFileSync("screen1.js", "utf8")
-const ast = parse(source)
-
-
-console.log(ast)
-
-console.log('--------------------')
-
-let deps = []
-dashAst(ast, function (node, parent) {
-
-    console.log(node, '\n')
-  if (node.type === 'CallExpression' && isIdentifier(node.callee, 'require')) {
+  for (const token in tokens) {
+    console.log(token)
   }
+}
 
+function main() {
+  run(sourceCode)
+  if (hadError) {
+    process.exit(65)
+  }
+}
 
-})
-
-//console.log(deps)
-
-/*
-(define-event Button1 Click()
-    (set-this-form)
-    (call-component-method 'Notifier1 'ShowAlert (*list-for-runtime* "Alert") '(text)))
-
-*/
+main()

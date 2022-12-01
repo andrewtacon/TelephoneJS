@@ -1,0 +1,21 @@
+(try-catch (let ((attempt (delay (set-form-name "Screen1")))) (force attempt)) (exception java.lang.Throwable 'notfound))(do-after-form-creation (set-and-coerce-property! 'Screen1 'AppName "yail1" 'text)
+ (set-and-coerce-property! 'Screen1 'ShowListsAsJson #t 'boolean)
+ (set-and-coerce-property! 'Screen1 'Sizing "Responsive" 'text)
+ (set-and-coerce-property! 'Screen1 'Title "Screen1" 'text)
+)
+
+(add-component Screen1 com.google.appinventor.components.runtime.Button Button1 
+(set-and-coerce-property! 'Button1 'Text "Alert" 'text)
+
+)
+
+(add-component Screen1 com.google.appinventor.components.runtime.Button Button2 
+(set-and-coerce-property! 'Button2 'Text "Change" 'text)
+
+)
+
+(add-component Screen1 com.google.appinventor.components.runtime.Notifier Notifier1 
+)
+(init-runtime)(define-event Button1 Click()(set-this-form)
+    (call-component-method 'Notifier1 'ShowAlert (*list-for-runtime* "Message") '(text)))(define-event Button2 Click()(set-this-form)
+    (call-yail-primitive open-another-screen (*list-for-runtime* "Screen2") '(text) "open another screen"))(call-Initialize-of-components 'Screen1 'Button1 'Button2 'Notifier1)

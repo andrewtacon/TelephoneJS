@@ -78,9 +78,9 @@ async function getValues() {
 
 
 async function sendMessage(payload) {
+    console.log(payload)
     let answer = await fetch('http://localhost:8001/_newblocks?' + payload)
     let a = await answer.json()
-    seq++
     return a
 }
 
@@ -150,32 +150,11 @@ function loadSequenceNumber() {
 //this is -2 for blocks - No idea what it really does. But it works for now
 let blockid = -2
 
-//this is default system code that seems to need to be sent so the emulator
-//actually runs code in the first place
-let system1 = `
-(define-syntax protect-enum   
-    (lambda (x)     
-        (syntax-case x ()       
-            ((_ enum-value number-value)         
-                (if (< com.google.appinventor.components.common.YaVersion:BLOCKS_LANGUAGE_VERSION 34)           
-                #'number-value           
-                #'enum-value)
-            )
-        )
-    )
-)
-(clear-current-form)`
-
-//need to have a yail maker here
-
-//this reads the generated yail code and loads it into the program
-let system2 = fs.readFileSync("code.yail", "utf-8")
-
 //build the message to send - layer in the hmac and extra information
 function buildMessage(message) {
     var encoder = new goog.Uri.QueryData();
     encoder.add('mac', hmac(message + seq + blockid));
-    encoder.add('seq', seq);
+    encoder.add('seq', seq++);
     encoder.add('code', message);
     encoder.add('blockid', blockid);
     return encoder.toString();
@@ -193,7 +172,7 @@ async function loadAssets() {
 
     for (let i = 0; i < assetList.length; i++) {
         let asset = assetList[i]
-        console.log("LOADING:"+ asset)
+        console.log("LOADING:" + asset)
         let url = `http://127.0.0.1:8001/?filename=${asset}`
 
         //run an OPTIONS request
@@ -206,7 +185,7 @@ async function loadAssets() {
         //run a PUT request and send the file
         const stats = fs.statSync(asset);
         const fileSizeInBytes = stats.size;
-        
+
         // You can pass any of the 3 objects below as body
         let readStream = fs.createReadStream(asset);
 
@@ -259,12 +238,46 @@ async function main() {
         loadSequenceNumber() //load sequence number from file so it matches last sent value to emulator
     }
 
+    await loadScreen("Screen1", true)
+    setInterval(listener, 2000)
+}
+
+
+async function loadScreen(screen, firstLoad = true) {
     //need to load the assets associated with the item
-    await loadAssets()
+    // await loadAssets()
+
+
+    //this is default system code that seems to need to be sent so the emulator
+    //actually runs code in the first place
+    let system1 = `
+(define-syntax protect-enum   
+    (lambda (x)     
+        (syntax-case x ()       
+            ((_ enum-value number-value)         
+                (if (< com.google.appinventor.components.common.YaVersion:BLOCKS_LANGUAGE_VERSION 34)           
+                #'number-value           
+                #'enum-value)
+            )
+        )
+    )
+)
+(clear-current-form)`
+
+    //need to have a yail maker here
+
+    //this reads the generated yail code and loads it into the program
+    let system2 = fs.readFileSync(`${screen}.yail`, "utf-8")
 
     //send first message so things load
-    let msg = buildMessage(system1)
-    sendMessage(msg)
+    if (!firstLoad) {
+        system2 = "(clear-current-form)" + system2
+    } else {
+        system2 = system1 + system2
+        
+       // let msg = buildMessage(system1)
+       // sendMessage(msg)
+    }
 
     //send the actual yail program code
     msg = buildMessage(system2)
@@ -272,11 +285,28 @@ async function main() {
 
     //store updated sequence number for next run
     updateSequenceNumber(seq)
-
 }
 
+
+async function listener() {
+
+    let values = await fetch('http://localhost:8001/_values')
+    let res = await values.json()
+    console.log(res)
+
+    try {
+        if (res.values[0].type === 'pushScreen') {
+            console.log(`Loading "${res.values[0].screen}"`)
+            await loadScreen(res.values[0].screen, false)
+        }
+    } catch {
+
+    }
+}
 
 
 //make it so - Captain Jean L. Picard
 main()
+
+
 
