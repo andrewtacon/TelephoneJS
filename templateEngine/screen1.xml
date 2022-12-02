@@ -1,9 +1,9 @@
 <screen name="Screen1" AppName="yail" Title="Great Title!" BackgroundImage="smile.png" ShowTitle="false" StatusBar="false">
     <button name="Button1">Button Text</button>
-    <hbox halign="center" valign="top">
+    <hbox halign="center" valign="top" Image="cat.jpg">
         <label>Label</label>
         <notifier name="note1"></notifier>
-    </hbox
+    </hbox>
 </screen>
 
 

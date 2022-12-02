@@ -1,0 +1,14 @@
+
+    (try-catch 
+        (let 
+            ((
+                attempt 
+                    (delay 
+                        (set-form-name "Screen1")
+                    )
+            )) 
+            (force attempt)
+        ) 
+        (exception java.lang.Throwable 'notfound)
+    )
+    (do-after-form-creation	(set-and-coerce-property! 'Screen1 'appname "yail" 'text)	(set-and-coerce-property! 'Screen1 'title "Great Title!" 'text)	(set-and-coerce-property! 'Screen1 'backgroundimage "smile.png" 'text)(set-and-coerce-property! 'Screen1 'TitleVisible #f 'boolean)(set-and-coerce-property! 'Screen1 'ShowStatusBar #f 'boolean))(add-component Screen1 com.google.appinventor.components.runtime.Button Button1 (set-and-coerce-property! 'Button1 'Text "Button Text" 'text))(add-component Screen1 com.google.appinventor.components.runtime.HorizontalArrangement hbox_1(set-and-coerce-property! 'hbox_1 'AlignHorizontal 3 'number)(set-and-coerce-property! 'hbox_1 'AlignVertical 1 'number)(set-and-coerce-property! 'hbox_1 'Image "cat.jpg" 'text))(add-component hbox_1 com.google.appinventor.components.runtime.Label label_2 (set-and-coerce-property! 'label_2 'Text "Label" 'text))(add-component hbox_1 com.google.appinventor.components.runtime.Notifier note1 )(init-runtime)(call-Initialize-of-components 'Screen1 'Button1 'hbox_1 'label_2 'note1  )
