@@ -1,4 +1,5 @@
-(try-catch (let ((attempt (delay (set-form-name "Screen2")))) (force attempt)) (exception java.lang.Throwable 'notfound))(rename-component "Screen1" "Screen2")
+(try-catch (let ((attempt (delay (set-form-name "Screen2")))) (force attempt)) (exception java.lang.Throwable 'notfound))
+(rename-component "Screen1" "Screen2")
 
 (do-after-form-creation (set-and-coerce-property! 'Screen2 'AppName "yail1" 'text)
  (set-and-coerce-property! 'Screen2 'ShowListsAsJson #t 'boolean)

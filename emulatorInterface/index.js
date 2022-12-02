@@ -78,7 +78,6 @@ async function getValues() {
 
 
 async function sendMessage(payload) {
-    console.log(payload)
     let answer = await fetch('http://localhost:8001/_newblocks?' + payload)
     let a = await answer.json()
     return a
@@ -274,9 +273,9 @@ async function loadScreen(screen, firstLoad = true) {
         system2 = "(clear-current-form)" + system2
     } else {
         system2 = system1 + system2
-        
-       // let msg = buildMessage(system1)
-       // sendMessage(msg)
+
+        // let msg = buildMessage(system1)
+        // sendMessage(msg)
     }
 
     //send the actual yail program code
@@ -295,10 +294,16 @@ async function listener() {
     console.log(res)
 
     try {
-        if (res.values[0].type === 'pushScreen') {
-            console.log(`Loading "${res.values[0].screen}"`)
-            await loadScreen(res.values[0].screen, false)
+        if (res.values) {
+            for (let i=0; i<res.values.length; i++){
+                if (res.values[i].type === 'pushScreen') {
+                    console.log(`Loading "${res.values[i].screen}"`)
+                    await loadScreen(res.values[i].screen, false)
+                    break //take that QCAA
+                }
+            }
         }
+
     } catch {
 
     }
