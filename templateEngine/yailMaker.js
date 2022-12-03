@@ -243,14 +243,12 @@ function traverse(object, parent = '') {
             let element = object.elements[i]
             if (element.attributes) {
                 if (element.attributes.row && element.attributes.col) {
-                    console.log(element.attributes)
                     assignment[parseInt(element.attributes.row)][parseInt(element.attributes.col)] = 1
                     element.attributes.assigned = true //mark element so don't add it later on
                 }
             }
         }
-        console.log(assignment)
-
+   
         /*
             4. iterate over unassigned elements and fill from the first available cell, assigning col and row to elements
                 -> this might stuff up some ordering so doing it anyway
@@ -327,9 +325,11 @@ function createScreen(attributes) {
         else if (key === "showtitle" && value === "false") { showTitle(key, value, attributes.name) }
         else if (key === "statusbar" && value === "false") { showStatus(key, value, attributes.name) }
         else if (key === 'backgroundcolor') { backgroundColor(key, value, attributes.name) }
-        else {
-            output(`\t(set-and-coerce-property! '${attributes.name} '${key} "${value}" 'text)`)
-        }
+        else if (key === 'appname') { appName(key, value, attributes.name) }
+        else if (key === 'title') { title(key, value, attributes.name) }
+        //else {
+        //    output(`\t(set-and-coerce-property! '${attributes.name} '${key} "${value}" 'text)`)
+        //}
     }
     output(`)`)
 
@@ -344,6 +344,7 @@ function createButton(attributes, parent, elements) {
         key = key.toLowerCase()
         if (key === 'col') { col(key, value, attributes.name) }
         else if (key === 'row') { row(key, value, attributes.name) }
+        else if (key === 'width') { width(key, value, attributes.name) }
     }
 
     output(')')
@@ -428,7 +429,7 @@ function createTable(attributes, parent, elements) {
         if (key === "width") { width(key, value, attributes.name) }
         else if (key === 'height') { height(key, value, attributes.name) }
         else if (key === 'visible') { visible(key, value, attributes.name) }
-        else if (key === 'cols') { cols(key, value, attributes.name) }
+        else if (key === 'columns') { cols(key, value, attributes.name) }
         else if (key === 'rows') { rows(key, value, attributes.name) }
         else if (key === 'col') { col(key, value, attributes.name) }
         else if (key === 'row') { row(key, value, attributes.name) }
@@ -439,6 +440,14 @@ function createTable(attributes, parent, elements) {
 ///////////////////////////////////////////////////////////////////////////////
 //// This section adds the actual lines of code for the various parameters ////
 ///////////////////////////////////////////////////////////////////////////////
+
+function appName(key, value, name) {
+    output(`(set-and-coerce-property! '${name} 'AppName "${value}" 'text)`)
+}
+
+function title(key, value, name) {
+    output(`(set-and-coerce-property! '${name} 'Title "${value}" 'text)`)
+}
 
 function showTitle(key, value, name) {
     output(`(set-and-coerce-property! '${name} 'TitleVisible #f 'boolean)`)

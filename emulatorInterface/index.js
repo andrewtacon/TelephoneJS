@@ -237,7 +237,7 @@ async function main() {
         loadSequenceNumber() //load sequence number from file so it matches last sent value to emulator
     }
 
-    await loadScreen("Screen1", true)
+    await loadScreen("Screen2", true)
     setInterval(listener, 2000)
 }
 
