@@ -26,5 +26,5 @@ Table <br><i>Items are arranged in table format</i>|table|name|any text string
 &nbsp;|&nbsp;|cols|integer - the number of columns. If omitted, default is 2.
 &nbsp;|&nbsp;|rows|integer - the number of rows. If omitted, default is 2.
 &nbsp;|&nbsp;|visible|<b>false</b> makes item invisible, anything else doesn't
-Items in table cells need extra attributes.<br>If these are not provided then they<br>will be generated across rows and then down|&nbsp;|col|integer from 0 - column to place item in
+Items in table cells need extra attributes.<br>If these are not provided then they<br>will be generated across rows and then down columns|&nbsp;|col|integer from 0 - column to place item in
 &nbsp;|&nbsp;|row|integer from 0 - row to place item in

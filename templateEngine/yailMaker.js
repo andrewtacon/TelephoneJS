@@ -43,7 +43,7 @@ function output(text) {
 fs.writeFileSync("code.yail", "")
 
 //get input
-let contents = fs.readFileSync("screen1.xml", "utf-8")
+let contents = fs.readFileSync("temp.xml", "utf-8")
 
 //should catch errors in xml format and alert user
 let structure = JSON.parse(convert.xml2json(contents))
@@ -79,6 +79,11 @@ function traverse(object, parent = '') {
     }
 
     if (object.attributes) {
+        //convert all attributes to lowercase
+        object.attributes = Object.fromEntries(
+            Object.entries(object.attributes).map(([k, v]) => [k.toLowerCase(), v])
+        );
+
         let attributes = object.attributes
         if (!attributes.name) {
             attributes.name = type + "_" + generator.next().value
@@ -102,25 +107,189 @@ function traverse(object, parent = '') {
     if (type === "table") {
         //for a table we need to do something special. We need to look at the direct descendents of the table and 
         //see if they all have 
-        //  1. row and column positions
-        //  2. that the row and columns positions are valid
-        //  3. that there are no double ups
-        //  4. if a row and column is missing need to generate one
-        //  5. if there is a double then push the element to the next available slot
-        //  6. if too many elements then either increase the table size
-        //once all of this is done, then the table can be constructed
+        /*
+            non-QCAA psuedocode
+            0. determine the size of the table
+            1. iterate over the items and determine if the column and row numbers are valid
+                -> determine minimum and maximum column
+                    -> set number of columns to be max of (current column count, max column number, max range of column numbers (in case did a negative))
+                    -> if negative column numbers then will need to determine this difference and update column number positions for the elements to be greater than/equal to zero
+                -> do the same for rows
+            2. check count of elements in list
+                -> if too many elements than cells, add extra rows so that cells will be adequete in quantity
+            3. assign numbered elements to cells and set element as assigned
+                -> if cell aready filled then leave second and subsequence as unassigned
+            4. iterate over unassigned elements and fill from the first available cell, assigning col and row to elements
+        */
 
-        createvscrollbox(object.attributes, parent, object.elements)
+
+        //0. determine the size of the table
+        let columns = 2
+        let rows = 2
+
+        if (object.attributes) {
+            if (object.attributes.columns) {
+                let setValue = parseInt(object.attributes.columns)
+                if (isNaN(setValue)) {
+                    console.log("Columns not a numerical integer value for a table, coercing to 2.")
+                    object.attributes.columns = 2
+                } else {
+                    columns = setValue
+                }
+            }
+            if (object.attributes.rows) {
+                let setValue = parseInt(object.attributes.rows)
+                if (isNaN(setValue)) {
+                    console.log("Rows not a numerical integer value for a table, coercing to 2.")
+                    object.attributes.rows = 2
+                } else {
+                    rows = setValue
+                }
+            }
+        }
+
+        /*
+            1. iterate over the items and determine if the column and row numbers are valid
+                -> determine minimum and maximum column
+                    -> set number of columns to be max of (current column count, max column number, max range of column numbers (in case did a negative))
+                    -> if negative column numbers then will need to determine this difference and update column number positions for the elements to be greater than/equal to zero
+                -> do the same for rows
+        */
+        let minColumn = 0
+        let maxColumn = 0
+        let minRow = 0
+        let maxRow = 0
+        for (let i = 0; i < object.elements.length; i++) {
+            let element = object.elements[i]
+            if (element.attributes) {
+                //convert attributes to lowercase
+                element.attributes = Object.fromEntries(
+                    Object.entries(element.attributes).map(([k, v]) => [k.toLowerCase(), v])
+                );
+                if (element.attributes.col) {
+                    let col = parseInt(element.attributes.col)
+                    if (isNaN(col)) {
+                        delete element.attributes.col
+                        console.log("Invalid column reference for table element. Deleting.")
+                    } else {
+                        if (col > maxColumn) { maxColumn = col }
+                        if (col < minColumn) { minColumn = col }
+                    }
+                }
+                if (element.attributes.row) {
+                    let row = parseInt(element.attributes.row)
+                    if (isNaN(row)) {
+                        delete element.attributes.row
+                        console.log("Invalid row reference for table element. Deleting.")
+                    } else {
+                        if (row > maxRow) { maxRow = row }
+                        if (row < minRow) { minRow = row }
+                    }
+                }
+            }
+        }
+
+        //need to account for the zero indexed columns and rows
+        maxRow += 1
+        maxColumn += 1
+        let requiredCols = Math.max(maxColumn, columns, maxColumn - minColumn)
+        if (requiredCols > columns) {
+            console.log(`Table requires more columns, increasing from ${columns} to ${requiredCols}`)
+            columns = requiredCols
+            object.attributes.columns = `${columns}`
+        }
+        let requiredRows = Math.max(maxRow, rows, maxRow - minRow)
+        if (requiredRows > rows) {
+            console.log(`Table requires more rows, increasing from ${rows} to ${requiredRows}`)
+            rows = requiredRows
+            object.attributes.rows = `${rows}`
+        }
+
+        //if row or column indices are less than zero then need to adjust them
+        //this should all work as cleaned these attributes earlier on by deleting invalid ones
+        if (minRow < 0 || minColumn < 0) {
+            for (let i = 0; i < object.elements.length; i++) {
+                let element = object.elements[i]
+                if (element.attributes) {
+                    if (element.attributes.row) {
+                        element.attributes.row = `${parseInt(element.attributes.row) - minRow}`
+                    }
+                    if (element.attributes.col) {
+                        element.attributes.col = `${parseInt(element.attributes.col) - minColumn}`
+                    }
+                }
+            }
+        }
+
+        /*
+            2. check count of elements in list
+                -> if too many elements than cells, add extra rows so that cells will be adequete in quantity
+        */
+        let elementCount = object.elements.length
+        if (elementCount > rows * columns) {
+            let requiredRows = Math.ceil(elementCount / columns)
+            console.log(`Increasing table row count from ${rows} to ${requiredRows} to account for excess elements`)
+            rows = requiredRows
+            object.attributes.rows = `${rows}`
+        }
+
+        /*
+            3. assign numbered elements to cells and set element as assigned
+                -> if cell aready filled then leave second and subsequence as unassigned
+        */
+        let assignment = []
+        for (let i = 0; i < rows; i++) { let r = []; for (j = 0; j < columns; j++) { r.push(0) }; assignment.push(r) }
+        for (let i = 0; i < object.elements.length; i++) {
+            let element = object.elements[i]
+            if (element.attributes) {
+                if (element.attributes.row && element.attributes.col) {
+                    console.log(element.attributes)
+                    assignment[parseInt(element.attributes.row)][parseInt(element.attributes.col)] = 1
+                    element.attributes.assigned = true //mark element so don't add it later on
+                }
+            }
+        }
+        console.log(assignment)
+
+        /*
+            4. iterate over unassigned elements and fill from the first available cell, assigning col and row to elements
+                -> this might stuff up some ordering so doing it anyway
+        */
+
+        for (let i = 0; i < object.elements.length; i++) {
+            let element = object.elements[i]
+            if (element.attributes === undefined || element.attributes.assigned === undefined) {
+                let vacantRow = 0
+                let vacantColumn = 0
+                while (assignment[vacantRow][vacantColumn] !== 0) {
+                    vacantColumn++
+                    if (vacantColumn === columns) {
+                        vacantRow++
+                        vacantColumn = 0
+                    }
+                }
+                if (element.attributes == undefined) {
+                    element.attributes = {}
+                }
+                element.attributes.row = `${vacantRow}`
+                element.attributes.col = `${vacantColumn}`
+                assignment[vacantRow][vacantColumn] = 1
+            }
+        }
+
+
+        createTable(object.attributes, parent, object.elements)
     }
 
     //generate the assetList
     if (object.attributes) {
         for (const [key, value] of Object.entries(object.attributes)) {
-            if (key !== "BackgroundImage" && key !== "Image") { continue; }
+            if (key !== "backgroundimage" && key !== "image") { continue; }
             assetsList.push(value)
         }
     }
 
+    //traverse the children
     if (object.elements) {
         for (let i = 0; i < object.elements.length; i++) {
             if (!object.name) {
@@ -251,7 +420,7 @@ function layoutAttributes(attributes) {
     }
 }
 
-function table(attributes, parent, elements) {
+function createTable(attributes, parent, elements) {
     let template = `(add-component ${parent} com.google.appinventor.components.runtime.TableArrangement ${attributes.name}`
     output(template)
     for (let [key, value] of Object.entries(attributes)) {

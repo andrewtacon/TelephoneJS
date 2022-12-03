@@ -1,4 +1,11 @@
-    <horizontal alignVertical="2" backgroundColor="#AABB00">
-        <label>Label</label>
-        <button>Button Text</button>
-    </horizontal>
+
+<screen>
+    <table columns="3" RoWs="1">
+        <button col="-1" row="-1">text1</button>
+        <button>text2</button>
+        <button col="2" row="2">text3</button>
+        <button>text4</button>
+        <button>text4</button>
+    </table>
+</screen>
+
