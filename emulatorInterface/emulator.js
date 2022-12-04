@@ -78,9 +78,40 @@ async function getValues() {
 
 
 async function sendMessage(payload) {
-    let answer = await fetch('http://localhost:8001/_newblocks?' + payload)
-    let a = await answer.json()
-    return a
+    let answer = await fetch('http://localhost:8001/_newblocks', {
+        method: 'POST',
+        headers: {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json'
+        },
+        body: payload
+    });
+
+    let a = await answer
+    //console.log(a)
+    return a.json()
+
+
+
+    /*    let answer = await fetch('http://localhost:8001/_newblocks?' + payload)
+        let a = await answer
+        //console.log(a)
+        return a.json()
+    
+    
+    /*
+    const rawResponse = await fetch('https://httpbin.org/post', {
+        method: 'POST',
+        headers: {
+          'Accept': 'application/json',
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({a: 1, b: 'Textual content'})
+      });
+      const content = await rawResponse.json();
+    
+    */
+
 }
 
 
@@ -147,7 +178,7 @@ function loadSequenceNumber() {
 
 
 //this is -2 for blocks - No idea what it really does. But it works for now
-let blockid = -2
+const blockid = -2
 
 //build the message to send - layer in the hmac and extra information
 function buildMessage(message) {
@@ -237,12 +268,14 @@ async function main() {
         loadSequenceNumber() //load sequence number from file so it matches last sent value to emulator
     }
 
-    await loadScreen("Screen2", true)
+    await loadScreen(currentScreen, true)
     setInterval(listener, 2000)
 }
 
 
-async function loadScreen(screen, firstLoad = true) {
+//this is the legacy development method to load data directory from the yail file
+//is depreciated in favour of the integrated approad of loading from dynamic array
+async function loadScreenFromFile(screen, firstLoad = true) {
     //need to load the assets associated with the item
     // await loadAssets()
 
@@ -287,6 +320,84 @@ async function loadScreen(screen, firstLoad = true) {
 }
 
 
+let yail = []
+let currentScreen = "screen1.xml"
+let firstLoad = true
+function pushNewData(data) {
+    console.log("New data incoming.")
+    yail = data
+    //if (triggerRefresh) {
+    //  console.log('Refresh triggered for '+currentScreen)
+    loadScreen(currentScreen, firstLoad)
+    //}
+}
+
+
+function loadData(data) {
+    yail = data
+    //  console.log("Initial data")
+    // console.log(yail)
+}
+
+async function loadScreen(screen, firstLoad = true) {
+    //need to load the assets associated with the item
+    // await loadAssets()
+
+
+    //this is default system code that seems to need to be sent so the emulator
+    //actually runs code in the first place
+    let system1 = `
+(define-syntax protect-enum   
+    (lambda (x)     
+        (syntax-case x ()       
+            ((_ enum-value number-value)         
+                (if (< com.google.appinventor.components.common.YaVersion:BLOCKS_LANGUAGE_VERSION 34)           
+                #'number-value           
+                #'enum-value)
+            )
+        )
+    )
+)
+(clear-current-form)`
+
+    //need to have a yail maker here
+
+    //this reads the generated yail code and loads it into the program
+    let system2 = yail[screen]// fs.readFileSync(`${screen}.yail`, "utf-8")
+
+    if (system2 === undefined) {
+        console.log("Message error")
+        console.log(yail)
+        console.log(screen)
+        console.log(system2)
+        return
+    }
+
+    //send first message so things load
+    if (!firstLoad) {
+        system2 = "(clear-current-form)" + system2
+    } else {
+        system2 = system1 + system2
+
+        // let msg = buildMessage(system1)
+        // sendMessage(msg)
+    }
+
+    //send the actual yail program code
+    msg = buildMessage(system2)
+    sendMessage(msg)
+
+    //store updated sequence number for next run
+    updateSequenceNumber(seq)
+    console.log(`Message Number: ${seq}`)
+
+    firstLoad = false
+    console.log("Message sent to emulator")
+}
+
+
+
+
 async function listener() {
 
     let values = await fetch('http://localhost:8001/_values')
@@ -295,7 +406,7 @@ async function listener() {
 
     try {
         if (res.values) {
-            for (let i=0; i<res.values.length; i++){
+            for (let i = 0; i < res.values.length; i++) {
                 if (res.values[i].type === 'pushScreen') {
                     console.log(`Loading "${res.values[i].screen}"`)
                     await loadScreen(res.values[i].screen, false)
@@ -311,7 +422,10 @@ async function listener() {
 
 
 //make it so - Captain Jean L. Picard
-main()
+//main()
 
+exports.run = main
+exports.update = pushNewData
+exports.load = loadData
 
 
