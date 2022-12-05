@@ -1,64 +1,87 @@
-var Promise = require('bluebird')
-var adb = require('adbkit')
-var client = adb.createClient()
+const adb = require('adbkit')
+const client = adb.createClient()
 
-client.listDevices()
-  .then(function(devices) {
-    return Promise.map(devices, function(device) {
-      return client.readdir(device.id, '/sdcard/Android/data/edu.mit.appinventor.aicompanion3/files/AppInventor/assets')
-        .then(function(files) {
-          // Synchronous, so we don't have to care about returning at the
-          // right time
-          console.log(files)
-          files.forEach(function(file) {
-            if (file.isFile()) {
-              console.log('[%s] Found file "%s"', device.id, file.name)
-            }
-          })
-        })
-    })
+
+const logger = require("../logger/logger")
+const log = logger.log
+const debug = logger.debug
+
+
+async function getFiles(devices) {
+  let foundFiles = []
+  for (let i = 0; i < devices.length; i++) {
+    let device = devices[i]
+    let files = await client.readdir(device.id, '/sdcard/Android/data/edu.mit.appinventor.aicompanion3/files/AppInventor/assets')
+    for (let j = 0; j < files.length; j++) {
+      let file = files[j]
+      if (file.isFile()) {
+        foundFiles.push(file.name)
+      }
+
+    }
+  }
+  return foundFiles
+}
+
+async function startMonitorLog(device) {
+  let logcat = await client.openLogcat(device.id, { clear: true } )
+
+  logcat.on('entry', entry => {
+    if (entry.message.indexOf("Incoming seq") !== -1 || entry.message.indexOf("Computed seq") !== -1) {
+      let incoming = entry.message.indexOf("Incoming seq")
+      let computed = entry.message.indexOf("Computed seq")
+
+      if (incoming !==-1) {        
+        let raw = entry.message.substring(incoming+15, incoming+25)
+        adbSequence.incoming = parseInt(raw)
+        adbLogOutput(entry.message.substring(incoming, incoming+25))
+      } 
+      if (computed !==-1) {        
+        let raw = entry.message.substring(computed+15, computed+25)
+        adbSequence.computed = parseInt(raw)
+        adbLogOutput(entry.message.substring(computed, computed+25))
+      }
+
+    } else {
+      debug("------------------------------")
+      debug(entry.message)
+      debug("------------------------------")
+      
+    }
   })
-  .then(function() {
-    console.log('Done checking /sdcard files on connected devices')
-  })
-  .catch(function(err) {
-    console.error('Something went wrong:', err.stack)
-  })
-
-
-
-
-
-  /* 
-  //THIS CODE GETS THE CURRENTLY UPLOADED FILES 
-
-  var Promise = require('bluebird')
-var adb = require('adbkit')
-var client = adb.createClient()
-
-client.listDevices()
-  .then(function(devices) {
-    return Promise.map(devices, function(device) {
-      return client.readdir(device.id, '/sdcard/Android/data/edu.mit.appinventor.aicompanion3/files/AppInventor/assets')
-        .then(function(files) {
-          // Synchronous, so we don't have to care about returning at the
-          // right time
-          console.log(files)
-          files.forEach(function(file) {
-            if (file.isFile()) {
-              console.log('[%s] Found file "%s"', device.id, file.name)
-            }
-          })
-        })
-    })
-  })
-  .then(function() {
-    console.log('Done checking /sdcard files on connected devices')
-  })
-  .catch(function(err) {
-    console.error('Something went wrong:', err.stack)
+  logcat.on('error', err => {
+    debug("logcat error "+ err)
   })
 
+}
 
+let adbSequence = {
+  incoming: 0,
+  computed: 1
+}
 
-  */
+function adbLogOutput(message) {
+  debug(message)
+  debug(adbSequence)
+}
+
+async function getDevices() {
+  let devices = await client.listDevices()
+  return devices
+}
+
+let devices;
+async function main() {
+  devices = await getDevices()
+  let files = await getFiles(devices)
+  debug(files)
+  for (let i = 0; i < devices.length; i++) {
+    await startMonitorLog(devices[i])
+  }
+}
+
+main()
+
+exports.sequence = adbSequence
+exports.devices = getDevices
+exports.getFiles = getFiles

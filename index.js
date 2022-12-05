@@ -23,6 +23,7 @@ for (let i = 0; i < files.length; i++) {
 //this sets up the folder watcher for any saved or changed files
 let changedFiles = []
 fs.watch(__dirname, 'utf8', function (eventType, filename) {
+    if (filename===null) {return}
     if (filename.toLowerCase().endsWith(".xml")) {
         if (!changedFiles.includes(filename)) {
             changedFiles.push(filename)
@@ -57,4 +58,4 @@ function checkForChanges() {
 
 setInterval(checkForChanges, 2000)
 
-emulatorInterface.run()
+emulatorInterface.run(false)

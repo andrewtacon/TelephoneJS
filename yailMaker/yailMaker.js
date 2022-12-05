@@ -303,6 +303,7 @@ function traverse(object, parent = '') {
             assetsList.push(value)
         }
     }
+    fs.writeFileSync("assets.list", JSON.stringify(assetsList))
 
     //traverse the children
     if (object.elements) {

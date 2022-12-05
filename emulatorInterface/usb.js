@@ -312,7 +312,7 @@ async function loadAssets() {
 
 
 //main function - runs once, async so that it can wait for thinsg to happen
-async function main(isEmulator = true) {
+async function main(isEmulator = false) {
 
     //if selected hard reset or there is no tracking file for the sequence number
     //then reset the emulator hard

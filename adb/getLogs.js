@@ -2,6 +2,18 @@ var Promise = require('bluebird')
 var adb = require('adbkit')
 var client = adb.createClient()
 
+async function startMonitorLog(device){
+
+    let logcat = await client.openLogcat(device.id, { clear: true })
+    logcat.on('entry', entry => {
+        if (entry.message.indexOf("Incoming seq") !== -1 || entry.message.indexOf("Computed seq") !== -1) {
+            console.log(entry.message)
+        }
+    })
+
+}
+
+
 client.listDevices()
     .then(function (devices) {
         return Promise.map(devices, function (device) {
