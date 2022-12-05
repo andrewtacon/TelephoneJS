@@ -322,12 +322,12 @@ async function main(isEmulator = false) {
         await deviceReset()
     }
 
-    let state = isEmulator ? await launchEmulator() : await launchUSBDevice()
+    let state =  await launchUSBDevice()
 
     //for testing - if already connected then assume everything is good
     if (state !== 'connected') {
         resetSequenceNumber()
-        let status = isEmulator ? await checkEmulatorStatus() : await checkUSBDeviceStatus()
+        let status =  await checkUSBDeviceStatus()
         await startRepl(status.device)
         await getVersion()
         await getValues()
@@ -545,7 +545,7 @@ async function listener() {
 
 
 //make it so - Captain Jean L. Picard
-//main()
+main()
 
 exports.run = main
 exports.update = pushNewData

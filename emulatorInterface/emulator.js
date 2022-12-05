@@ -322,20 +322,38 @@ async function main(isEmulator = true) {
         await deviceReset()
     }
 
-    let state = isEmulator ? await launchEmulator() : await launchUSBDevice()
+    if (isEmulator) {
+        let state = await launchEmulator()
+        console.log(state)
 
-    //for testing - if already connected then assume everything is good
-    if (state !== 'connected') {
-        resetSequenceNumber()
-        let status = isEmulator ? await checkEmulatorStatus() : await checkUSBDeviceStatus()
-        await startRepl(status.device)
-        await getVersion()
-        await getValues()
+        //for testing - if already connected then assume everything is good
+        if (state !== 'connected') {
+            resetSequenceNumber()
+            let status = await checkEmulatorStatus()
+            await startRepl(status.device)
+            await getVersion()
+            await getValues()
 
-        //then also log the last time the emulator was started
+            //then also log the last time the emulator was started
+        } else {
+            loadSequenceNumber() //load sequence number from file so it matches last sent value to emulator
+        }
     } else {
-        loadSequenceNumber() //load sequence number from file so it matches last sent value to emulator
+        let state = await checkUSBDeviceStatus()
+        console.log(state)
+
+        //for testing - if already connected then assume everything is good
+        if (state !== 'connected') {
+            let status = await checkUSBDeviceStatus()
+            await startRepl(status.device)
+            await getVersion()
+            await getValues()
+
+            //then also log the last time the emulator was started
+        }
     }
+
+
 
     await loadScreen(currentScreen, true)
     setInterval(listener, 1000)

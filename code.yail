@@ -23,42 +23,28 @@
 	(set-and-coerce-property! 'Button1 'Text "Button Text2 HERE" 'text)
 )
 
-(add-component Screen1 com.google.appinventor.components.runtime.VerticalScrollArrangement vscrollbox_1
-	(set-and-coerce-property! 'vscrollbox_1 'Image "smile.png" 'text)
+(add-component Screen1 com.google.appinventor.components.runtime.VerticalScrollArrangement vscrollbox_11
+	(set-and-coerce-property! 'vscrollbox_11 'Image "smile.png" 'text)
 )
 
-(add-component vscrollbox_1 com.google.appinventor.components.runtime.TableArrangement table_2
-	(set-and-coerce-property! 'table_2 'Columns 4 'number)
-	(set-and-coerce-property! 'table_2 'Width -2 'number)
+(add-component vscrollbox_11 com.google.appinventor.components.runtime.TableArrangement table_12
+	(set-and-coerce-property! 'table_12 'Columns 4 'number)
+	(set-and-coerce-property! 'table_12 'Width -2 'number)
 )
 
-(add-component table_2 com.google.appinventor.components.runtime.Button button_3 
-	(set-and-coerce-property! 'button_3 'Text "I will break" 'text)
-	(set-and-coerce-property! 'button_3 'Width -1025 'number)
-	(set-and-coerce-property! 'button_3 'Row 0 'number)
-	(set-and-coerce-property! 'button_3 'Column 0 'number)
+(add-component table_12 com.google.appinventor.components.runtime.Button button_13 
+	(set-and-coerce-property! 'button_13 'Text "I will break" 'text)
+	(set-and-coerce-property! 'button_13 'Width -1025 'number)
+	(set-and-coerce-property! 'button_13 'Row 0 'number)
+	(set-and-coerce-property! 'button_13 'Column 0 'number)
 )
 
-(add-component table_2 com.google.appinventor.components.runtime.Button button_4 
-	(set-and-coerce-property! 'button_4 'Text "I will break" 'text)
-	(set-and-coerce-property! 'button_4 'Width -1025 'number)
-	(set-and-coerce-property! 'button_4 'Row 0 'number)
-	(set-and-coerce-property! 'button_4 'Column 1 'number)
-)
-
-(add-component table_2 com.google.appinventor.components.runtime.Button button_5 
-	(set-and-coerce-property! 'button_5 'Text "I will break" 'text)
-	(set-and-coerce-property! 'button_5 'Width -1025 'number)
-	(set-and-coerce-property! 'button_5 'Row 0 'number)
-	(set-and-coerce-property! 'button_5 'Column 2 'number)
-)
-
-(add-component table_2 com.google.appinventor.components.runtime.Button button_6 
-	(set-and-coerce-property! 'button_6 'Text "I will break" 'text)
-	(set-and-coerce-property! 'button_6 'Width -1025 'number)
-	(set-and-coerce-property! 'button_6 'Row 0 'number)
-	(set-and-coerce-property! 'button_6 'Column 3 'number)
+(add-component table_12 com.google.appinventor.components.runtime.Button button_14 
+	(set-and-coerce-property! 'button_14 'Text "I will break" 'text)
+	(set-and-coerce-property! 'button_14 'Width -1025 'number)
+	(set-and-coerce-property! 'button_14 'Row 0 'number)
+	(set-and-coerce-property! 'button_14 'Column 1 'number)
 )
 
 (init-runtime)
-(call-Initialize-of-components 'Screen1 'Button1 'vscrollbox_1 'table_2 'button_3 'button_4 'button_5 'button_6  )
+(call-Initialize-of-components 'Screen1 'Button1 'vscrollbox_11 'table_12 'button_13 'button_14  )
