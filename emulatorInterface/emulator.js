@@ -181,8 +181,8 @@ let hmac = function (input) {
 
 let sha1 = function (input) {
     var hasher = new goog.crypt.Sha1();
-    hasher.update(this.string_to_bytes(input));
-    return (this.bytes_to_hexstring(hasher.digest()));
+    hasher.update(string_to_bytes(input));
+    return (bytes_to_hexstring(hasher.digest()));
 };
 
 let string_to_bytes = function (input) {
@@ -198,6 +198,7 @@ let bytes_to_hexstring = function (input) {
         z.push(Number(256 + input[i]).toString(16).substring(1, 3));
     return z.join("");
 };
+
 
 //////////////////////////////////////////////
 //// END HMAC CODE ///////////////////////////
@@ -360,52 +361,6 @@ async function main(isEmulator = true) {
 }
 
 
-//this is the legacy development method to load data directory from the yail file
-//is depreciated in favour of the integrated approad of loading from dynamic array
-async function loadScreenFromFile(screen, firstLoad = true) {
-    //need to load the assets associated with the item
-    //  await loadAssets()
-
-
-    //this is default system code that seems to need to be sent so the emulator
-    //actually runs code in the first place
-    let system1 = `
-(define-syntax protect-enum   
-    (lambda (x)     
-        (syntax-case x ()       
-            ((_ enum-value number-value)         
-                (if (< com.google.appinventor.components.common.YaVersion:BLOCKS_LANGUAGE_VERSION 34)           
-                #'number-value           
-                #'enum-value)
-            )
-        )
-    )
-)
-(clear-current-form)`
-
-    //need to have a yail maker here
-
-    //this reads the generated yail code and loads it into the program
-    let system2 = fs.readFileSync(`${screen}.yail`, "utf-8")
-
-    //send first message so things load
-    if (!firstLoad) {
-        system2 = "(clear-current-form)" + system2
-    } else {
-        system2 = system1 + system2
-
-        // let msg = buildMessage(system1)
-        // sendMessage(msg)
-    }
-
-    //send the actual yail program code
-    msg = buildMessage(system2)
-    enqueueMessage(msg)
-    //    sendMessage(msg)
-
-    //store updated sequence number for next run
-    updateSequenceNumber(seq)
-}
 
 
 let yail = []
@@ -423,8 +378,8 @@ function pushNewData(data) {
 
 function loadData(data) {
     yail = data
-    //  console.log("Initial data")
-    // console.log(yail)
+    debug("Initial data")
+    debug(yail)
 }
 
 async function loadScreen(screen, firstLoad = true) {
@@ -449,7 +404,7 @@ async function loadScreen(screen, firstLoad = true) {
     //need to have a yail maker here
 
     //this reads the generated yail code and loads it into the program
-    let system2 = yail[screen]// fs.readFileSync(`${screen}.yail`, "utf-8")
+    let system2 = yail[screen]
 
     if (system2 === undefined) {
         console.log("Message error")
@@ -471,7 +426,8 @@ async function loadScreen(screen, firstLoad = true) {
 
     //send the actual yail program code
     msg = buildMessage(system2)
-    sendMessage(msg)
+    //sendMessage(msg)
+    enqueueMessage(msg)
 
     //store updated sequence number for next run
     updateSequenceNumber(seq)
@@ -489,7 +445,7 @@ async function loadScreen(screen, firstLoad = true) {
 
 let ableToSend = true
 let awaitingValues = false
-let lastMessageSent //need to keep this incase it fails due to the sequence numbers being out
+let lastMessageSent //need to keep this incase it fails due to the sequence numbers being out of sync in code and on device
 async function listener() {
 
     try {
@@ -568,5 +524,5 @@ async function listener() {
 exports.run = main
 exports.update = pushNewData
 exports.load = loadData
-
+exports.sha1 = sha1
 

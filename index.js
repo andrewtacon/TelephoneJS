@@ -60,4 +60,4 @@ setInterval(checkForChanges, 2000)
 
 const IS_EMULATOR = true
 const IS_USB = false
-emulatorInterface.run(IS_USB)
+emulatorInterface.run(IS_EMULATOR)
