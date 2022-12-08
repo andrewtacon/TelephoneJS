@@ -2,7 +2,7 @@ const adb = require('adbkit')
 const client = adb.createClient()
 
 
-const logger = require("../logger/logger")
+const logger = require("./logger")
 const log = logger.log
 const debug = logger.debug
 

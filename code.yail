@@ -33,7 +33,7 @@
 )
 
 (add-component table_2 com.google.appinventor.components.runtime.Button button_3 
-	(set-and-coerce-property! 'button_3 'Text "I will break" 'text)
+	(set-and-coerce-property! 'button_3 'Text "I will break here" 'text)
 	(set-and-coerce-property! 'button_3 'Width -1025 'number)
 	(set-and-coerce-property! 'button_3 'Row 0 'number)
 	(set-and-coerce-property! 'button_3 'Column 0 'number)

@@ -1,3 +1,7 @@
+///to get around self-signed certificate on the school network
+
+process.env ['NODE_TLS_REJECT_UNAUTHORIZED'] = 0 
+
 ////////////////////////////////////////////////
 /// MOST OF THIS CODE FROM MITS replmgr.js /////
 ////////////////////////////////////////////////
@@ -25,32 +29,6 @@ const fetch = require("node-fetch")
 const webRTC = require('wrtc')
 let RTCPeerConnection = webRTC.RTCPeerConnection
 
-////////////////////////////////////////////////////////
-///// crypto ///////////////////////////////////////////
-////////////////////////////////////////////////////////
-
-require("google-closure-library");
-goog.require("goog.crypt.Sha1");
-
-let sha1 = function (input) {
-    let hasher = new goog.crypt.Sha1();
-    hasher.update(string_to_bytes(input));
-    return (bytes_to_hexstring(hasher.digest()));
-};
-
-let string_to_bytes = function (input) {
-    let z = [];
-    for (let i = 0; i < input.length; i++)
-        z.push(input.charCodeAt(i));
-    return z;
-};
-
-let bytes_to_hexstring = function (input) {
-    let z = [];
-    for (let i = 0; i < input.length; i++)
-        z.push(Number(256 + input[i]).toString(16).substring(1, 3));
-    return z.join("");
-};
 
 //////////////////////////////////////////////////////////////
 //// FROM MIT replmngr.js ////////////////////////////////////
@@ -71,7 +49,8 @@ let replcode = genCode()
 console.log(`AI Companion Code: ${replcode}`)
 
 //set up the rendezvous at the server with encrypted code (essentially a shared secret)
-let rendezvouscode = sha1(replcode);
+let security = require('./security')
+let rendezvouscode = security.sha1(replcode);
 
 let rs = {
     'key': replcode,
@@ -241,3 +220,4 @@ webrtcpeer.createOffer().then(function (desc) {
 });
 
 poll();
+

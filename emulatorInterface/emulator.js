@@ -6,17 +6,13 @@
 
 const fetch = require('node-fetch');
 const fs = require('fs');
-
-require("google-closure-library");
-goog.require("goog.crypt.Sha1");
-goog.require("goog.crypt.Hmac")
-goog.require("goog.Uri.QueryData")
+const security = require("./security")
 
 ////////////////////////////////////////////
 ///// Logging //////////////////////////////
 ////////////////////////////////////////////
 
-const logger = require("../logger/logger")
+const logger = require("./logger")
 const log = logger.log
 const debug = logger.debug
 
@@ -24,7 +20,7 @@ const debug = logger.debug
 //// ADB Comms //////////////////////////////
 /////////////////////////////////////////////
 
-const adb = require("../adb/getFiles");
+const adb = require("./adbController");
 
 
 /////////////////////////////////////////////
@@ -170,39 +166,6 @@ async function deviceReset(device) {
     return connect
 }
 
-/////////////////////////////////////////
-/// SEND MESSAGE HMAC HASHING CODE //////
-/////////////////////////////////////////
-
-let hmac = function (input) {
-    var googhash = new goog.crypt.Hmac(new goog.crypt.Sha1(), string_to_bytes("emulator"), 64);
-    return (bytes_to_hexstring(googhash.getHmac(string_to_bytes(input))));
-};
-
-let sha1 = function (input) {
-    var hasher = new goog.crypt.Sha1();
-    hasher.update(string_to_bytes(input));
-    return (bytes_to_hexstring(hasher.digest()));
-};
-
-let string_to_bytes = function (input) {
-    var z = [];
-    for (var i = 0; i < input.length; i++)
-        z.push(input.charCodeAt(i));
-    return z;
-};
-
-let bytes_to_hexstring = function (input) {
-    var z = [];
-    for (var i = 0; i < input.length; i++)
-        z.push(Number(256 + input[i]).toString(16).substring(1, 3));
-    return z.join("");
-};
-
-
-//////////////////////////////////////////////
-//// END HMAC CODE ///////////////////////////
-//////////////////////////////////////////////
 
 ////Need to keep track of the sequence number (the amount of data sent to the emulator)
 ////The emulator keeps track of this value and increments it each time new data is sent
@@ -234,10 +197,11 @@ function loadSequenceNumber() {
 //I think it is -1 when you send in an empty and a new value when you add individual blocks live (but that doesn't happen in this implementation)
 const blockid = -2
 
+
 //build the message to send - layer in the hmac and extra information
 function buildMessage(message) {
     var encoder = new goog.Uri.QueryData();
-    encoder.add('mac', hmac(message + seq + blockid));
+    encoder.add('mac', security.hmac(message + seq + blockid));
     encoder.add('seq', seq++);
     encoder.add('code', message);
     encoder.add('blockid', blockid);
@@ -524,5 +488,4 @@ async function listener() {
 exports.run = main
 exports.update = pushNewData
 exports.load = loadData
-exports.sha1 = sha1
 
