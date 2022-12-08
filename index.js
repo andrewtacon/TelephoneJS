@@ -1,4 +1,4 @@
-const emulatorInterface = require("./emulatorInterface/emulator")
+const emulatorInterface = require("./emulatorInterface/emulatorUSBConnection")
 const generateYail = require("./yailMaker/yailMaker")
 const fs = require('fs')
 

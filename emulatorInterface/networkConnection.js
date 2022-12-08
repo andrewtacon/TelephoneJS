@@ -1,6 +1,6 @@
 ///to get around self-signed certificate on the school network
 
-process.env ['NODE_TLS_REJECT_UNAUTHORIZED'] = 0 
+process.env['NODE_TLS_REJECT_UNAUTHORIZED'] = 0
 
 ////////////////////////////////////////////////
 /// MOST OF THIS CODE FROM MITS replmgr.js /////
@@ -30,6 +30,16 @@ const webRTC = require('wrtc')
 let RTCPeerConnection = webRTC.RTCPeerConnection
 
 
+////////////////////////////////////////////
+///// Logging //////////////////////////////
+////////////////////////////////////////////
+
+const logger = require("./logger")
+const log = logger.log
+const debug = logger.debug
+
+
+
 //////////////////////////////////////////////////////////////
 //// FROM MIT replmngr.js ////////////////////////////////////
 //////////////////////////////////////////////////////////////
@@ -46,7 +56,7 @@ function genCode() {
 ////////////////////////////////////
 
 let replcode = genCode()
-console.log(`AI Companion Code: ${replcode}`)
+log(`AI Companion Code: ${replcode}`)
 
 //set up the rendezvous at the server with encrypted code (essentially a shared secret)
 let security = require('./security')
@@ -84,12 +94,6 @@ let webrtcerror = function (doalert, msg) {
 
 webrtcisopen = false;
 webrtcforcestop = false;
-
-
-function debug(msg){
-
-}
-
 
 ///run a poll to get get data from the rendezvous server
 let poll = function () {
@@ -137,14 +141,15 @@ webrtcpeer = new RTCPeerConnection(rs.iceservers);
 
 webrtcpeer.oniceconnectionstatechange = function (evt) {
     let isFirefox = typeof InstallTrigger !== 'undefined';
-//    console.log("oniceconnectionstatechange: evt.type = " + evt.type + " ice connection state = " +
-  //      this.iceConnectionState);
-    console.log("Network connection status: " + this.iceConnectionState)
+    //    log("oniceconnectionstatechange: evt.type = " + evt.type + " ice connection state = " +
+    //      this.iceConnectionState);
+    log("Network connection status: " + this.iceConnectionState)
     connectionstate = this.iceConnectionState;
     if ((connectionstate == "disconnected" && !isFirefox) ||
         connectionstate == "failed") {
         webrtcerror(true, "Web rtc connection closed");
     }
+
 };
 
 webrtcpeer.onsignalingstatechange = function (evt) {
@@ -173,10 +178,10 @@ webrtcdata = webrtcpeer.createDataChannel('data');
 
 webrtcdata.onopen = function () {
     webrtcisopen = true;
-    //console.log('webrtc data connection open!');
+    log('Network data connection open!');
     webrtcdata.onmessage = function (ev) {
-        console.log("webrtc(onmessage): " + ev.data);
-        let json = goog.json.parse(ev.data);
+        log("webrtc(onmessage): " + ev.data);
+        let json = JSON.parse(ev.data);
         if (json.status == 'OK') {
             context.processRetvals(json.values);
         }
@@ -188,7 +193,7 @@ webrtcdata.onopen = function () {
 };
 
 webrtcdata.onclose = function () {
-    console.log("webrtc data closed");
+    log("Network data connection closed.");
     webrtcdata = null;
     webrtcstarting = false;
     webrtcrunning = false;
@@ -196,7 +201,7 @@ webrtcdata.onclose = function () {
 };
 
 webrtcdata.onerror = function (err) {
-    console.log("webrtc data error: " + err);
+    log("Network data error: " + err);
     webrtcdata = null;
     webrtcstarting = false;
     webrtcrunning = false;
@@ -221,3 +226,37 @@ webrtcpeer.createOffer().then(function (desc) {
 
 poll();
 
+
+
+let sentMacros = false
+function senddata(yailPayload) {
+    log("Sending network data.")
+    var PROTECT_ENUM_ANDROID = "(define-syntax protect-enum " +
+        "  (lambda (x) " +
+        "    (syntax-case x () " +
+        "      ((_ enum-value number-value) " +
+        "        (if (< com.google.appinventor.components.common.YaVersion:BLOCKS_LANGUAGE_VERSION 34) " +
+        "          #'number-value " +
+        "          #'enum-value)))))";
+    var PROTECT_ENUM_IOS = "#f))(define-syntax protect-enum " +
+        "(syntax-rules () ((_ enum-value number-value) " +
+        "(if (equal? \"\" (yail:invoke (yail:invoke AIComponentKit.Form 'getActiveForm) 'VersionName)) " +
+        "#'number-value #'enum-value))))(begin (begin #f";
+
+
+    if (!sentMacros) {
+        webrtcdata.send(PROTECT_ENUM_ANDROID);
+        sentMacros = true;
+    }
+
+    let item = `(clear-current-form)` + yailPayload
+
+    let blockid = -2
+    item = "(begin (require <com.google.youngandroid.runtime>) (process-repl-input " +
+        blockid + " (begin " + item + ")))";
+
+    webrtcdata.send(item);
+}
+
+
+//let item = fs.readFileSync("code.yail", "utf-8")
