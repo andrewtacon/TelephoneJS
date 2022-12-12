@@ -22,6 +22,7 @@ const debug = logger.debug
 
 const adb = require("./adbController");
 
+
 /////////////////////////////////////////////
 ////// USB DEVICE CONTROL CODE //////////////
 /////////////////////////////////////////////
@@ -276,7 +277,7 @@ async function loadAssets() {
 
 
 //main function - runs once, async so that it can wait for thinsg to happen
-async function main(isEmulator = "emulator") {
+async function main(isEmulator = true) {
 
     //if selected hard reset or there is no tracking file for the sequence number
     //then reset the emulator hard
@@ -286,9 +287,9 @@ async function main(isEmulator = "emulator") {
         await deviceReset()
     }
 
-    if (isEmulator === 'emulator') {
+    if (isEmulator) {
         let state = await launchEmulator()
-        //console.log(state)
+        console.log(state)
 
         //for testing - if already connected then assume everything is good
         if (state !== 'connected') {
@@ -304,7 +305,7 @@ async function main(isEmulator = "emulator") {
         }
     } else {
         let state = await checkUSBDeviceStatus()
-        //console.log(state)
+        console.log(state)
 
         //for testing - if already connected then assume everything is good
         if (state !== 'connected') {
@@ -321,8 +322,6 @@ async function main(isEmulator = "emulator") {
 
     await loadScreen(currentScreen, true)
     setInterval(listener, 1000)
-
-    await adb.run()
 }
 
 

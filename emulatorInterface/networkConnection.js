@@ -1,6 +1,6 @@
 ///to get around self-signed certificate on the school network
 
-process.env['NODE_TLS_REJECT_UNAUTHORIZED'] = 0
+//process.env['NODE_TLS_REJECT_UNAUTHORIZED'] = 0
 
 ////////////////////////////////////////////////
 /// MOST OF THIS CODE FROM MITS replmgr.js /////
@@ -135,6 +135,8 @@ let poll = function () {
 
         })
 
+   
+
 };
 
 webrtcpeer = new RTCPeerConnection(rs.iceservers);
@@ -183,12 +185,14 @@ webrtcdata.onopen = function () {
         log("webrtc(onmessage): " + ev.data);
         let json = JSON.parse(ev.data);
         if (json.status == 'OK') {
-            context.processRetvals(json.values);
+         //   context.processRetvals(json.values);
         }
     };
     // Ready to actually exchange data
     webrtcrunning = true;
     webrtcdata = webrtcdata; // For debugging
+
+    setInterval(listener, 1000)
 
 };
 
@@ -224,7 +228,7 @@ webrtcpeer.createOffer().then(function (desc) {
     webrtcpeer.setLocalDescription(desc);
 });
 
-poll();
+//poll();
 
 
 
@@ -259,4 +263,36 @@ function senddata(yailPayload) {
 }
 
 
-//let item = fs.readFileSync("code.yail", "utf-8")
+let yail = []
+let currentScreen = "screen1.xml"
+function loadData(data) {
+    yail = data
+    debug("Initial data")
+    debug(yail)
+}
+
+function update(data) {
+    log("New data incoming")
+    yail = data
+    senddata(yail[currentScreen])
+
+}
+
+
+let lastMessageSent = ""
+async function listener() {
+
+    if (yail[currentScreen] !== lastMessageSent && yail[currentScreen] !== undefined) {
+        lastMessageSent = yail[currentScreen]
+        senddata(lastMessageSent)
+    }
+
+}
+
+
+
+
+
+exports.load = loadData
+exports.update = senddata
+exports.run = poll

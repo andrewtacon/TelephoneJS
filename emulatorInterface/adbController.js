@@ -80,8 +80,9 @@ async function main() {
   }
 }
 
-main()
+//main()
 
+exports.run = main
 exports.sequence = adbSequence
 exports.devices = getDevices
 exports.getFiles = getFiles

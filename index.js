@@ -1,11 +1,19 @@
-const emulatorInterface = require("./emulatorInterface/emulatorUSBConnection")
+let emulatorInterface
+let networkInterface
 const generateYail = require("./yailMaker/yailMaker")
 const fs = require('fs')
 
 let yail = []
 let assetList = []
 
-//this sections loads all the XML files into the structure and creates the initial asset list
+const IS_EMULATOR = "emulator"
+const IS_USB = "usb"
+const IS_NET = 'net'
+let mode = IS_NET
+
+let log = console.log
+
+//this sections loads all the XML files into the system as yail code and creates the initial asset list
 let files = fs.readdirSync(__dirname)
 files = files.filter(file => file.toLowerCase().endsWith(".xml"))
 
@@ -19,18 +27,21 @@ for (let i = 0; i < files.length; i++) {
     }
 }
 
+//emulatorInterface.load(yail)
+
+
 
 //this sets up the folder watcher for any saved or changed files
+//currently only focusses on the xml files
 let changedFiles = []
 fs.watch(__dirname, 'utf8', function (eventType, filename) {
-    if (filename===null) {return}
+    if (filename === null) { return }
     if (filename.toLowerCase().endsWith(".xml")) {
         if (!changedFiles.includes(filename)) {
             changedFiles.push(filename)
         }
     }
 })
-emulatorInterface.load(yail)
 
 
 function update(filename) {
@@ -43,6 +54,8 @@ function update(filename) {
     }
 }
 
+//this checks to see if the files that have now been saved actually have any changes to them
+//if so it updates the contents in the yail array and send it off to the connection manager for queuing and distribution
 function checkForChanges() {
     let changesMade = false
     for (let i = changedFiles.length - 1; i >= 0; i--) {
@@ -52,12 +65,51 @@ function checkForChanges() {
     }
     if (changesMade) {
         console.log("Changes found. Updating.")
-        emulatorInterface.update(yail)
+        if (mode !== IS_NET && emulatorInterface) {
+            emulatorInterface.update(yail)
+        } else if (mode===IS_NET && networkInterface){
+            networkInterface.update(yail)
+        }
     }
 }
 
 setInterval(checkForChanges, 2000)
 
-const IS_EMULATOR = true
-const IS_USB = false
-emulatorInterface.run(IS_EMULATOR)
+
+//this section sends off the connection data to the connection manager to instantiate the correct sending pathway
+
+async function main() {
+
+    let args = process.argv
+    for (let i = 0; i < args.length; i++) {
+        args[i] = args[i].toLowerCase().trim()
+    }
+
+    if (args.includes('net') || args.includes("wifi")) {
+        log("Network mode")
+        mode = IS_NET
+        networkInterface = require("./emulatorInterface/networkConnection")
+        networkInterface.run()
+        networkInterface.load(yail)
+
+    } else {
+        emulatorInterface = require("./emulatorInterface/emulatorUSBConnection")
+        emulatorInterface.load(yail)
+
+        if (args.includes("usb")) {
+            log("USB mode")
+            mode = IS_USB
+            await emulatorInterface.run(IS_USB)
+        } else {
+            console.log("Emulator mode")
+            mode = IS_EMULATOR
+            await emulatorInterface.run(IS_EMULATOR)
+        }
+
+
+    }
+
+}
+
+
+main()
