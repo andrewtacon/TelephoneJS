@@ -11,7 +11,6 @@
 /// the way that I think.                    ///
 ////////////////////////////////////////////////
 
-let context;
 let webrtcpeer;
 let webrtcisopen = false;
 let webrtcforcestop = false;
@@ -38,6 +37,12 @@ const logger = require("./logger")
 const log = logger.log
 const debug = logger.debug
 
+
+////////////////////////////////////////////
+//// FILE OPERATIONS ///////////////////////
+////////////////////////////////////////////
+
+const fs = require('fs')
 
 
 //////////////////////////////////////////////////////////////
@@ -89,14 +94,23 @@ let offer;
 let haveoffer = false;
 let connectionstate = "none";
 let webrtcerror = function (doalert, msg) {
-    engine.resetcompanion();
+    log(msg)
+    //    engine.resetcompanion();
 };
 
 webrtcisopen = false;
 webrtcforcestop = false;
+let webrtcCandidates = []
+let targetIP
+let targetPort
+//ip address regexp
+const regexExp = /^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])$/gi;
+
 
 ///run a poll to get get data from the rendezvous server
-let poll = function () {
+let poll = async function () {
+
+
 
     fetch(rs.rendezvous2 + rs.key + '-r')
         .then((data) => data.json())
@@ -118,6 +132,14 @@ let poll = function () {
                             console.error(e);
                             webrtcerror(true, "Connection error\n" + e);
                         });
+
+                        //  console.log(candidate)
+                        let ip = candidate.candidate.split(" ")[4]
+                        if (regexExp.test(ip) && candidate.candidate.indexOf('srflx') !== -1) {
+                            webrtcCandidates.push(candidate)
+                            //   console.log(candidate.candidate)
+                        }
+
                     } else {
                         debug("Seen nonce " + nonce);
                     }
@@ -133,9 +155,30 @@ let poll = function () {
                 setTimeout(poll, 1000); // Try again in one second
             }
 
+            webrtcCandidates.sort((a, b) => {
+                let aValue = parseInt(a.candidate.split(" ")[0].replace("candidate:", "").trim())
+                let bValue = parseInt(b.candidate.split(" ")[0].replace("candidate:", "").trim())
+                return bValue - aValue
+
+            })
+
+            // console.log(webrtcCandidates)
+            targetPort = 8001
+            if (webrtcCandidates.length > 0) {
+                console.log(webrtcCandidates)
+
+                let selectedCandidate = webrtcCandidates[0].candidate
+                let sc = selectedCandidate.split(' ')
+                console.log(sc)
+                targetIP = sc[4]            //raddr
+      //          targetPort = sc[11]
+            }
+
+
+
         })
 
-   
+
 
 };
 
@@ -178,19 +221,37 @@ webrtcpeer.onicecandidate = function (evt) {
 
 webrtcdata = webrtcpeer.createDataChannel('data');
 
-webrtcdata.onopen = function () {
+webrtcdata.onopen = async function () {
     webrtcisopen = true;
     log('Network data connection open!');
     webrtcdata.onmessage = function (ev) {
-        log("webrtc(onmessage): " + ev.data);
         let json = JSON.parse(ev.data);
         if (json.status == 'OK') {
-         //   context.processRetvals(json.values);
+            log(`Device returned OK for data.`)
+
+        } else {
+            log("webrtc(onmessage): " + ev.data);
         }
     };
     // Ready to actually exchange data
     webrtcrunning = true;
     webrtcdata = webrtcdata; // For debugging
+
+    let info = await fetch('https://rendezvous.appinventor.mit.edu/rendezvous/' + rendezvouscode)
+    let d = await info.json()
+    //targetPort = 8001
+    if (d.ipaddr.indexOf("Error") === -1 && targetIP === undefined) {
+        targetIP = d.ipaddr
+
+        
+
+    }
+
+
+    //can only upload assets on the LAN
+    if (targetIP !== undefined) {
+        await loadAssets()
+    }
 
     setInterval(listener, 1000)
 
@@ -296,3 +357,51 @@ async function listener() {
 exports.load = loadData
 exports.update = senddata
 exports.run = poll
+
+
+//this does work - uploads the assets over normal httpd - doesn't use the webrtc channel for data upload
+//must have an IP address to do this
+//for MIT is downloads assets from their server and this is baked into the companion app so I don't know if there is a workaround here
+//i think this is the only way to do this.
+async function loadAssets() {
+
+    let assetList = ["frown2.png"]
+
+    for (let i = 0; i < assetList.length; i++) {
+        let asset = assetList[i]
+
+
+        //let url = `http://192.168.0.13:8001/?filename=${asset}`
+        let url = `http://${targetIP}:${targetPort}/?filename=${asset}`
+
+
+        log(`Loading "${asset} onto device.`)
+
+
+        //run an OPTIONS request
+        const options = await fetch(url, {
+            method: 'OPTIONS'
+        });
+        let optionReturn = await options
+
+
+        //run a PUT request and send the file
+        const stats = fs.statSync(asset);
+        const fileSizeInBytes = stats.size;
+
+        // You can pass any of the 3 objects below as body
+        let readStream = fs.createReadStream(asset);
+
+        const put = await fetch(url, {
+            method: 'PUT',
+            headers: {
+                "Content-length": fileSizeInBytes
+            },
+            body: readStream // Here, stringContent or bufferContent would also work
+        });
+        let putReturn = await put
+
+
+    }
+
+}
