@@ -23,42 +23,77 @@
 	(set-and-coerce-property! 'Button1 'Text "Button Text2 HERE" 'text)
 )
 
-(add-component Screen1 com.google.appinventor.components.runtime.VerticalScrollArrangement vscrollbox_1
-	(set-and-coerce-property! 'vscrollbox_1 'Image "smile.png" 'text)
+(add-component Screen1 com.google.appinventor.components.runtime.TableArrangement table_23
+	(set-and-coerce-property! 'table_23 'Columns 4 'number)
+	(set-and-coerce-property! 'table_23 'Width -2 'number)
 )
 
-(add-component vscrollbox_1 com.google.appinventor.components.runtime.TableArrangement table_2
-	(set-and-coerce-property! 'table_2 'Columns 4 'number)
-	(set-and-coerce-property! 'table_2 'Width -2 'number)
+(add-component table_23 com.google.appinventor.components.runtime.Button button_24 
+	(set-and-coerce-property! 'button_24 'Text "I will break" 'text)
+	(set-and-coerce-property! 'button_24 'Width -1025 'number)
+	(set-and-coerce-property! 'button_24 'Row 0 'number)
+	(set-and-coerce-property! 'button_24 'Column 0 'number)
 )
 
-(add-component table_2 com.google.appinventor.components.runtime.Button button_3 
-	(set-and-coerce-property! 'button_3 'Text "I will break" 'text)
-	(set-and-coerce-property! 'button_3 'Width -1025 'number)
-	(set-and-coerce-property! 'button_3 'Row 0 'number)
-	(set-and-coerce-property! 'button_3 'Column 0 'number)
+(add-component table_23 com.google.appinventor.components.runtime.Button button_25 
+	(set-and-coerce-property! 'button_25 'Text "I will break" 'text)
+	(set-and-coerce-property! 'button_25 'Width -1025 'number)
+	(set-and-coerce-property! 'button_25 'Row 0 'number)
+	(set-and-coerce-property! 'button_25 'Column 1 'number)
 )
 
-(add-component table_2 com.google.appinventor.components.runtime.Button button_4 
-	(set-and-coerce-property! 'button_4 'Text "I will break" 'text)
-	(set-and-coerce-property! 'button_4 'Width -1025 'number)
-	(set-and-coerce-property! 'button_4 'Row 0 'number)
-	(set-and-coerce-property! 'button_4 'Column 1 'number)
+(add-component table_23 com.google.appinventor.components.runtime.Button button_26 
+	(set-and-coerce-property! 'button_26 'Text "I will break" 'text)
+	(set-and-coerce-property! 'button_26 'Width -1025 'number)
+	(set-and-coerce-property! 'button_26 'Row 0 'number)
+	(set-and-coerce-property! 'button_26 'Column 2 'number)
 )
 
-(add-component table_2 com.google.appinventor.components.runtime.Button button_5 
-	(set-and-coerce-property! 'button_5 'Text "I will break" 'text)
-	(set-and-coerce-property! 'button_5 'Width -1025 'number)
-	(set-and-coerce-property! 'button_5 'Row 0 'number)
-	(set-and-coerce-property! 'button_5 'Column 2 'number)
+(add-component table_23 com.google.appinventor.components.runtime.Button button_27 
+	(set-and-coerce-property! 'button_27 'Text "I will break" 'text)
+	(set-and-coerce-property! 'button_27 'Width -1025 'number)
+	(set-and-coerce-property! 'button_27 'Row 0 'number)
+	(set-and-coerce-property! 'button_27 'Column 3 'number)
 )
 
-(add-component table_2 com.google.appinventor.components.runtime.Button button_6 
-	(set-and-coerce-property! 'button_6 'Text "I will break" 'text)
-	(set-and-coerce-property! 'button_6 'Width -1025 'number)
-	(set-and-coerce-property! 'button_6 'Row 0 'number)
-	(set-and-coerce-property! 'button_6 'Column 3 'number)
+(add-component table_23 com.google.appinventor.components.runtime.Button button_28 
+	(set-and-coerce-property! 'button_28 'Text "I will break" 'text)
+	(set-and-coerce-property! 'button_28 'Width -1025 'number)
+	(set-and-coerce-property! 'button_28 'Row 1 'number)
+	(set-and-coerce-property! 'button_28 'Column 0 'number)
+)
+
+(add-component Screen1 com.google.appinventor.components.runtime.DatePicker datepicker_29 
+	(set-and-coerce-property! 'datepicker_29 'Text "Pick a date" 'text)
+	(set-and-coerce-property! 'datepicker_29 'Shape 3 'number)
+	(set-and-coerce-property! 'datepicker_29 'FontSize 36 'number)
+	(set-and-coerce-property! 'datepicker_29  'TextColor #xFFFF00FF 'number)
+	(set-and-coerce-property! 'datepicker_29 'FontBold #f 'boolean)
+	(set-and-coerce-property! 'datepicker_29 'FontItalic #f 'boolean)
+	(set-and-coerce-property! 'datepicker_29 'Width -1100 'number)
+	(set-and-coerce-property! 'datepicker_29 'Height 200 'number)
+)
+
+(add-component Screen1 com.google.appinventor.components.runtime.CheckBox checkbox_30 
+	(set-and-coerce-property! 'checkbox_30 'Text "Label for checkbox" 'text)
+	(set-and-coerce-property! 'checkbox_30  'TextColor #xFF0000FF 'number)
+	(set-and-coerce-property! 'checkbox_30  'BackgroundColor #xFF00FFFF 'number)
+	(set-and-coerce-property! 'checkbox_30 'Checked #f 'boolean)
+	(set-and-coerce-property! 'checkbox_30 'FontBold #f 'boolean)
+)
+
+(add-component Screen1 com.google.appinventor.components.runtime.Image image_31 
+	(set-and-coerce-property! 'image_31 'Picture "smile.png" 'text)
+	(set-and-coerce-property! 'image_31 'Width 100 'number)
+	(set-and-coerce-property! 'image_31 'Height 100 'number)
+)
+
+(add-component Screen1 com.google.appinventor.components.runtime.Label label_32 
+	(set-and-coerce-property! 'label_32 'Text "Red label" 'text)
+	(set-and-coerce-property! 'label_32 'FontSize 24 'number)
+	(set-and-coerce-property! 'label_32  'BackgroundColor #xFF000000 'number)
+	(set-and-coerce-property! 'label_32  'TextColor #xFFFF0000 'number)
 )
 
 (init-runtime)
-(call-Initialize-of-components 'Screen1 'Button1 'vscrollbox_1 'table_2 'button_3 'button_4 'button_5 'button_6  )
+(call-Initialize-of-components 'Screen1 'Button1 'table_23 'button_24 'button_25 'button_26 'button_27 'button_28 'datepicker_29 'checkbox_30 'image_31 'label_32  )
