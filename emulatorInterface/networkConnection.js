@@ -162,8 +162,9 @@ let poll = async function () {
 
             })
 
+            //This is an attempt to get the IP endpoitn address so can upload - it doesn't work (yet or maybe ever)
             // console.log(webrtcCandidates)
-            targetPort = 8001
+/*            targetPort = 8001
             if (webrtcCandidates.length > 0) {
                 console.log(webrtcCandidates)
 
@@ -172,7 +173,7 @@ let poll = async function () {
                 console.log(sc)
                 targetIP = sc[4]            //raddr
       //          targetPort = sc[11]
-            }
+            }*/
 
 
 
@@ -239,16 +240,13 @@ webrtcdata.onopen = async function () {
 
     let info = await fetch('https://rendezvous.appinventor.mit.edu/rendezvous/' + rendezvouscode)
     let d = await info.json()
+    
+    //this extracts the IP address of the companion device - work for devices on the same LAN
     //targetPort = 8001
     if (d.ipaddr.indexOf("Error") === -1 && targetIP === undefined) {
         targetIP = d.ipaddr
-
-        
-
     }
-
-
-    //can only upload assets on the LAN
+    //can only upload assets on the same LAN
     if (targetIP !== undefined) {
         await loadAssets()
     }
