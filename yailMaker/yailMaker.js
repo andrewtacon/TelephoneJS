@@ -8,6 +8,7 @@ const TYPES = [
     "image",
     "label",
     "listpicker",
+    "listview",
     //do listview next
     "screen",
     "text",
@@ -112,6 +113,7 @@ function traverse(object, parent = '') {
     if (type === "image") { createImage(object.attributes, parent, object.elements) }
     if (type === "label") { createLabel(object.attributes, parent, object.elements) }
     if (type === "listpicker") { createListPicker(object.attributes, parent, object.elements) }
+    if (type === "listview") { createListView(object.attributes, parent, object.elements) }
     if (type === "notifier") { createNotifier(object.attributes, parent, object.elements) }
     if (type === "hbox") { createhbox(object.attributes, parent, object.elements) }
     if (type === "vbox") { createvbox(object.attributes, parent, object.elements) }
@@ -291,7 +293,7 @@ function traverse(object, parent = '') {
 
         createTable(object.attributes, parent, object.elements)
 
-        
+
     }    /////////// THIS IS THE END HANDLING TABLES ////////////
 
     //generate the assetList
@@ -359,7 +361,7 @@ function createScreen(attributes) {
 function createButton(attributes, parent, elements) {
     let template = `\n(add-component ${parent} com.google.appinventor.components.runtime.Button ${attributes.name} `
     output(template)
-    
+
     if (elements[0].text) {
         text("", elements[0].text, attributes.name)
     }
@@ -412,7 +414,7 @@ function createCheckBox(attributes, parent, elements) {
         else if (key === 'textalign') { textAlignment(key, value, attributes.name) }
         else if (key === 'col') { col(key, value, attributes.name) }
         else if (key === 'row') { row(key, value, attributes.name) }
-        else if (key === 'name') {} //already processed 
+        else if (key === 'name') { } //already processed 
         else {
             console.log(`Ignoring invalid attribute for checkbox: '${key}'`)
         }
@@ -446,7 +448,7 @@ function createDatePicker(attributes, parent, elements) {
         else if (key === 'textcolor') { textColor(key, value, attributes.name) }
         else if (key === 'col') { col(key, value, attributes.name) }
         else if (key === 'row') { row(key, value, attributes.name) }
-        else if (key === 'name') {} //already processed 
+        else if (key === 'name') { } //already processed 
         else {
             console.log(`Ignoring invalid attribute for datepicker: '${key}'`)
         }
@@ -478,7 +480,7 @@ function createImage(attributes, parent, elements) {
         else {
             console.log(`Ignoring invalid attribute for image: '${key}'`)
         }
-}
+    }
 
     output('\n)\n')
 }
@@ -509,7 +511,7 @@ function createLabel(attributes, parent, elements) {
         else if (key === 'textcolor') { textColor(key, value, attributes.name) }
         else if (key === 'col') { col(key, value, attributes.name) }
         else if (key === 'row') { row(key, value, attributes.name) }
-        else if (key === 'name') {  } //already processed
+        else if (key === 'name') { } //already processed
         else {
             console.log(`Ignoring invalid attribute for label: '${key}'`)
         }
@@ -526,16 +528,14 @@ function createLabel(attributes, parent, elements) {
 
 
 function createListPicker(attributes, parent, elements) {
-    let template = `\n(add-component ${parent} com.google.appinventor.components.runtime.Label ${attributes.name} `
+    let template = `\n(add-component ${parent} com.google.appinventor.components.runtime.ListPicker ${attributes.name} `
     output(template)
-    if (elements[0].text) {
-        text("", elements[0].text, attributes.name)
-    }
+
 
     for (let [key, value] of Object.entries(attributes)) {
         key = key.toLowerCase()
         if (key === 'backgroundcolor') { backgroundColor(key, value, attributes.name) }
-        else if (key === 'elements') { elementsFromString(key, value, attributes.name) }   
+        else if (key === 'elements') { elementsFromString(key, value, attributes.name) }
         else if (key === 'enabled') { isEnabled(key, value, attributes.name) }
         else if (key === 'bold') { isBold(key, value, attributes.name) }
         else if (key === 'italic') { isItalic(key, value, attributes.name) }
@@ -556,9 +556,9 @@ function createListPicker(attributes, parent, elements) {
         else if (key === 'title') { title(key, value, attributes.name) }
         else if (key === 'col') { col(key, value, attributes.name) }
         else if (key === 'row') { row(key, value, attributes.name) }
-        else if (key === 'name') {  } //already processed
+        else if (key === 'name') { } //already processed
         else {
-            console.log(`Ignoring invalid attribute for label: '${key}'`)
+            console.log(`Ignoring invalid attribute for listpicker: '${key}'`)
         }
     }
 
@@ -568,13 +568,67 @@ function createListPicker(attributes, parent, elements) {
 
 //LISTVIEW
 
-function createNotifier(attributes, parent, elements) {
-    let template = `\n(add-component ${parent} com.google.appinventor.components.runtime.Notifier ${attributes.name})\n`
+
+function createListView(attributes, parent, elements) {
+    let template = `\n(add-component ${parent} com.google.appinventor.components.runtime.ListView ${attributes.name} `
     output(template)
+
+    for (let [key, value] of Object.entries(attributes)) {
+        key = key.toLowerCase()
+        if (key === 'backgroundcolor') { backgroundColor(key, value, attributes.name) }
+        else if (key === 'elements') { elementsFromString(key, value, attributes.name) }
+        else if (key === 'fontsizedetail') { fontSizeDetail(key, value, attributes.name) }
+        else if (key === 'typeface') { typeface(key, value, attributes.name) }
+        else if (key === 'typefacedetail') { typefaceDetail(key, value, attributes.name) }
+        else if (key === 'height') { height(key, value, attributes.name) }
+        else if (key === 'width') { width(key, value, attributes.name) }
+        else if (key === 'imageheight') { imageHeight(key, value, attributes.name) }
+        else if (key === 'imagewidth') { imageWidth(key, value, attributes.name) }
+        else if (key === 'data') { listdata(key, value, attributes.name) }
+        else if (key === 'layout') { layout(key, value, attributes.name) }
+        else if (key === "orientation") { orientation(key, value, attributes.name) }
+        else if (key === 'selection') { setSelection(key, value, attributes.name) }
+        else if (key === 'selectioncolor') { selectionColor(key, value, attributes.name) }
+        else if (key === 'showfilter') { showFilter(key, value, attributes.name) }
+        else if (key === 'textcolor') { textColor(key, value, attributes.name) }
+        else if (key === 'textcolordetail') { textColorDetail(key, value, attributes.name) }
+        else if (key === 'textsize') { textSize(key, value, attributes.name) }
+        else if (key === 'visible') { visible(key, value, attributes.name) }
+        else if (key === 'col') { col(key, value, attributes.name) }
+        else if (key === 'row') { row(key, value, attributes.name) }
+        else if (key === 'name') { } //already processed
+        else {
+            console.log(`Ignoring invalid attribute for listview: '${key}'`)
+        }
+    }
+
+    output('\n)\n')
+}
+
+
+function createNotifier(attributes, parent, elements) {
+    let template = `\n(add-component ${parent} com.google.appinventor.components.runtime.Notifier ${attributes.name}`
+    output(template)
+
+    
+    for (let [key, value] of Object.entries(attributes)) {
+        key = key.toLowerCase()
+        if (key === 'backgroundcolor') { backgroundColor(key, value, attributes.name) }
+        else if (key === 'textcolor') { textColor(key, value, attributes.name) }
+        else if (key === 'length') { notifierLength(key, value, attributes.name) }
+        else if (key === 'name') { } //already processed 
+        else {
+            console.log(`Ignoring invalid attribute for checkbox: '${key}'`)
+        }
+    }
+
+    output('\n)\n')
+
 }
 
 //PASSWORD TEXTBOX
 //SLIDER
+//SPINNER
 //SWITCH
 //TEXTBOX
 //TIMEPICKER
@@ -667,33 +721,41 @@ function elementsFromString(key, value, name) { setText(key, value, name, "Eleme
 function showTitle(key, value, name) { setFalse(key, value, name, "TitleVisible") }
 function isChecked(key, value, name) { setTrue(key, value, name, "Checked") }
 function isEnabled(key, value, name) { setFalse(key, value, name, "Enabled") }
-function showFeedback(key, value, name) { setFalse(key,value, name, "ShowFeedback") }
-function alternativeText(key, value, name) { setText(key,value,name, "AlternateText")}
-function isClickable(key, value, name) { setTrue(key, value, name, "Clickable")}
-function isBold(key, value, name) { setTrue(key, value, name, "FontBold")}
-function isItalic(key, value, name) { setTrue(key, value, name, "FontItalic")}
-function scalePictureToFit(key, value, name) { setTrue(key, value, name, "ScalePictureToFit")}
-function showStatus(key, value, name) { setFalse(key,value, name, "ShowStatusBar") }
-function fontSize(key, value, name) { setFloat(key,value, name, "FontSize") }
+function showFeedback(key, value, name) { setFalse(key, value, name, "ShowFeedback") }
+function alternativeText(key, value, name) { setText(key, value, name, "AlternateText") }
+function isClickable(key, value, name) { setTrue(key, value, name, "Clickable") }
+function isBold(key, value, name) { setTrue(key, value, name, "FontBold") }
+function isItalic(key, value, name) { setTrue(key, value, name, "FontItalic") }
+function scalePictureToFit(key, value, name) { setTrue(key, value, name, "ScalePictureToFit") }
+function showStatus(key, value, name) { setFalse(key, value, name, "ShowStatusBar") }
+function fontSize(key, value, name) { setFloat(key, value, name, "FontSize") }
+function textSize(key, value, name) { setFloat(key, value, name, "TextSize") }
+function fontSizeDetail(key, value, name) { setFloat(key, value, name, "FontSizeDetail") }
 function rotationAngle(key, value, name) { setFloat(key, value, name, "RotationAngle") }
 
-function showFilter(key, value, name) { setTrue(key, value, name, "ShowFilterBar")}
+function showFilter(key, value, name) { setTrue(key, value, name, "ShowFilterBar") }
 
-function typeface(key, value, name) { fromList(key, value, name, ['sans serif', 'serif', 'monospace'], "FontTypeface")}
-function setShape(key, value, name) { fromList(key, value, name, ['rounded', 'rectangular', 'oval'], "Shape")}
+function typeface(key, value, name) { fromList(key, value, name, ['sans serif', 'serif', 'monospace'], "FontTypeface") }
+function typefaceDetail(key, value, name) { fromList(key, value, name, ['sans serif', 'serif', 'monospace'], "FontTypefaceDetail") }
+function setShape(key, value, name) { fromList(key, value, name, ['rounded', 'rectangular', 'oval'], "Shape") }
 
-function text(key, value, name) { setText(key, value, name, "Text")}
-function setSelection(key, value, name) { setText(key, value, name, "Selection")}
-function HTMLFormat(key, value, name) { setTrue(key, value, name, "HTMLFormat")}
-function hasMargins(key, value, name) { setFalse(key,value, name, "HasMargins") }
+function text(key, value, name) { setText(key, value, name, "Text") }
+function setSelection(key, value, name) { setText(key, value, name, "Selection") }
+function HTMLFormat(key, value, name) { setTrue(key, value, name, "HTMLFormat") }
+function hasMargins(key, value, name) { setFalse(key, value, name, "HasMargins") }
 
-function valign(key, value, name) { fromList(key, value, name, ['top', 'center', 'bottom'], "AlignVertical")}
-function halign(key, value, name) { fromList(key, value, name, ['left', 'right', 'center'], "AlignHorizontal")}
-function textAlignment(key, value, name) { fromList(key, value, name, ['left', 'center', 'right'], "TextAlignment")}
+function valign(key, value, name) { fromList(key, value, name, ['top', 'center', 'bottom'], "AlignVertical") }
+function halign(key, value, name) { fromList(key, value, name, ['left', 'right', 'center'], "AlignHorizontal") }
+function textAlignment(key, value, name) { fromList(key, value, name, ['left', 'center', 'right'], "TextAlignment") }
+function orientation(key, value, name) { fromList(key, value, name, ['vertical', 'horizontal'], "Orientation") }
 
-function backgroundColor(key, value, name) { setColor(key, value, name, "BackgroundColor")}
+function notifierLength(key, value, name) { fromList(key, value, name, ['short', 'long'], "NotifierLength") }
+
+function backgroundColor(key, value, name) { setColor(key, value, name, "BackgroundColor") }
 function textColor(key, value, name) { setColor(key, value, name, "TextColor") }
+function selectionColor(key, value, name) { setColor(key, value, name, "SelectionColor") }
 function itemTextColor(key, value, name) { setColor(key, value, name, "ItemTextColor") }
+function textColorDetail(key, value, name) { setColor(key, value, name, "TextColorDetail") }
 function itemBackgroundColor(key, value, name) { setColor(key, value, name, "ItemBackgroundColor") }
 
 function visible(key, value, name) { setFalse(key, value, name, "Visible") }
@@ -703,17 +765,20 @@ function picture(key, value, name) { setText(key, value, name, "Picture") }
 
 //cols and rows are for the table arrangement itself
 function cols(key, value, name) { setInteger(key, value, name, "Columns") }
-function rows(key, value, name) { setInteger(key, value, name, "Rows")}
+function rows(key, value, name) { setInteger(key, value, name, "Rows") }
 
 //col and row are for any item placed inside a table arrangement
 function col(key, value, name) { setInteger(key, value, name, "Column") }
-function row(key, value, name) { setInteger(key, value, name, "Row")}
+function row(key, value, name) { setInteger(key, value, name, "Row") }
 
 function width(key, value, name) { setDimensions(key, value, name, "Width") }
 function height(key, value, name) { setDimensions(key, value, name, "Height") }
 
+function imageHeight(key, value, name) { setInteger(key, value, name, "ImageHeight") }
+function imageWidth(key, value, name) { setInteger(key, value, name, "ImageWidth") }
 
-
+function layout(key, value, name) { fromList(key, value, name, ['text', 'text_detail', 'text_detail_horz', 'image_text', 'image_text_detail'], "ListViewLayout") }
+function listdata(key, value, name) { loadListViewData(key, value, name, "ListData") }
 
 /////////////////////////////////////////////////////////
 //// These are the master parameter creation methods ////
@@ -764,7 +829,9 @@ function fromList(key, value, name, options, descriptor) {
         let index = options.indexOf(value) + 1
 
         //special case
-        if (descriptor === "TextAlignment") {index--}
+        if (descriptor === "TextAlignment" || descriptor === "ListViewLayout") { index-- }
+        if (descriptor === "Orientation") { if (index !== 1) { return } } //only send through request for horizonatal, vertical is default
+        if (descriptor === "NotifierLength") { if (index !== 0) { return } } //only send through request for short, long is default
 
         output(`\n\t(set-and-coerce-property! '${name} '${descriptor} ${index} 'number)`)
     } else {
@@ -772,7 +839,7 @@ function fromList(key, value, name, options, descriptor) {
     }
 }
 
-function setColor( key, value, name, descriptor) {
+function setColor(key, value, name, descriptor) {
     if (value.length !== 8) {
         console.log(`Invalid colour for ${descriptor}. Must be 8 digit hexadecimal string. Found value does not have 8 characters - "${value}" ***`)
         return
@@ -817,3 +884,28 @@ function setDimensions(key, value, name, descriptor) {
         output(`\n\t(set-and-coerce-property! '${name} '${descriptor} ${value} 'number)`)
     }
 }
+
+
+function loadListViewData(key, value, name, descriptor) {
+    //load the data from a CSV file 
+    let file = fs.readFileSync(value, 'utf-8')
+    let data = file.split("\n")
+
+    let datalist = []
+
+    while (typeof data[0] !== "undefined") {
+        let d = data.shift()
+        let line = d.split(",")
+        let object = {}
+        if (typeof line[0] !== 'undefined') { object.Text1 = line[0].trim() }
+        if (typeof line[1] !== 'undefined') { object.Text2 = line[1].trim() }
+        if (typeof line[2] !== 'undefined') { object.Image = line[2].trim() }
+        datalist.push(object)
+    }
+
+    let outputText = JSON.stringify(datalist)
+    outputText = outputText.replaceAll('"', '\\"')
+
+    output(`\n\t(set-and-coerce-property! '${name} '${descriptor} "${outputText}" 'text)`)
+}
+
