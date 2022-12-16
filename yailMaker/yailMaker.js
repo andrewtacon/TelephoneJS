@@ -1,3 +1,4 @@
+const { ObjectPattern } = require("abstract-syntax-tree")
 const fs = require("fs")
 const convert = require("xml-js")
 
@@ -133,6 +134,19 @@ const ELEMENTS = {
     "translator": {
         "runTimeName": "Translator",
         "attributes": ["apikey"]
+    },
+    //start drawing and animation elements
+    "canvas": {
+        "runTimeName": "Canvas",
+        "attributes": ["backgroundcolor", "backgroundimage", "extendmovesoutsidecanvas", "extend", "fontsize", "height", "width", "linewidth", "paintcolor", "paint", 'tapthreshold', 'textalign', 'visible']
+    },
+    "ball": {
+        "runTimeName": "Ball",
+        "attributes": ["enabled", "heading", "interval", "originatcenter", "paint", "paintcolor", "radius", "speed", "visible", "x", "y", "z"]
+    },
+    "sprite": {
+        "runTimeName": "ImageSprite",
+        "attributes": ["enabled", "heading", "height", "width", "interval", "picture", "rotates", "speed", "visible", "x", "y", "z"]
     }
 }
 
@@ -144,6 +158,7 @@ const ATTRIBUTES = {
     "AlignVertical": ["valign"],
     "AlternateText": ["alt"],
     "BackgroundColor": [],
+    "BackgroundImage": [],
     "Checked": [],
     "Clickable": [],
     "ColorLeft": ["leftcolor"],
@@ -153,6 +168,7 @@ const ATTRIBUTES = {
     "Country": [],
     "ElementsFromString": ["elements"],
     "Enabled": [],
+    "ExtendMovesOutsideCanvas": ["extend"],
     "FollowLinks": [],
     "FontBold": ["bold"],
     "FontItalic": ["italic"],
@@ -161,6 +177,7 @@ const ATTRIBUTES = {
     "FontTypeface": ["typeface"],
     "FontTypefaceDetail": ["typefacedetail"],
     "HasMargins": ["margins"],
+    "Heading": [],
     "Height": [],
     "Hint": [],
     "HomeUrl": ["url"],
@@ -169,9 +186,11 @@ const ATTRIBUTES = {
     "Image": [],
     "ImageHeight": [],
     "ImageWidth": [],
+    "Interval": [],
     "ItemBackgroundColor": ["itembg", "itembackground"],
     "ItemTextColor": ["itemcolor"],
     "Language": ["lang"],
+    "LineWidth": [],
     "ListData": ["data"],
     "ListViewLayout": ["layout"],
     "Loop": [],
@@ -184,13 +203,17 @@ const ATTRIBUTES = {
     "NumbersOnly": ["numbers"],
     "On": [],
     "Orientation": [],
+    "OriginAtCenter": [],
+    "PaintColor": ["paint"],
     "Picture": [],
     "Pitch": [],
     "PlayOnlyInForeground": [],
     "Prompt": [],
     "PromptForPermission": ["promptpermission"],
+    "Radius": [],
     "ReadOnly": [],
     "RotationAngle": [],
+    "Rotates": [],
     "Row": ["row"],
     "Rows": ["rows"],
     "SavedRecording": [],
@@ -203,6 +226,7 @@ const ATTRIBUTES = {
     "ShowStatusBar": ["statusbar"],
     "Source": ["src"],
     "SpeechRate": [],
+    "Speed": [],
     "Text": [],
     "TextAlignment": ["textalign"],
     "TextColor": [],
@@ -221,6 +245,9 @@ const ATTRIBUTES = {
     "Visible": [],
     "Volume": ["vol"],
     "Width": [],
+    "X": [],
+    "Y": [],
+    "Z": []
 
 }
 
@@ -456,6 +483,27 @@ function traverse(object, parent = '') {
         }
     }    /////////// THIS IS THE END HANDLING TABLES ////////////
 
+    //ball must have an X and Y
+    if (type === "ball" || type==="sprite") {
+        if (typeof object.attributes === undefined) {
+            object.attributes = {}
+        }
+        if (typeof object.attributes.x === undefined) {
+            object.attributes.x = 20
+        }
+        if (typeof object.attributes.y === undefined) {
+            object.attributes.y = 20
+        }
+        if (isNaN(parseInt(object.attributes.x))) {
+            object.attributes.x = 20
+            console.log("Invalid ball position x. Setting to 20,")
+        }
+        if (isNaN(parseInt(object.attributes.y))) {
+            object.attributes.y = 20
+            console.log("Invalid ball position y. Setting to 20,")
+        }
+    }
+
 
     //create the elements
     if (Object.keys(ELEMENTS).indexOf(type) !== -1) {
@@ -556,6 +604,7 @@ function setAttribute(key, value, name, descriptor) {
         case "Country":
         case "Language":
         case "ApiKey":
+        case "BackgroundImage":
             setText(key, value, name, descriptor)
             break;
         case "TitleVisible":
@@ -568,6 +617,7 @@ function setAttribute(key, value, name, descriptor) {
         case "HasMargins":
         case "Visible":
         case "UseLegacy":
+        case "Rotates":
             setFalse(key, value, name, descriptor)
             break;
         case "Checked":
@@ -585,6 +635,8 @@ function setAttribute(key, value, name, descriptor) {
         case "ReadOnly":
         case "PlayOnlyInForeground":
         case "Loop":
+        case "ExtendMovesOutsideCanvas":
+        case "OriginAtCenter":
             setTrue(key, value, name, descriptor)
             break;
         case "FontSize":
@@ -597,6 +649,12 @@ function setAttribute(key, value, name, descriptor) {
         case "Volume":
         case "Pitch":
         case "SpeechRate":
+        case "LineWidth":
+        case "Heading":
+        case "Speed":
+        case "X":
+        case "Y":
+        case "Z":
             setFloat(key, value, name, descriptor)
             break;
         case "BackgroundColor":
@@ -611,6 +669,7 @@ function setAttribute(key, value, name, descriptor) {
         case "ThumbColorInactive":
         case "TrackColorActive":
         case "TrackColorInactive":
+        case "PaintColor":
             setColor(key, value, name, descriptor)
             break;
         case "Columns":
@@ -620,6 +679,9 @@ function setAttribute(key, value, name, descriptor) {
         case "ImageHeight":
         case "ImageWidth":
         case "MinimumInterval":
+        case "TapThreshold":
+        case "Interval":
+        case "Radius":
             setInteger(key, value, name, descriptor);
             break;
         case "Width":
