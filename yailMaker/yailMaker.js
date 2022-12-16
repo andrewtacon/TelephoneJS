@@ -1,24 +1,228 @@
 const fs = require("fs")
 const convert = require("xml-js")
 
-const TYPES = [
-    "button",
-    "checkbox",
-    "datepicker",
-    "image",
-    "label",
-    "listpicker",
-    "listview",
-    //do listview next
-    "screen",
-    "text",
-    "notifier",
-    "hbox",
-    "vbox",
-    "hscrollbox",
-    "vscrollbox",
-    "table",
-]
+
+//////////////////////////////////////////////////
+//// INTERFACE ELEMENTS //////////////////////////
+//////////////////////////////////////////////////
+
+const ELEMENTS = {
+    //start UI elements
+    "button": {
+        "runTimeName": "Button",
+        "attributes": ["text", "backgroundcolor", "enabled", "bold", "italic", "fontsize", "typeface", "height", "width", "image", "shape", "showfeedback", "textalign", "visible", "textcolor", "col", "row", "name"]
+    },
+    "checkbox": {
+        "runTimeName": "CheckBox",
+        "attributes": ["text", "backgroundcolor", "checked", "enabled", "bold", "italic", "fontsize", "typeface", "height", "width", "visible", "textcolor", "textalign", "col", "row", "name"]
+    },
+    "datepicker": {
+        "runTimeName": "DatePicker",
+        "attributes": ["text", "backgroundcolor", "enabled", "bold", "italic", "fontsize", "typeface", "height", "width", "image", "shape", "showfeedback", "visible", "textcolor", "col", "row", "name"]
+    },
+    "image": {
+        "runTimeName": "Image",
+        "attributes": ["alt", "clickable", "height", "width", "picture", "rotationangle", "scalepicturetofit", "visible", "col", "row", "name"]
+    },
+    "label": {
+        "runTimeName": "Label",
+        "attributes": ["text", "backgroundcolor", "bold", "italic", "fontsize", "typeface", "html", "margins", "height", "width", "textalign", "visible", "textcolor", "col", "row", "name"]
+    },
+    "listpicker": {
+        "runTimeName": "ListPicker",
+        "attributes": ["backgroundcolor", "elements", "enabled", "bold", "italic", "fontsize", "typeface", "image", "height", "width", "itembg", "itembackground", "itemtextcolor", "itemcolor", "selection", "shape", "showfeedback", "showfilter", "textalign", "visible", "textcolor", "col", "row", "name"]
+    },
+    "listview": {
+        "runTimeName": "ListView",
+        "attributes": ["backgroundcolor", "elememts", "fontsizedetail", "typeface", "typefacedetail", "height", "width", "imageheight", "imagewidth", "data", "layout", "orientation", "selection", "selectioncolor", "showfilter", "textcolor", "textcolordetail", "textsize", "visible", "col", "row", "name"]
+    },
+    "notifier": {
+        "runTimeName": "Notifier",
+        "attributes": ["backgroundcolor", "textcolor", "length", "name"]
+    },
+    "password": {
+        "runTimeName": "PasswordTextBox",
+        "attributes": ["text", "backgroundcolor", "enabled", "bold", "italic", "fontsize", "typeface", "height", "width", "hint", "numbers", "textalign", "visible", "textcolor", "col", "row", "name"]
+    },
+    "slider": {
+        "runTimeName": "Slider",
+        "attributes": ["leftcolor", "rightcolor", "width", "max", "min", "thumbenabled", "thumbposition", "col", "row", "name"]
+    },
+    "spinner": {
+        "runTimeName": "Spinner",
+        "attributes": ["elements", "width", "prompt", "selection", "visible", "col", "row", "name"]
+    },
+    "switch": {
+        "runTimeName": "Switch",
+        "attributes": ["text", "backgroundcolor", "enabled", "bold", "italic", "fontsize", "typeface", "height", "width", "on", "textcolor", "thumbcoloractive", "thumbcolorinactive", 'trackcoloractive', 'trackcolorinactive', "visible", "col", "row", "name"]
+    },
+    "textbox": {
+        "runTimeName": "TextBox",
+        "attributes": ["text", "backgroundcolor", "enabled", "bold", "italic", "fontsize", "typeface", "height", "width", "multiline", "numbers", "readonly", "textalign", "visible", "textcolor", "col", "row", "name"]
+    },
+    'timepicker': {
+        "runTimeName": "TimePicker",
+        "attributes": ["text", "backgroundcolor", "enabled", "bold", "italic", "fontsize", "typeface", "height", "width", "image", "shape", "showfeedback", "visible", "textalign", "textcolor", "col", "row", "name"]
+    },
+    'webview': {
+        "runTimeName": "WebViewer",
+        "attributes": ["followlinks", "height", "width", "url", "ignoressl", "promptpermission", "uselocation", "visible", "col", "row", "name"]
+    },
+    "screen": {
+        "runTimeName": "Screen",
+        "attributes": ["showtitle", "statusbar", "backgroundcolor", "appname", "title"]
+    },
+    //start layout elements
+    "hbox": {
+        "runTimeName": "HorizontalArrangement",
+        "attributes": ["halign", "valign", "width", "height", "backgroundcolor", "image", "visible", "col", "row"]
+    },
+    "vbox": {
+        "runTimeName": "VerticalArrangement",
+        "attributes": ["halign", "valign", "width", "height", "backgroundcolor", "image", "visible", "col", "row"]
+    },
+    "hscrollbox": {
+        "runTimeName": "HorizontalScrollArrangement",
+        "attributes": ["halign", "valign", "width", "height", "backgroundcolor", "image", "visible", "col", "row"]
+    },
+    "vscrollbox": {
+        "runTimeName": "VerticalScrollArrangement",
+        "attributes": ["halign", "valign", "width", "height", "backgroundcolor", "image", "visible", "col", "row"]
+    },
+    "table": {
+        "runTimeName": "TableArrangement",
+        "attributes": ["width", "height", "visible", "columns", "rows", "col", "row"]
+    },
+    //start media elements
+    "camcorder": {
+        "runTimeName": "Camcorder",
+        "attributes": ["name"]
+    },
+    "camera": {
+        "runTimeName": "Camera",
+        "attributes": ["name"]
+    },
+    "imagepicker": {
+        "runTimeName": "ImagePicker",
+        "attributes": ["backgroundcolor", "enabled", "bold", "italic", "fontsize", "typeface", "height", "width", "image", "shape", "showfeedback", "text", "textalign", "textcolor", "visible"]
+    },
+    "videoplayer": {
+        "runTimeName": "VideoPlayer",
+        "attributes": ["height", "width", "source", "visible", "volume"]
+    },
+    "player": {
+        "runTimeName": "Player",
+        "attributes": ["loop", "playonlyinforeground", "source", "volume"]
+    },
+    "sound": {
+        "runTimeName": "Sound",
+        "attributes": ["minimuminterval", "source"]
+    },
+    "soundrecorded": {
+        "runTimeName": "SoundRecorded",
+        "attributes": ["savedrecording"]
+    },
+    "speechrecognizer": {
+        "runTimeName": "SpeechRecognizer",
+        "attributes": ["uselegacy"]
+    },
+    "texttospeech": {
+        "runTimeName": "TextToSpeech",
+        "attributes": ["country", "language", "lang", "pitch", "speechrate"]
+    },
+    "translator": {
+        "runTimeName": "Translator",
+        "attributes": ["apikey"]
+    }
+}
+
+//Attributes and their synonyms
+const ATTRIBUTES = {
+    "ApiKey": [],
+    "AppName": [],
+    "AlignHorizontal": ["halign"],
+    "AlignVertical": ["valign"],
+    "AlternateText": ["alt"],
+    "BackgroundColor": [],
+    "Checked": [],
+    "Clickable": [],
+    "ColorLeft": ["leftcolor"],
+    "ColorRight": ["rightcolor"],
+    "Column": ["col"],
+    "Columns": ["cols"],
+    "Country": [],
+    "ElementsFromString": ["elements"],
+    "Enabled": [],
+    "FollowLinks": [],
+    "FontBold": ["bold"],
+    "FontItalic": ["italic"],
+    "FontSize": [],
+    "FontSizeDetail": [],
+    "FontTypeface": ["typeface"],
+    "FontTypefaceDetail": ["typefacedetail"],
+    "HasMargins": ["margins"],
+    "Height": [],
+    "Hint": [],
+    "HomeUrl": ["url"],
+    "HTMLFormat": ["html"],
+    "IgnoreSslErrors": ["ignoressl"],
+    "Image": [],
+    "ImageHeight": [],
+    "ImageWidth": [],
+    "ItemBackgroundColor": ["itembg", "itembackground"],
+    "ItemTextColor": ["itemcolor"],
+    "Language": ["lang"],
+    "ListData": ["data"],
+    "ListViewLayout": ["layout"],
+    "Loop": [],
+    "MaxValue": ["max"],
+    "MinValue": ["min"],
+    "MinimumInterval": [],
+    "MultiLine": [],
+    "Name": [],
+    "NotifierLength": ["length"],
+    "NumbersOnly": ["numbers"],
+    "On": [],
+    "Orientation": [],
+    "Picture": [],
+    "Pitch": [],
+    "PlayOnlyInForeground": [],
+    "Prompt": [],
+    "PromptForPermission": ["promptpermission"],
+    "ReadOnly": [],
+    "RotationAngle": [],
+    "Row": ["row"],
+    "Rows": ["rows"],
+    "SavedRecording": [],
+    "ScalePictureToFit": [],
+    "Selection": [],
+    "SelectionColor": [],
+    "Shape": [],
+    "ShowFeedback": [],
+    "ShowFilterBar": ["showfilter"],
+    "ShowStatusBar": ["statusbar"],
+    "Source": ["src"],
+    "SpeechRate": [],
+    "Text": [],
+    "TextAlignment": ["textalign"],
+    "TextColor": [],
+    "TextColorDetail": [],
+    "TextSize": [],
+    "ThumbColorActive": [],
+    "ThumbColorInactive": [],
+    "ThumbEnabled": [],
+    "ThumbPosition": [],
+    "Title": [],
+    "TitleVisible": ["showtitle"],
+    "TrackColorActive": [],
+    "TrackColorInactive": [],
+    "UsesLocation": ["uselocation", "location"],
+    "UseLegacy": [],
+    "Visible": [],
+    "Volume": ["vol"],
+    "Width": [],
+
+}
 
 
 //this helps name objects without a name
@@ -35,7 +239,6 @@ function output(text) {
     if (logFile) { fs.appendFileSync("code.yail", text) }
     yail += text
 }
-
 
 //this is the heart of the operation
 let yail = ""
@@ -77,16 +280,7 @@ exports.for = main
 
 function traverse(object, parent = '') {
 
-    if (object.type === 'text') { return }
-
     let type = object.name
-
-    if (TYPES.indexOf(type) === -1 && parent !== '') {
-        console.log(`*** Error: Invalid design element "${object.name}" found. ***`)
-        console.log(parent)
-        console.log(object)
-        process.exit(1)
-    }
 
     if (object.attributes) {
         //convert all attributes to lowercase
@@ -106,38 +300,9 @@ function traverse(object, parent = '') {
 
     elementList.push(object.attributes.name)
 
-    if (type === "screen") { createScreen(object.attributes) }
-    if (type === "button") { createButton(object.attributes, parent, object.elements) }
-    if (type === "checkbox") { createCheckBox(object.attributes, parent, object.elements) }
-    if (type === "datepicker") { createDatePicker(object.attributes, parent, object.elements) }
-    if (type === "image") { createImage(object.attributes, parent, object.elements) }
-    if (type === "label") { createLabel(object.attributes, parent, object.elements) }
-    if (type === "listpicker") { createListPicker(object.attributes, parent, object.elements) }
-    if (type === "listview") { createListView(object.attributes, parent, object.elements) }
-    if (type === "notifier") { createNotifier(object.attributes, parent, object.elements) }
-    if (type === "hbox") { createhbox(object.attributes, parent, object.elements) }
-    if (type === "vbox") { createvbox(object.attributes, parent, object.elements) }
-    if (type === "hscrollbox") { createhscrollbox(object.attributes, parent, object.elements) }
-    if (type === "vscrollbox") { createvscrollbox(object.attributes, parent, object.elements) }
+
+    //for tables we need to do some basic error correct for columns and rows numbers for the table and the elements within
     if (type === "table") {
-        //for a table we need to do something special. We need to look at the direct descendents of the table and 
-        //see if they all have 
-        /*
-            non-QCAA psuedocode
-            0. determine the size of the table
-            1. iterate over the items and determine if the column and row numbers are valid
-                -> determine minimum and maximum column
-                    -> set number of columns to be max of (current column count, max column number, max range of column numbers (in case did a negative))
-                    -> if negative column numbers then will need to determine this difference and update column number positions for the elements to be greater than/equal to zero
-                -> do the same for rows
-            2. check count of elements in list
-                -> if too many elements than cells, add extra rows so that cells will be adequete in quantity
-            3. assign numbered elements to cells and set element as assigned
-                -> if cell aready filled then leave second and subsequence as unassigned
-            4. iterate over unassigned elements and fill from the first available cell, assigning col and row to elements
-        */
-
-
         //0. determine the size of the table
         let columns = 2
         let rows = 2
@@ -289,12 +454,13 @@ function traverse(object, parent = '') {
                 assignment[vacantRow][vacantColumn] = 1
             }
         }
-
-
-        createTable(object.attributes, parent, object.elements)
-
-
     }    /////////// THIS IS THE END HANDLING TABLES ////////////
+
+
+    //create the elements
+    if (Object.keys(ELEMENTS).indexOf(type) !== -1) {
+        createElement(type, object.attributes, parent, object.elements)
+    }
 
     //generate the assetList
     if (object.attributes) {
@@ -318,396 +484,52 @@ function traverse(object, parent = '') {
 
 }
 
-////////////////////////////////////////////////////////////////////////
-///// OBJECT CREATION FUNCTIONS ////////////////////////////////////////
-////////////////////////////////////////////////////////////////////////
 
+function createElement(element, attributes, parent, elements) {
+    let template = `\n(add-component ${parent} com.google.appinventor.components.runtime.${ELEMENTS[element].runTimeName} ${attributes.name}`
 
-function createScreen(attributes) {
-    let template = `\n(try-catch 
-    (let 
-        ((
-            attempt 
-                (delay 
-                    (set-form-name "${attributes.name}")
-                )
-        )) 
-        (force attempt)
-    ) 
-    (exception java.lang.Throwable 'notfound)
-)
-    `
+    if (element === "screen") { //screen creation is a special case
+        template = `\n(try-catch 
+            (let 
+                ((
+                    attempt 
+                        (delay 
+                            (set-form-name "${attributes.name}")
+                        )
+                )) 
+                (force attempt)
+            ) 
+            (exception java.lang.Throwable 'notfound)
+        )
+        \n(do-after-form-creation`
+    }
 
     output(template)
-    output(`\n(do-after-form-creation`)
+
     for (let [key, value] of Object.entries(attributes)) {
+        //convert key (the attribute to lowercase)
         key = key.toLowerCase()
-        if (key === "name") { continue; }
-        else if (key === "showtitle" && value === "false") { showTitle(key, value, attributes.name) }
-        else if (key === "statusbar" && value === "false") { showStatus(key, value, attributes.name) }
-        else if (key === 'backgroundcolor') { backgroundColor(key, value, attributes.name) }
-        else if (key === 'appname') { appName(key, value, attributes.name) }
-        else if (key === 'title') { title(key, value, attributes.name) }
+        //determine if the key is in the list for this element
+        let legalAttributes = ELEMENTS[element].attributes
+        if (legalAttributes.indexOf(key) !== -1) {
+
+            //find correct name for the attribute for the SCHEME code
+            for (let [attrkey, attrvalue] of Object.entries(ATTRIBUTES)) {
+                if (attrkey.toLowerCase() === key || attrvalue.indexOf(key) !== -1) {
+                    //process the attribute
+                    setAttribute(key, value, attributes.name, attrkey)
+                }
+            }
+
+        } else {
+            console.log(`Invalid attribute for "${element}": ignoring.`)
+        }
+
+
     }
     output(`\n)\n`)
-}
-
-
-//////////////////////////////////////////////////
-//// USER INTERFACE ELEMENTS /////////////////////
-//////////////////////////////////////////////////
-
-
-function createButton(attributes, parent, elements) {
-    let template = `\n(add-component ${parent} com.google.appinventor.components.runtime.Button ${attributes.name} `
-    output(template)
-
-    if (elements[0].text) {
-        text("", elements[0].text, attributes.name)
-    }
-
-    for (let [key, value] of Object.entries(attributes)) {
-        key = key.toLowerCase()
-        if (key === 'backgroundcolor') { backgroundColor(key, value, attributes.name) }
-        else if (key === 'enabled') { isEnabled(key, value, attributes.name) }
-        else if (key === 'bold') { isBold(key, value, attributes.name) }
-        else if (key === 'italic') { isItalic(key, value, attributes.name) }
-        else if (key === 'fontsize') { fontSize(key, value, attributes.name) }
-        else if (key === 'typeface') { typeface(key, value, attributes.name) }
-        else if (key === 'height') { height(key, value, attributes.name) }
-        else if (key === "width") { width(key, value, attributes.name) }
-        else if (key === 'image') { image(key, value, attributes.name) }
-        else if (key === 'shape') { setShape(key, value, attributes.name) }
-        else if (key === 'showfeedback') { showFeedback(key, value, attributes.name) }
-        else if (key === 'textalign') { textAlignment(key, value, attributes.name) }
-        else if (key === 'visible') { visible(key, value, attributes.name) }
-        else if (key === 'textcolor') { textColor(key, value, attributes.name) }
-        else if (key === 'col') { col(key, value, attributes.name) }
-        else if (key === 'row') { row(key, value, attributes.name) }
-        else if (key === 'name') { } //already processed 
-        else {
-            console.log(`Ignoring invalid attribute for button: '${key}'`)
-        }
-    }
-
-    output('\n)\n')
-}
-
-function createCheckBox(attributes, parent, elements) {
-    let template = `\n(add-component ${parent} com.google.appinventor.components.runtime.CheckBox ${attributes.name} `
-    output(template)
-    text("", elements[0].text, attributes.name)
-
-    for (let [key, value] of Object.entries(attributes)) {
-        key = key.toLowerCase()
-        if (key === 'backgroundcolor') { backgroundColor(key, value, attributes.name) }
-        else if (key === 'checked') { isChecked(key, value, attributes.name) }
-        else if (key === 'enabled') { isEnabled(key, value, attributes.name) }
-        else if (key === 'bold') { isBold(key, value, attributes.name) }
-        else if (key === 'italic') { isItalic(key, value, attributes.name) }
-        else if (key === 'fontSize') { fontSize(key, value, attributes.name) }
-        else if (key === 'typeface') { typeface(key, value, attributes.name) }
-        else if (key === 'height') { height(key, value, attributes.name) }
-        else if (key === "width") { width(key, value, attributes.name) }
-        else if (key === 'visible') { visible(key, value, attributes.name) }
-        else if (key === 'textcolor') { textColor(key, value, attributes.name) }
-        else if (key === 'textalign') { textAlignment(key, value, attributes.name) }
-        else if (key === 'col') { col(key, value, attributes.name) }
-        else if (key === 'row') { row(key, value, attributes.name) }
-        else if (key === 'name') { } //already processed 
-        else {
-            console.log(`Ignoring invalid attribute for checkbox: '${key}'`)
-        }
-    }
-
-    output('\n)\n')
-}
-
-
-function createDatePicker(attributes, parent, elements) {
-    let template = `\n(add-component ${parent} com.google.appinventor.components.runtime.DatePicker ${attributes.name} `
-    output(template)
-    if (elements[0].text) {
-        text("", elements[0].text, attributes.name)
-    }
-
-    for (let [key, value] of Object.entries(attributes)) {
-        key = key.toLowerCase()
-        if (key === 'backgroundcolor') { backgroundColor(key, value, attributes.name) }
-        else if (key === 'enabled') { isEnabled(key, value, attributes.name) }
-        else if (key === 'bold') { isBold(key, value, attributes.name) }
-        else if (key === 'italic') { isItalic(key, value, attributes.name) }
-        else if (key === 'fontsize') { fontSize(key, value, attributes.name) }
-        else if (key === 'typeface') { typeface(key, value, attributes.name) }
-        else if (key === 'height') { height(key, value, attributes.name) }
-        else if (key === "width") { width(key, value, attributes.name) }
-        else if (key === 'image') { image(key, value, attributes.name) }
-        else if (key === 'shape') { setShape(key, value, attributes.name) }
-        else if (key === 'showfeedback') { showFeedback(key, value, attributes.name) }
-        else if (key === 'visible') { visible(key, value, attributes.name) }
-        else if (key === 'textcolor') { textColor(key, value, attributes.name) }
-        else if (key === 'col') { col(key, value, attributes.name) }
-        else if (key === 'row') { row(key, value, attributes.name) }
-        else if (key === 'name') { } //already processed 
-        else {
-            console.log(`Ignoring invalid attribute for datepicker: '${key}'`)
-        }
-
-    }
-
-    output('\n)\n')
-}
-
-
-
-function createImage(attributes, parent, elements) {
-    let template = `\n(add-component ${parent} com.google.appinventor.components.runtime.Image ${attributes.name} `
-    output(template)
-
-    for (let [key, value] of Object.entries(attributes)) {
-        key = key.toLowerCase()
-        if (key === 'alt') { alternativeText(key, value, attributes.name) }
-        else if (key === 'clickable') { isClickable(key, value, attributes.name) }
-        else if (key === 'height') { height(key, value, attributes.name) }
-        else if (key === "width") { width(key, value, attributes.name) }
-        else if (key === 'picture') { picture(key, value, attributes.name) }
-        else if (key === 'rotationangle') { rotationAngle(key, value, attributes.name) }
-        else if (key === 'scalepicturetofit') { scalePictureToFit(key, value, attributes.name) }
-        else if (key === 'visible') { visible(key, value, attributes.name) }
-        else if (key === 'col') { col(key, value, attributes.name) }
-        else if (key === 'row') { row(key, value, attributes.name) }
-        else if (key === 'name') { } //already processed
-        else {
-            console.log(`Ignoring invalid attribute for image: '${key}'`)
-        }
-    }
-
-    output('\n)\n')
-}
-
-
-
-
-function createLabel(attributes, parent, elements) {
-    let template = `\n(add-component ${parent} com.google.appinventor.components.runtime.Label ${attributes.name} `
-    output(template)
-    if (elements[0].text) {
-        text("", elements[0].text, attributes.name)
-    }
-
-    for (let [key, value] of Object.entries(attributes)) {
-        key = key.toLowerCase()
-        if (key === 'backgroundcolor') { backgroundColor(key, value, attributes.name) }
-        else if (key === 'bold') { isBold(key, value, attributes.name) }
-        else if (key === 'italic') { isItalic(key, value, attributes.name) }
-        else if (key === 'fontsize') { fontSize(key, value, attributes.name) }
-        else if (key === 'typeface') { typeface(key, value, attributes.name) }
-        else if (key === 'html') { HTMLFormat(key, value, attributes.name) }
-        else if (key === 'margins') { hasMargins(key, value, attributes.name) }
-        else if (key === 'height') { height(key, value, attributes.name) }
-        else if (key === "width") { width(key, value, attributes.name) }
-        else if (key === 'textalign') { textAlignment(key, value, attributes.name) }
-        else if (key === 'visible') { visible(key, value, attributes.name) }
-        else if (key === 'textcolor') { textColor(key, value, attributes.name) }
-        else if (key === 'col') { col(key, value, attributes.name) }
-        else if (key === 'row') { row(key, value, attributes.name) }
-        else if (key === 'name') { } //already processed
-        else {
-            console.log(`Ignoring invalid attribute for label: '${key}'`)
-        }
-    }
-
-    output('\n)\n')
-}
-
-
-
-
-//LISTPICKER
-
-
-
-function createListPicker(attributes, parent, elements) {
-    let template = `\n(add-component ${parent} com.google.appinventor.components.runtime.ListPicker ${attributes.name} `
-    output(template)
-
-
-    for (let [key, value] of Object.entries(attributes)) {
-        key = key.toLowerCase()
-        if (key === 'backgroundcolor') { backgroundColor(key, value, attributes.name) }
-        else if (key === 'elements') { elementsFromString(key, value, attributes.name) }
-        else if (key === 'enabled') { isEnabled(key, value, attributes.name) }
-        else if (key === 'bold') { isBold(key, value, attributes.name) }
-        else if (key === 'italic') { isItalic(key, value, attributes.name) }
-        else if (key === 'fontsize') { fontSize(key, value, attributes.name) }
-        else if (key === 'typeface') { typeface(key, value, attributes.name) }
-        else if (key === 'image') { image(key, value, attributes.name) }
-        else if (key === 'height') { height(key, value, attributes.name) }
-        else if (key === "width") { width(key, value, attributes.name) }
-        else if (key === 'itembg' || key === 'itembackground') { itemBackgroundColor(key, value, attributes.name) }
-        else if (key === 'itemtextcolor' || key === 'itemcolor') { itemTextColor(key, value, attributes.name) }
-        else if (key === 'selection') { setSelection(key, value, attributes.name) }
-        else if (key === 'shape') { setShape(key, value, attributes.name) }
-        else if (key === 'showfeedback') { showFeedback(key, value, attributes.name) }
-        else if (key === 'showfilter') { showFilter(key, value, attributes.name) }
-        else if (key === 'textalign') { textAlignment(key, value, attributes.name) }
-        else if (key === 'visible') { visible(key, value, attributes.name) }
-        else if (key === 'textcolor') { textColor(key, value, attributes.name) }
-        else if (key === 'title') { title(key, value, attributes.name) }
-        else if (key === 'col') { col(key, value, attributes.name) }
-        else if (key === 'row') { row(key, value, attributes.name) }
-        else if (key === 'name') { } //already processed
-        else {
-            console.log(`Ignoring invalid attribute for listpicker: '${key}'`)
-        }
-    }
-
-    output('\n)\n')
-}
-
-
-//LISTVIEW
-
-
-function createListView(attributes, parent, elements) {
-    let template = `\n(add-component ${parent} com.google.appinventor.components.runtime.ListView ${attributes.name} `
-    output(template)
-
-    for (let [key, value] of Object.entries(attributes)) {
-        key = key.toLowerCase()
-        if (key === 'backgroundcolor') { backgroundColor(key, value, attributes.name) }
-        else if (key === 'elements') { elementsFromString(key, value, attributes.name) }
-        else if (key === 'fontsizedetail') { fontSizeDetail(key, value, attributes.name) }
-        else if (key === 'typeface') { typeface(key, value, attributes.name) }
-        else if (key === 'typefacedetail') { typefaceDetail(key, value, attributes.name) }
-        else if (key === 'height') { height(key, value, attributes.name) }
-        else if (key === 'width') { width(key, value, attributes.name) }
-        else if (key === 'imageheight') { imageHeight(key, value, attributes.name) }
-        else if (key === 'imagewidth') { imageWidth(key, value, attributes.name) }
-        else if (key === 'data') { listdata(key, value, attributes.name) }
-        else if (key === 'layout') { layout(key, value, attributes.name) }
-        else if (key === "orientation") { orientation(key, value, attributes.name) }
-        else if (key === 'selection') { setSelection(key, value, attributes.name) }
-        else if (key === 'selectioncolor') { selectionColor(key, value, attributes.name) }
-        else if (key === 'showfilter') { showFilter(key, value, attributes.name) }
-        else if (key === 'textcolor') { textColor(key, value, attributes.name) }
-        else if (key === 'textcolordetail') { textColorDetail(key, value, attributes.name) }
-        else if (key === 'textsize') { textSize(key, value, attributes.name) }
-        else if (key === 'visible') { visible(key, value, attributes.name) }
-        else if (key === 'col') { col(key, value, attributes.name) }
-        else if (key === 'row') { row(key, value, attributes.name) }
-        else if (key === 'name') { } //already processed
-        else {
-            console.log(`Ignoring invalid attribute for listview: '${key}'`)
-        }
-    }
-
-    output('\n)\n')
-}
-
-
-function createNotifier(attributes, parent, elements) {
-    let template = `\n(add-component ${parent} com.google.appinventor.components.runtime.Notifier ${attributes.name}`
-    output(template)
-
-    
-    for (let [key, value] of Object.entries(attributes)) {
-        key = key.toLowerCase()
-        if (key === 'backgroundcolor') { backgroundColor(key, value, attributes.name) }
-        else if (key === 'textcolor') { textColor(key, value, attributes.name) }
-        else if (key === 'length') { notifierLength(key, value, attributes.name) }
-        else if (key === 'name') { } //already processed 
-        else {
-            console.log(`Ignoring invalid attribute for checkbox: '${key}'`)
-        }
-    }
-
-    output('\n)\n')
 
 }
-
-//PASSWORD TEXTBOX
-//SLIDER
-//SPINNER
-//SWITCH
-//TEXTBOX
-//TIMEPICKER
-//WEBVIEWER
-
-
-
-/////////////////////////////////////////////
-////// LAYOUTS //////////////////////////////
-/////////////////////////////////////////////
-
-
-
-
-//Horizontal Arrangement
-function createhbox(attributes, parent, elements) {
-    let template = `\n(add-component ${parent} com.google.appinventor.components.runtime.HorizontalArrangement ${attributes.name}`
-    output(template)
-    layoutAttributes(attributes)  //attributes for layouts are same so combined in one function
-    output(`\n)\n`)
-}
-
-//Vertical Arrangement
-function createvbox(attributes, parent, elements) {
-    let template = `\n(add-component ${parent} com.google.appinventor.components.runtime.VerticalArrangement ${attributes.name}`
-    output(template)
-    layoutAttributes(attributes)  //attributes for layouts are same so combined in one function
-    output(`\n)\n`)
-}
-
-//Vertical Scroll Arrangement
-function createvscrollbox(attributes, parent, elements) {
-    let template = `\n(add-component ${parent} com.google.appinventor.components.runtime.VerticalScrollArrangement ${attributes.name}`
-    output(template)
-    layoutAttributes(attributes)  //attributes for layouts are same so combined in one function
-    output(`\n)\n`)
-}
-
-//Horizontal Scroll Arrangement
-function createhscrollbox(attributes, parent, elements) {
-    let template = `\n(add-component ${parent} com.google.appinventor.components.runtime.HorizontalScrollArrangement ${attributes.name}`
-    output(template)
-    layoutAttributes(attributes)  //attributes for layouts are same so combined in one function
-    output(`\n)\n`)
-}
-
-function layoutAttributes(attributes) {
-    for (let [key, value] of Object.entries(attributes)) {
-        key = key.toLowerCase()
-        if (key === "halign") { halign(key, value, attributes.name) }
-        else if (key === "valign") { valign(key, value, attributes.name) }
-        else if (key === "width") { width(key, value, attributes.name) }
-        else if (key === 'height') { height(key, value, attributes.name) }
-        else if (key === 'backgroundColor') { backgroundColor(key, value, attributes.name) }
-        else if (key === 'image') { image(key, value, attributes.name) }
-        else if (key === 'visible') { visible(key, value, attributes.name) }
-        else if (key === 'col') { col(key, value, attributes.name) }
-        else if (key === 'row') { row(key, value, attributes.name) }
-    }
-}
-
-function createTable(attributes, parent, elements) {
-    let template = `\n(add-component ${parent} com.google.appinventor.components.runtime.TableArrangement ${attributes.name}`
-    output(template)
-    for (let [key, value] of Object.entries(attributes)) {
-        key = key.toLowerCase()
-        if (key === "width") { width(key, value, attributes.name) }
-        else if (key === 'height') { height(key, value, attributes.name) }
-        else if (key === 'visible') { visible(key, value, attributes.name) }
-        else if (key === 'columns') { cols(key, value, attributes.name) }
-        else if (key === 'rows') { rows(key, value, attributes.name) }
-        else if (key === 'col') { col(key, value, attributes.name) }
-        else if (key === 'row') { row(key, value, attributes.name) }
-    }
-    output(`\n)\n`)
-}
-
-
-
 
 
 
@@ -715,76 +537,160 @@ function createTable(attributes, parent, elements) {
 //// This section adds the actual lines of code for the various parameters ////
 ///////////////////////////////////////////////////////////////////////////////
 
-function appName(key, value, name) { setText(key, value, name, 'AppName') }
-function title(key, value, name) { setText(key, value, name, "Title") }
-function elementsFromString(key, value, name) { setText(key, value, name, "ElementsFromString") }
-function showTitle(key, value, name) { setFalse(key, value, name, "TitleVisible") }
-function isChecked(key, value, name) { setTrue(key, value, name, "Checked") }
-function isEnabled(key, value, name) { setFalse(key, value, name, "Enabled") }
-function showFeedback(key, value, name) { setFalse(key, value, name, "ShowFeedback") }
-function alternativeText(key, value, name) { setText(key, value, name, "AlternateText") }
-function isClickable(key, value, name) { setTrue(key, value, name, "Clickable") }
-function isBold(key, value, name) { setTrue(key, value, name, "FontBold") }
-function isItalic(key, value, name) { setTrue(key, value, name, "FontItalic") }
-function scalePictureToFit(key, value, name) { setTrue(key, value, name, "ScalePictureToFit") }
-function showStatus(key, value, name) { setFalse(key, value, name, "ShowStatusBar") }
-function fontSize(key, value, name) { setFloat(key, value, name, "FontSize") }
-function textSize(key, value, name) { setFloat(key, value, name, "TextSize") }
-function fontSizeDetail(key, value, name) { setFloat(key, value, name, "FontSizeDetail") }
-function rotationAngle(key, value, name) { setFloat(key, value, name, "RotationAngle") }
+function setAttribute(key, value, name, descriptor) {
 
-function showFilter(key, value, name) { setTrue(key, value, name, "ShowFilterBar") }
+    switch (descriptor) {
+        case "AppName":
+        case "Title":
+        case "Hint":
+        case "Prompt":
+        case "ElementsFromString":
+        case "AlternateText":
+        case "HomeUrl":
+        case "Text":
+        case "Selection":
+        case "Image":
+        case "Picture":
+        case "Source":
+        case "SavedRecording":
+        case "Country":
+        case "Language":
+        case "ApiKey":
+            setText(key, value, name, descriptor)
+            break;
+        case "TitleVisible":
+        case "Enabled":
+        case "ShowFeedback":
+        case "ShowStatusBar":
+        case "ThumbEnabled":
+        case "FollowLinks":
+        case "PromptForPermission":
+        case "HasMargins":
+        case "Visible":
+        case "UseLegacy":
+            setFalse(key, value, name, descriptor)
+            break;
+        case "Checked":
+        case "Clickable":
+        case "FontBold":
+        case "FontItalic":
+        case "ScalePictureToFit":
+        case "On":
+        case "IgnoreSslErrors":
+        case "UsesLocation":
+        case "ShowFilterBar":
+        case "NumbersOnly":
+        case "HTMLFormat":
+        case "MultiLine":
+        case "ReadOnly":
+        case "PlayOnlyInForeground":
+        case "Loop":
+            setTrue(key, value, name, descriptor)
+            break;
+        case "FontSize":
+        case "TextSize":
+        case "FontSizeDetail":
+        case "RotationAngle":
+        case "MaxValue":
+        case "MinValue":
+        case "ThumbPosition":
+        case "Volume":
+        case "Pitch":
+        case "SpeechRate":
+            setFloat(key, value, name, descriptor)
+            break;
+        case "BackgroundColor":
+        case "TextColor":
+        case "SelectionColor":
+        case "ItemTextColor":
+        case "TextColorDetail":
+        case "ItemBackgroundColor":
+        case "ColorLeft":
+        case "ColorRight":
+        case "ThumbColorActive":
+        case "ThumbColorInactive":
+        case "TrackColorActive":
+        case "TrackColorInactive":
+            setColor(key, value, name, descriptor)
+            break;
+        case "Columns":
+        case "Rows":
+        case "Column":
+        case "Row":
+        case "ImageHeight":
+        case "ImageWidth":
+        case "MinimumInterval":
+            setInteger(key, value, name, descriptor);
+            break;
+        case "Width":
+        case "Height":
+            setDimensions(key, value, name, descriptor);
+            break;
+        case "FontTypeface":
+            fromList(key, value, name, ['sans serif', 'serif', 'monospace'], "FontTypeface")
+            break;
+        case "FontTypefaceDetail":
+            fromList(key, value, name, ['sans serif', 'serif', 'monospace'], "FontTypefaceDetail")
+            break;
+        case "Shape":
+            fromList(key, value, name, ['rounded', 'rectangular', 'oval'], "Shape")
+            break;
+        case "AlignVertical":
+            fromList(key, value, name, ['top', 'center', 'bottom'], "AlignVertical")
+            break;
+        case "AlignHorizontal":
+            fromList(key, value, name, ['left', 'right', 'center'], "AlignHorizontal")
+            break;
+        case "TextAlignment":
+            fromList(key, value, name, ['left', 'center', 'right'], "TextAlignment")
+            break;
+        case "Orientation":
+            fromList(key, value, name, ['vertical', 'horizontal'], "Orientation")
+            break;
+        case "NotifierLength":
+            fromList(key, value, name, ['short', 'long'], "NotifierLength")
+            break;
+        case "ListViewLayout":
+            fromList(key, value, name, ['text', 'text_detail', 'text_detail_horz', 'image_text', 'image_text_detail'], "ListViewLayout")
+            break;
+        case "ListData":
+            loadListViewData(key, value, name, "ListData")
+            break;
+        case "Name":
+            break;
+        default:
+            console.log(`Error: Unknown descriptor "${descriptor}". Ignoring.`)
+    }
 
-function typeface(key, value, name) { fromList(key, value, name, ['sans serif', 'serif', 'monospace'], "FontTypeface") }
-function typefaceDetail(key, value, name) { fromList(key, value, name, ['sans serif', 'serif', 'monospace'], "FontTypefaceDetail") }
-function setShape(key, value, name) { fromList(key, value, name, ['rounded', 'rectangular', 'oval'], "Shape") }
+}
 
-function text(key, value, name) { setText(key, value, name, "Text") }
-function setSelection(key, value, name) { setText(key, value, name, "Selection") }
-function HTMLFormat(key, value, name) { setTrue(key, value, name, "HTMLFormat") }
-function hasMargins(key, value, name) { setFalse(key, value, name, "HasMargins") }
 
-function valign(key, value, name) { fromList(key, value, name, ['top', 'center', 'bottom'], "AlignVertical") }
-function halign(key, value, name) { fromList(key, value, name, ['left', 'right', 'center'], "AlignHorizontal") }
-function textAlignment(key, value, name) { fromList(key, value, name, ['left', 'center', 'right'], "TextAlignment") }
-function orientation(key, value, name) { fromList(key, value, name, ['vertical', 'horizontal'], "Orientation") }
-
-function notifierLength(key, value, name) { fromList(key, value, name, ['short', 'long'], "NotifierLength") }
-
-function backgroundColor(key, value, name) { setColor(key, value, name, "BackgroundColor") }
-function textColor(key, value, name) { setColor(key, value, name, "TextColor") }
-function selectionColor(key, value, name) { setColor(key, value, name, "SelectionColor") }
-function itemTextColor(key, value, name) { setColor(key, value, name, "ItemTextColor") }
-function textColorDetail(key, value, name) { setColor(key, value, name, "TextColorDetail") }
-function itemBackgroundColor(key, value, name) { setColor(key, value, name, "ItemBackgroundColor") }
-
-function visible(key, value, name) { setFalse(key, value, name, "Visible") }
-
-function image(key, value, name) { setText(key, value, name, "Image") }
-function picture(key, value, name) { setText(key, value, name, "Picture") }
-
-//cols and rows are for the table arrangement itself
-function cols(key, value, name) { setInteger(key, value, name, "Columns") }
-function rows(key, value, name) { setInteger(key, value, name, "Rows") }
-
-//col and row are for any item placed inside a table arrangement
-function col(key, value, name) { setInteger(key, value, name, "Column") }
-function row(key, value, name) { setInteger(key, value, name, "Row") }
-
-function width(key, value, name) { setDimensions(key, value, name, "Width") }
-function height(key, value, name) { setDimensions(key, value, name, "Height") }
-
-function imageHeight(key, value, name) { setInteger(key, value, name, "ImageHeight") }
-function imageWidth(key, value, name) { setInteger(key, value, name, "ImageWidth") }
-
-function layout(key, value, name) { fromList(key, value, name, ['text', 'text_detail', 'text_detail_horz', 'image_text', 'image_text_detail'], "ListViewLayout") }
-function listdata(key, value, name) { loadListViewData(key, value, name, "ListData") }
 
 /////////////////////////////////////////////////////////
 //// These are the master parameter creation methods ////
 /////////////////////////////////////////////////////////
 
 function setText(key, value, name, descriptor) {
+
+    if (descriptor === "Country") {
+        value = value.toUpperCase()
+        let countries = ["AUS", "AUT", "BEL", "BLZ", "BWA", "CAN", "CHE", "DEU", "ESP", "FRA", "GBR", "HKG", "IND", "IRL", "ITA", "JAM", "LIE", "LUX", "MCO", "MHL", "MLT", "NAM", "NZL", "PAK", "PHL", "SGP", "TTO", "USA", "VIR", "ZAF", "ZWE"]
+        if (countries.indexOf(value) === -1) {
+            console.log("Invalid country in speech recognizer. Ignoring.")
+            return
+        }
+    }
+    if (descriptor === "Language") {
+        value = value.toLowerCase()
+        let languages = ["en", "de", "es", "fr", "it"]
+        if (languages.indexOf(value) === -1) {
+            console.log("Invalid language in speech recognizer. Ignoring.")
+            return
+        }
+    }
+
+
+
     output(`\n\t(set-and-coerce-property! '${name} '${descriptor} "${value}" 'text)`)
 }
 
@@ -854,7 +760,7 @@ function setColor(key, value, name, descriptor) {
         }
     }
 
-    output(`\n\t(set-and-coerce-property! '${name}  '${descriptor} #x${value} 'number)`)
+    output(`\n\t(set-and-coerce-property! '${name} '${descriptor} #x${value} 'number)`)
 }
 
 function setDimensions(key, value, name, descriptor) {
