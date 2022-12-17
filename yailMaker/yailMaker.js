@@ -247,7 +247,38 @@ const ELEMENTS = {
     "thermometer": {
         "runTimeName": "Thermometer",
         "attributes": ["enabled", "refreshtime"]
+    },
+    //social and communication tools
+    "contactpicker": {
+        "runTimeName": "ContactPicker",
+        "attributes": ["backgroundcolor", "enabled", "bold", "italic", "fontsize", "typeface", "height", "width", "shape", "showfeedback", "text", "textalign", "textcolor", "visible"]
+    },
+    "emailpicker": {
+        "runTimeName": "EmailPicker",
+        "attributes": ["backgroundcolor", "enabled", "bold", "italic", "fontsize", "typeface", "height", "width", "shape", "showfeedback", "hint", "text", "textalign", "textcolor", "visible"]
+    },
+    "phonecall": {
+        "runTimeName": "PhoneCall",
+        "attributes": ["phonenumber"]
+    },
+    "phonenumberpicker": {
+        "runTimeName": "PhoneNumberPicker",
+        "attributes": ["backgroundcolor", "enabled", "bold", "italic", "fontsize", "typeface", "height", "width", "image", "shape", "showfeedback", "text", "textalign", "textcolor", "visible"]
+    },
+    "sharing": {
+        "runTimeName": "Sharing",
+        "attributes": []
+    },
+    "texting": {
+        "runTimeName": "Texting",
+        "attributes": ["googlevoiceenabled", "message", "phonenumber", "recievingenabled"]
+    },
+    "twitter": {
+        "runTimeName": "Twitter",
+        "attributes": ["consumerkey", "consumersecret"]
     }
+
+
 }
 
 //Attributes and their synonyms
@@ -269,6 +300,8 @@ const ATTRIBUTES = {
     "ColorRight": ["rightcolor"],
     "Column": ["col"],
     "Columns": ["cols"],
+    "ConsumerKey": [],
+    "ConsumerSecret": [],
     "Country": [],
     "Description": [],
     "Draggable": [],
@@ -293,6 +326,7 @@ const ATTRIBUTES = {
     "FontSizeDetail": [],
     "FontTypeface": ["typeface"],
     "FontTypefaceDetail": ["typefacedetail"],
+    "GoogleVoiceEnabled": [],
     "HasMargins": ["margins"],
     "Heading": [],
     "Height": [],
@@ -321,6 +355,7 @@ const ATTRIBUTES = {
     "Loop": [],
     "MapType": [],
     "MaxValue": ["max"],
+    "Message": [],
     "MinValue": ["min"],
     "MinimumInterval": [],
     "MultiLine": [],
@@ -332,6 +367,7 @@ const ATTRIBUTES = {
     "Orientation": [],
     "OriginAtCenter": [],
     "PaintColor": ["paint"],
+    "PhoneNumber": [],
     "Picture": [],
     "Pitch": [],
     "PlayOnlyInForeground": [],
@@ -341,6 +377,7 @@ const ATTRIBUTES = {
     "Radius": [],
     "ReadOnly": [],
     "ReadMode": [],
+    "RecievingEnabled": [],
     "RefreshTime": [],
     "Rotation": [],
     "RotationAngle": [],
@@ -761,6 +798,10 @@ function setAttribute(key, value, name, descriptor) {
         case "CenterFromString":
         case "Description":
         case "ImageAsset":
+        case "PhoneNumber":
+        case "Message":
+        case "ConsumerKey":
+        case "ConsumerSecret":
         case "HolePointsFromString":
         case "PointsFromString": //this is array of arrays of x,y - should be a convience method to load these better
             //e.g. [[68.02222323204114,-127.02117919921876],[68.01142776369724,-126.99234008789064]]
@@ -811,6 +852,7 @@ function setAttribute(key, value, name, descriptor) {
         case "EnableInfoBox":
         case "LegacyMode":
         case "KeepRunningWhenOnPause":
+        case "GoogleVoiceEnabled":
             setTrue(key, value, name, descriptor)
             break;
         case "FontSize":
@@ -931,6 +973,9 @@ function setAttribute(key, value, name, descriptor) {
             break;
         case "Sensitivity":
             fromList(key, value, name, ['weak', 'moderate', 'strong'], "ScaleUnits")
+            break;
+        case "RecievingEnabled":
+            fromList(key, value, name, ['off', 'foreground', 'always'], "RecievingEnabled")
             break;
         case "ListData":
             loadListViewData(key, value, name, "ListData")
