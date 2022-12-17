@@ -276,6 +276,31 @@ const ELEMENTS = {
     "twitter": {
         "runTimeName": "Twitter",
         "attributes": ["consumerkey", "consumersecret"]
+    },
+    //storage elements
+    "clouddb": {
+        "runTimeName": "CloudDB",
+        "attributes": ["projectid", "redisport", "redisserver", "token", "usessl"]
+    },
+    "datafile": {
+        "runTimeName": "DataFile",
+        "attributes": ["defaultscope", "scope", "sourcefile"]
+    },
+    "file": {
+        "runTimeName": "File",
+        "attributes": ["defaultscope", "scope", "readpermission", "writepermission"]
+    },
+    "spreadsheet": {
+        "runTimeName": "Spreadsheet",
+        "attributes": ["applicationame", "credentialsjson", "credentials", "spreadsheetid"]
+    },
+    "tinydb": {
+        "runTimeName": "TinyDB",
+        "attributes": ["namespace"]
+    },
+    "tinywebdb": {
+        "runTimeName": "TinyWebDB",
+        "attributes": ["serviceurl"]
     }
 
 
@@ -290,6 +315,7 @@ const ATTRIBUTES = {
     "AlternateText": ["alt"],
     "AnchorHorizontal": [],
     "AnchorVertical": [],
+    "ApplicationName": [],
     "BackgroundColor": [],
     "BackgroundImage": [],
     "CenterFromString": ["center"],
@@ -303,6 +329,8 @@ const ATTRIBUTES = {
     "ConsumerKey": [],
     "ConsumerSecret": [],
     "Country": [],
+    "CredentialsJSON": ["credentials"],
+    "DefaultScope": ["scope"],
     "Description": [],
     "Draggable": [],
     "DistanceInterval": [],
@@ -360,6 +388,7 @@ const ATTRIBUTES = {
     "MinimumInterval": [],
     "MultiLine": [],
     "Name": [],
+    "Namespace": [],
     "NorthLatitude": ["north"],
     "NotifierLength": ["length"],
     "NumbersOnly": ["numbers"],
@@ -372,12 +401,16 @@ const ATTRIBUTES = {
     "Pitch": [],
     "PlayOnlyInForeground": [],
     "PointsFromString": ["points"],
+    "ProjectID": [],
     "Prompt": [],
     "PromptForPermission": ["promptpermission"],
     "Radius": [],
     "ReadOnly": [],
     "ReadMode": [],
+    "ReadPermission": [],
     "RecievingEnabled": [],
+    "RedisPort": [],
+    "RedisServer": [],
     "RefreshTime": [],
     "Rotation": [],
     "RotationAngle": [],
@@ -390,6 +423,7 @@ const ATTRIBUTES = {
     "Selection": [],
     "SelectionColor": [],
     "Sensitivity": [],
+    "ServiceURL": [],
     "Shape": [],
     "ShowCompass": [],
     "ShowScale": [],
@@ -399,8 +433,10 @@ const ATTRIBUTES = {
     "ShowFilterBar": ["showfilter"],
     "ShowStatusBar": ["statusbar"],
     "Source": ["src"],
+    "SourceFile": [],
     "SouthLatitude": ["south"],
     "SpeechRate": [],
+    "SpreadsheetID": [],
     "StartLatitude": ["startlat"],
     "StartLongitude": ["startlon"],
     "StopDetectionTimeout": [],
@@ -424,16 +460,19 @@ const ATTRIBUTES = {
     "TimerInterval": [],
     "Title": [],
     "TitleVisible": ["showtitle"],
+    "Token": [],
     "TrackColorActive": [],
     "TrackColorInactive": [],
     "TransportationMethod": ["method"],
     "UseExternalScanner": ["externalscanner", "external"],
     "UsesLocation": ["uselocation", "location"],
     "UseLegacy": [],
+    "UseSSL": [],
     "Visible": [],
     "Volume": ["vol"],
     "WestLongitude": ["west"],
     "Width": [],
+    "WritePermission": [],
     "X": [],
     "Y": [],
     "Z": [],
@@ -802,6 +841,15 @@ function setAttribute(key, value, name, descriptor) {
         case "Message":
         case "ConsumerKey":
         case "ConsumerSecret":
+        case "ProjectID":
+        case "RedisServer":
+        case "Token":
+        case "SourceFile":
+        case "ApplicationName":
+        case "CredentialsJSON":
+        case "SpreadsheetID":
+        case "Namespace":
+        case "ServiceURL":
         case "HolePointsFromString":
         case "PointsFromString": //this is array of arrays of x,y - should be a convience method to load these better
             //e.g. [[68.02222323204114,-127.02117919921876],[68.01142776369724,-126.99234008789064]]
@@ -824,6 +872,7 @@ function setAttribute(key, value, name, descriptor) {
         case "TimerAlwaysFires":
         case "TimerEnabled":
         case "ReadMode":
+        case "UseSSL":
             setFalse(key, value, name, descriptor)
             break;
         case "Checked":
@@ -853,6 +902,8 @@ function setAttribute(key, value, name, descriptor) {
         case "LegacyMode":
         case "KeepRunningWhenOnPause":
         case "GoogleVoiceEnabled":
+        case "ReadPermission":
+        case "WritePermission":
             setTrue(key, value, name, descriptor)
             break;
         case "FontSize":
@@ -917,6 +968,7 @@ function setAttribute(key, value, name, descriptor) {
         case "ZoomLevel":
         case "StrokeWidth":
         case "RefreshTime":
+        case "RedisPort":
         case "TimerInterval":
         case "TimeInterval":        //limit to 0, 1000, 10000, 60000, 300000 //should have this as timerinterval so not confuse users
         case "DistanceInterval":    ///limit to 0, 1, 10, 100
@@ -932,6 +984,9 @@ function setAttribute(key, value, name, descriptor) {
             break;
         case "FeaturesFromGeoJSON":
             setGeoJSONData(key, value, name, descriptor)
+            break;
+        case "DefaultScope":
+            setScope(key, value, name, descriptor)
             break;
         case "TransportationMethod":
             fromTextList(key, value, name, ['driving', 'cycling', 'wheelchair'], "TransportationMethod")
@@ -1167,6 +1222,17 @@ function fromTextList(key, value, name, options, descriptor) {
     else if (value === "wheelchair") { }
     else { return }
     output(`\n\t(set-and-coerce-property! '${name} '${descriptor} "${value}" 'text)`)
+}
+
+function setScope(key, value, name, options, descriptor) {
+    value = value.toLowerCase()
+    let options = ["asset", "cache", "legacy", "private", "shared"]
+    if (options.indexOf(value) === -1) {
+        console.log("Invalid deafult scope for data file. Ignoring.")
+        return
+    }
+    value = value[0].toUpperCase() + value.substring(1)
+    output(`\n\t(set-and-coerce-property! '${name} '${descriptor} "${value}" 'com.google.appinventor.components.common.FileScopeEnum)`)
 }
 
 function setGeoJSONData(key, value, name, descriptor) {
