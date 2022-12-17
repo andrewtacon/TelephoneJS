@@ -1,7 +1,14 @@
-const { ObjectPattern } = require("abstract-syntax-tree")
 const fs = require("fs")
 const convert = require("xml-js")
 
+//TODO: 
+//Complete elements
+//Make sure that only allowable things can nest within each other
+//CSS styling for groups, classes and names (ids)
+//programming language
+//compilation to android app (or maybe not)
+//redo readme better 
+//validate component exists for get component
 
 //////////////////////////////////////////////////
 //// INTERFACE ELEMENTS //////////////////////////
@@ -11,143 +18,178 @@ const ELEMENTS = {
     //start UI elements
     "button": {
         "runTimeName": "Button",
-        "attributes": ["text", "backgroundcolor", "enabled", "bold", "italic", "fontsize", "typeface", "height", "width", "image", "shape", "showfeedback", "textalign", "visible", "textcolor", "col", "row", "name"]
+        "attributes": ["class", "id", "text", "backgroundcolor", "enabled", "bold", "italic", "fontsize", "typeface", "height", "width", "image", "shape", "showfeedback", "textalign", "visible", "textcolor", "col", "row", "name"]
     },
     "checkbox": {
         "runTimeName": "CheckBox",
-        "attributes": ["text", "backgroundcolor", "checked", "enabled", "bold", "italic", "fontsize", "typeface", "height", "width", "visible", "textcolor", "textalign", "col", "row", "name"]
+        "attributes": ["class", "id", "text", "backgroundcolor", "checked", "enabled", "bold", "italic", "fontsize", "typeface", "height", "width", "visible", "textcolor", "textalign", "col", "row", "name"]
     },
     "datepicker": {
         "runTimeName": "DatePicker",
-        "attributes": ["text", "backgroundcolor", "enabled", "bold", "italic", "fontsize", "typeface", "height", "width", "image", "shape", "showfeedback", "visible", "textcolor", "col", "row", "name"]
+        "attributes": ["class", "id", "text", "backgroundcolor", "enabled", "bold", "italic", "fontsize", "typeface", "height", "width", "image", "shape", "showfeedback", "visible", "textcolor", "col", "row", "name"]
     },
     "image": {
         "runTimeName": "Image",
-        "attributes": ["alt", "clickable", "height", "width", "picture", "rotationangle", "scalepicturetofit", "visible", "col", "row", "name"]
+        "attributes": ["class", "id", "alt", "clickable", "height", "width", "picture", "rotationangle", "scalepicturetofit", "visible", "col", "row", "name"]
     },
     "label": {
         "runTimeName": "Label",
-        "attributes": ["text", "backgroundcolor", "bold", "italic", "fontsize", "typeface", "html", "margins", "height", "width", "textalign", "visible", "textcolor", "col", "row", "name"]
+        "attributes": ["class", "id", "text", "backgroundcolor", "bold", "italic", "fontsize", "typeface", "html", "margins", "height", "width", "textalign", "visible", "textcolor", "col", "row", "name"]
     },
     "listpicker": {
         "runTimeName": "ListPicker",
-        "attributes": ["backgroundcolor", "elements", "enabled", "bold", "italic", "fontsize", "typeface", "image", "height", "width", "itembg", "itembackground", "itemtextcolor", "itemcolor", "selection", "shape", "showfeedback", "showfilter", "textalign", "visible", "textcolor", "col", "row", "name"]
+        "attributes": ["class", "id", "backgroundcolor", "elements", "enabled", "bold", "italic", "fontsize", "typeface", "image", "height", "width", "itembg", "itembackground", "itemtextcolor", "itemcolor", "selection", "shape", "showfeedback", "showfilter", "textalign", "visible", "textcolor", "col", "row", "name"]
     },
     "listview": {
         "runTimeName": "ListView",
-        "attributes": ["backgroundcolor", "elememts", "fontsizedetail", "typeface", "typefacedetail", "height", "width", "imageheight", "imagewidth", "data", "layout", "orientation", "selection", "selectioncolor", "showfilter", "textcolor", "textcolordetail", "textsize", "visible", "col", "row", "name"]
+        "attributes": ["class", "id", "backgroundcolor", "elememts", "fontsizedetail", "typeface", "typefacedetail", "height", "width", "imageheight", "imagewidth", "data", "layout", "orientation", "selection", "selectioncolor", "showfilter", "textcolor", "textcolordetail", "textsize", "visible", "col", "row", "name"]
     },
     "notifier": {
         "runTimeName": "Notifier",
-        "attributes": ["backgroundcolor", "textcolor", "length", "name"]
+        "attributes": ["class", "id", "backgroundcolor", "textcolor", "length", "name"]
     },
     "password": {
         "runTimeName": "PasswordTextBox",
-        "attributes": ["text", "backgroundcolor", "enabled", "bold", "italic", "fontsize", "typeface", "height", "width", "hint", "numbers", "textalign", "visible", "textcolor", "col", "row", "name"]
+        "attributes": ["class", "id", "text", "backgroundcolor", "enabled", "bold", "italic", "fontsize", "typeface", "height", "width", "hint", "numbers", "textalign", "visible", "textcolor", "col", "row", "name"]
     },
     "slider": {
         "runTimeName": "Slider",
-        "attributes": ["leftcolor", "rightcolor", "width", "max", "min", "thumbenabled", "thumbposition", "col", "row", "name"]
+        "attributes": ["class", "id", "leftcolor", "rightcolor", "width", "max", "min", "thumbenabled", "thumbposition", "col", "row", "name"]
     },
     "spinner": {
         "runTimeName": "Spinner",
-        "attributes": ["elements", "width", "prompt", "selection", "visible", "col", "row", "name"]
+        "attributes": ["class", "id", "elements", "width", "prompt", "selection", "visible", "col", "row", "name"]
     },
     "switch": {
         "runTimeName": "Switch",
-        "attributes": ["text", "backgroundcolor", "enabled", "bold", "italic", "fontsize", "typeface", "height", "width", "on", "textcolor", "thumbcoloractive", "thumbcolorinactive", 'trackcoloractive', 'trackcolorinactive', "visible", "col", "row", "name"]
+        "attributes": ["class", "id", "text", "backgroundcolor", "enabled", "bold", "italic", "fontsize", "typeface", "height", "width", "on", "textcolor", "thumbcoloractive", "thumbcolorinactive", 'trackcoloractive', 'trackcolorinactive', "visible", "col", "row", "name"]
     },
     "textbox": {
         "runTimeName": "TextBox",
-        "attributes": ["text", "backgroundcolor", "enabled", "bold", "italic", "fontsize", "typeface", "height", "width", "multiline", "numbers", "readonly", "textalign", "visible", "textcolor", "col", "row", "name"]
+        "attributes": ["class", "id", "text", "backgroundcolor", "enabled", "bold", "italic", "fontsize", "typeface", "height", "width", "multiline", "numbers", "readonly", "textalign", "visible", "textcolor", "col", "row", "name"]
     },
     'timepicker': {
         "runTimeName": "TimePicker",
-        "attributes": ["text", "backgroundcolor", "enabled", "bold", "italic", "fontsize", "typeface", "height", "width", "image", "shape", "showfeedback", "visible", "textalign", "textcolor", "col", "row", "name"]
+        "attributes": ["class", "id", "text", "backgroundcolor", "enabled", "bold", "italic", "fontsize", "typeface", "height", "width", "image", "shape", "showfeedback", "visible", "textalign", "textcolor", "col", "row", "name"]
     },
     'webview': {
         "runTimeName": "WebViewer",
-        "attributes": ["followlinks", "height", "width", "url", "ignoressl", "promptpermission", "uselocation", "visible", "col", "row", "name"]
+        "attributes": ["class", "id", "followlinks", "height", "width", "url", "ignoressl", "promptpermission", "uselocation", "visible", "col", "row", "name"]
     },
     "screen": {
         "runTimeName": "Screen",
-        "attributes": ["showtitle", "statusbar", "backgroundcolor", "appname", "title"]
+        "attributes": ["class", "id", "showtitle", "statusbar", "backgroundcolor", "appname", "title"]
     },
     //start layout elements
     "hbox": {
         "runTimeName": "HorizontalArrangement",
-        "attributes": ["halign", "valign", "width", "height", "backgroundcolor", "image", "visible", "col", "row"]
+        "attributes": ["class", "id", "halign", "valign", "width", "height", "backgroundcolor", "image", "visible", "col", "row"]
     },
     "vbox": {
         "runTimeName": "VerticalArrangement",
-        "attributes": ["halign", "valign", "width", "height", "backgroundcolor", "image", "visible", "col", "row"]
+        "attributes": ["class", "id", "halign", "valign", "width", "height", "backgroundcolor", "image", "visible", "col", "row"]
     },
     "hscrollbox": {
         "runTimeName": "HorizontalScrollArrangement",
-        "attributes": ["halign", "valign", "width", "height", "backgroundcolor", "image", "visible", "col", "row"]
+        "attributes": ["class", "id", "halign", "valign", "width", "height", "backgroundcolor", "image", "visible", "col", "row"]
     },
     "vscrollbox": {
         "runTimeName": "VerticalScrollArrangement",
-        "attributes": ["halign", "valign", "width", "height", "backgroundcolor", "image", "visible", "col", "row"]
+        "attributes": ["class", "id", "halign", "valign", "width", "height", "backgroundcolor", "image", "visible", "col", "row"]
     },
     "table": {
         "runTimeName": "TableArrangement",
-        "attributes": ["width", "height", "visible", "columns", "rows", "col", "row"]
+        "attributes": ["class", "id", "width", "height", "visible", "columns", "rows", "col", "row"]
     },
     //start media elements
     "camcorder": {
         "runTimeName": "Camcorder",
-        "attributes": ["name"]
+        "attributes": ["class", "id", "name"]
     },
     "camera": {
         "runTimeName": "Camera",
-        "attributes": ["name"]
+        "attributes": ["class", "id", "name"]
     },
     "imagepicker": {
         "runTimeName": "ImagePicker",
-        "attributes": ["backgroundcolor", "enabled", "bold", "italic", "fontsize", "typeface", "height", "width", "image", "shape", "showfeedback", "text", "textalign", "textcolor", "visible"]
+        "attributes": ["class", "id", "backgroundcolor", "enabled", "bold", "italic", "fontsize", "typeface", "height", "width", "image", "shape", "showfeedback", "text", "textalign", "textcolor", "visible"]
     },
     "videoplayer": {
         "runTimeName": "VideoPlayer",
-        "attributes": ["height", "width", "source", "visible", "volume"]
+        "attributes": ["class", "id", "height", "width", "source", "visible", "volume"]
     },
     "player": {
         "runTimeName": "Player",
-        "attributes": ["loop", "playonlyinforeground", "source", "volume"]
+        "attributes": ["class", "id", "loop", "playonlyinforeground", "source", "volume"]
     },
     "sound": {
         "runTimeName": "Sound",
-        "attributes": ["minimuminterval", "source"]
+        "attributes": ["class", "id", "minimuminterval", "source"]
     },
     "soundrecorded": {
         "runTimeName": "SoundRecorded",
-        "attributes": ["savedrecording"]
+        "attributes": ["class", "id", "savedrecording"]
     },
     "speechrecognizer": {
         "runTimeName": "SpeechRecognizer",
-        "attributes": ["uselegacy"]
+        "attributes": ["class", "id", "uselegacy"]
     },
     "texttospeech": {
         "runTimeName": "TextToSpeech",
-        "attributes": ["country", "language", "lang", "pitch", "speechrate"]
+        "attributes": ["class", "id", "country", "language", "lang", "pitch", "speechrate"]
     },
     "translator": {
         "runTimeName": "Translator",
-        "attributes": ["apikey"]
+        "attributes": ["class", "id", "apikey"]
     },
     //start drawing and animation elements
     "canvas": {
         "runTimeName": "Canvas",
-        "attributes": ["backgroundcolor", "backgroundimage", "extendmovesoutsidecanvas", "extend", "fontsize", "height", "width", "linewidth", "paintcolor", "paint", 'tapthreshold', 'textalign', 'visible']
+        "attributes": ["class", "id", "backgroundcolor", "backgroundimage", "extendmovesoutsidecanvas", "extend", "fontsize", "height", "width", "linewidth", "paintcolor", "paint", 'tapthreshold', 'textalign', 'visible']
     },
     "ball": {
         "runTimeName": "Ball",
-        "attributes": ["enabled", "heading", "interval", "originatcenter", "paint", "paintcolor", "radius", "speed", "visible", "x", "y", "z"]
+        "attributes": ["class", "id", "enabled", "heading", "interval", "originatcenter", "paint", "paintcolor", "radius", "speed", "visible", "x", "y", "z"]
     },
     "sprite": {
         "runTimeName": "ImageSprite",
-        "attributes": ["enabled", "heading", "height", "width", "interval", "picture", "rotates", "speed", "visible", "x", "y", "z"]
+        "attributes": ["class", "id", "enabled", "heading", "height", "width", "interval", "picture", "rotates", "speed", "visible", "x", "y", "z"]
+    },
+    //start Maps
+    //43 things to go
+    "map": {
+        "runTimeName": "Map",
+        "attributes": ["class", "id", "center", "centerfromstring", "enablepan", "enablerotation", "enablezoom", "height", "width", "locationsensor", "maptype", "rotation", "scaleunits", "showcompass", "showscale", "showuser", "showzoom", "visible", "zoomlevel"]
+    },
+    "circle": {
+        "runTimeName": "",
+        "attributes": ["class", "id", "description", "draggable", "enableinfobox", "fillcolor", "fillopacity", "latitude", "lat", "longitude", "lon", "radius", "strokecolor", "strokewidth", "title", "visible"]
+    },
+    /*  "featurecollection": {      //there may be issues here - especially with url as the source of the data - unable to test
+          "runTimeName": "FeatureCollection",
+          "attributes": ["featuresfromgeojson", "source", "visible"]
+      },*/
+    "linestring": {
+        "runTimeName": "LineString",
+        "attributes": ["description", "draggable", "enableinfobox", "pointsfromstring", "points", "strokecolor", "strokeopacity", "strokewidth", "title", "visible"]
+    },
+    "marker": {
+        "runTimeName": "Marker",
+        "attributes": ["anchorhorizontal", "anchorvertical", "description", "draggable", "enableinfobox", "fillcolor", "fillopacity", "height", "width", "imageasset", "latitude", "lat", "longitude", "lon", "strokecolor", "strokeopacity", "strokewidth", "title", "visible"]
+    },
+    "navigation": {
+        "runTimeName": "Navigation",
+        "attributes": ["apikey", "endlatitude", "endlat", "endlongitude", "endlon", "language", "startlatitude", "startlat", "startlongitude", "startlon", "transportationmethod", "method"]
+    },
+    "polygon": {
+        "runTimeName": "Polygon",
+        "attributes": ["description", "draggable", "enableinfobox", "fillcolor", "fillopacity", "holepointsfromstring", "pointsfromstring", "strokecolor", "strokeopacity", "strokewidth", "title", "visible"]
+    },
+    "rectangle": {
+        "runTimeName": "Rectangle",
+        "attributes": ["description", "draggable", "eastlongitude", "east", "enableinfobox", "fillcolor", "fillopacity", "northlatitude", "north", "southlatitude", "south", "strokecolor", "strokeopacity", "strokewidth", "title", "visible", "westlongitude", "west"]
     }
+
 }
 
 //Attributes and their synonyms
@@ -157,18 +199,34 @@ const ATTRIBUTES = {
     "AlignHorizontal": ["halign"],
     "AlignVertical": ["valign"],
     "AlternateText": ["alt"],
+    "AnchorHorizontal": [],
+    "AnchorVertical": [],
     "BackgroundColor": [],
     "BackgroundImage": [],
+    "CenterFromString": ["center"],
     "Checked": [],
+    "Class": [], //for CSS styling
     "Clickable": [],
     "ColorLeft": ["leftcolor"],
     "ColorRight": ["rightcolor"],
     "Column": ["col"],
     "Columns": ["cols"],
     "Country": [],
+    "Description": [],
+    "Draggable": [],
+    "EastLongitude": ["east"],
     "ElementsFromString": ["elements"],
     "Enabled": [],
+    "EnableInfoBox": [],
+    "EnablePan": [],
+    "EnableRotation": [],
+    "EnableZoom": [],
+    "EndLatitude": ["endlat"],
+    "EndLongitude": ["endlon"],
     "ExtendMovesOutsideCanvas": ["extend"],
+    "FeaturesFromGeoJSON": [],
+    "FillColor": [],
+    "FillOpacity": [],
     "FollowLinks": [],
     "FontBold": ["bold"],
     "FontItalic": ["italic"],
@@ -180,25 +238,33 @@ const ATTRIBUTES = {
     "Heading": [],
     "Height": [],
     "Hint": [],
+    "HolePointsFromString": [],
     "HomeUrl": ["url"],
     "HTMLFormat": ["html"],
+    "Id": [], //for CSS styling
     "IgnoreSslErrors": ["ignoressl"],
     "Image": [],
+    "ImageAsset": [],
     "ImageHeight": [],
     "ImageWidth": [],
     "Interval": [],
     "ItemBackgroundColor": ["itembg", "itembackground"],
     "ItemTextColor": ["itemcolor"],
     "Language": ["lang"],
+    "Latitude": ["lat"],
     "LineWidth": [],
     "ListData": ["data"],
     "ListViewLayout": ["layout"],
+    "LocationSensor": [],
+    "Longitude": ["lon"],
     "Loop": [],
+    "MapType": [],
     "MaxValue": ["max"],
     "MinValue": ["min"],
     "MinimumInterval": [],
     "MultiLine": [],
     "Name": [],
+    "NorthLatitude": ["north"],
     "NotifierLength": ["length"],
     "NumbersOnly": ["numbers"],
     "On": [],
@@ -208,24 +274,37 @@ const ATTRIBUTES = {
     "Picture": [],
     "Pitch": [],
     "PlayOnlyInForeground": [],
+    "PointsFromString": ["points"],
     "Prompt": [],
     "PromptForPermission": ["promptpermission"],
     "Radius": [],
     "ReadOnly": [],
+    "Rotation": [],
     "RotationAngle": [],
     "Rotates": [],
     "Row": ["row"],
     "Rows": ["rows"],
     "SavedRecording": [],
     "ScalePictureToFit": [],
+    "ScaleUnits": [],
     "Selection": [],
     "SelectionColor": [],
     "Shape": [],
+    "ShowCompass": [],
+    "ShowScale": [],
+    "ShowUnits": [],
+    "ShowZoom": [],
     "ShowFeedback": [],
     "ShowFilterBar": ["showfilter"],
     "ShowStatusBar": ["statusbar"],
     "Source": ["src"],
+    "SouthLatitude": ["south"],
     "SpeechRate": [],
+    "StartLatitude": ["startlat"],
+    "StartLongitude": ["startlon"],
+    "StrokeColor": [],
+    "StrokeOpacity": [],
+    "StrokeWidth": [],
     "Speed": [],
     "Text": [],
     "TextAlignment": ["textalign"],
@@ -240,14 +319,17 @@ const ATTRIBUTES = {
     "TitleVisible": ["showtitle"],
     "TrackColorActive": [],
     "TrackColorInactive": [],
+    "TransportationMethod": ["method"],
     "UsesLocation": ["uselocation", "location"],
     "UseLegacy": [],
     "Visible": [],
     "Volume": ["vol"],
+    "WestLongitude": ["west"],
     "Width": [],
     "X": [],
     "Y": [],
-    "Z": []
+    "Z": [],
+    "ZoomLevel": [],
 
 }
 
@@ -484,7 +566,7 @@ function traverse(object, parent = '') {
     }    /////////// THIS IS THE END HANDLING TABLES ////////////
 
     //ball must have an X and Y
-    if (type === "ball" || type==="sprite") {
+    if (type === "ball" || type === "sprite") {
         if (typeof object.attributes === undefined) {
             object.attributes = {}
         }
@@ -605,6 +687,12 @@ function setAttribute(key, value, name, descriptor) {
         case "Language":
         case "ApiKey":
         case "BackgroundImage":
+        case "CenterFromString":
+        case "Description":
+        case "ImageAsset":
+        case "HolePointsFromString":
+        case "PointsFromString": //this is array of arrays of x,y - should be a convience method to load these better
+            //e.g. [[68.02222323204114,-127.02117919921876],[68.01142776369724,-126.99234008789064]]
             setText(key, value, name, descriptor)
             break;
         case "TitleVisible":
@@ -618,6 +706,8 @@ function setAttribute(key, value, name, descriptor) {
         case "Visible":
         case "UseLegacy":
         case "Rotates":
+        case "EnablePan":
+        case "EnableZoom":
             setFalse(key, value, name, descriptor)
             break;
         case "Checked":
@@ -637,6 +727,13 @@ function setAttribute(key, value, name, descriptor) {
         case "Loop":
         case "ExtendMovesOutsideCanvas":
         case "OriginAtCenter":
+        case "EnableRotation":
+        case "ShowCompass":
+        case "ShowScale":
+        case "ShowUser":
+        case "ShowZoom":
+        case "Draggable":
+        case "EnableInfoBox":
             setTrue(key, value, name, descriptor)
             break;
         case "FontSize":
@@ -655,6 +752,20 @@ function setAttribute(key, value, name, descriptor) {
         case "X":
         case "Y":
         case "Z":
+        case "Rotation":
+        case "FillOpacity":
+        case "Radius": //there are cases where this should be an integer - hope this doesn't break anything
+        case "StrokeOpacity":
+        case "Latitude":    //should be a special method to test for latitude and longitude correctness
+        case "Longitude":
+        case "StartLatitude":
+        case "StartLongitude":
+        case "EndLatitude":
+        case "EndLongitude":
+        case "NorthLatitude":
+        case "SouthLatitude":
+        case "EastLongitude":
+        case "WestLongitude":
             setFloat(key, value, name, descriptor)
             break;
         case "BackgroundColor":
@@ -670,6 +781,8 @@ function setAttribute(key, value, name, descriptor) {
         case "TrackColorActive":
         case "TrackColorInactive":
         case "PaintColor":
+        case "FillColor":
+        case "StrokeColor":
             setColor(key, value, name, descriptor)
             break;
         case "Columns":
@@ -681,12 +794,22 @@ function setAttribute(key, value, name, descriptor) {
         case "MinimumInterval":
         case "TapThreshold":
         case "Interval":
-        case "Radius":
+        case "ZoomLevel":
+        case "StrokeWidth":
             setInteger(key, value, name, descriptor);
             break;
         case "Width":
         case "Height":
             setDimensions(key, value, name, descriptor);
+            break;
+        case "LocationSensor":
+            setComponent(key, value, name, descriptor);
+            break;
+        case "FeaturesFromGeoJSON":
+            setGeoJSONData(key, value, name, descriptor)
+            break;
+        case "TransportationMethod":
+            fromTextList(key, value, name, ['driving', 'cycling', 'wheelchair'], "TransportationMethod")
             break;
         case "FontTypeface":
             fromList(key, value, name, ['sans serif', 'serif', 'monospace'], "FontTypeface")
@@ -698,9 +821,11 @@ function setAttribute(key, value, name, descriptor) {
             fromList(key, value, name, ['rounded', 'rectangular', 'oval'], "Shape")
             break;
         case "AlignVertical":
+        case "AnchorVertical":
             fromList(key, value, name, ['top', 'center', 'bottom'], "AlignVertical")
             break;
         case "AlignHorizontal":
+        case "AnchorHorizontal":
             fromList(key, value, name, ['left', 'right', 'center'], "AlignHorizontal")
             break;
         case "TextAlignment":
@@ -715,10 +840,18 @@ function setAttribute(key, value, name, descriptor) {
         case "ListViewLayout":
             fromList(key, value, name, ['text', 'text_detail', 'text_detail_horz', 'image_text', 'image_text_detail'], "ListViewLayout")
             break;
+        case "MapType":
+            fromList(key, value, name, ['roads', 'aerial', 'terrain'], "MapType")
+            break;
+        case "ScaleUnits":
+            fromList(key, value, name, ['metric', 'imperial'], "ScaleUnits")
+            break;
         case "ListData":
             loadListViewData(key, value, name, "ListData")
             break;
         case "Name":
+        case "Id":      //for CSS styling
+        case "Class":   //for CSS styling
             break;
         default:
             console.log(`Error: Unknown descriptor "${descriptor}". Ignoring.`)
@@ -777,6 +910,16 @@ function setTrue(key, value, name, descriptor) {
 function setFloat(key, value, name, descriptor) {
     value = parseFloat(value)
     if (!isNaN(value)) {
+        if (descriptor === "StokeOpacity") {
+            if (value < 0) { value = 0 }
+            if (value > 1) { value = 1 }
+        } else if (descriptor.includes("Longitude")) {
+            while (value < -180) { value += 360 }
+            while (value > 180) { value -= 360 }
+        } else if (descriptor.includes("Latitude")) {
+            while (value < -90) { value += 180 }
+            while (value > 90) { value -= 180 }
+        }
         output(`\n\t(set-and-coerce-property! '${name} '${descriptor} ${value} 'number)`)
     } else {
         console.log(`${descriptor} requires a numerical value as input.`)
@@ -792,6 +935,13 @@ function setInteger(key, value, name, descriptor) {
     }
 }
 
+
+
+function setComponent(key, value, name, descriptor) {
+    //somehow need to validate that the component actually exists.....
+    output(`\n\t(set-and-coerce-property! '${name} '${descriptor} (get-component ${value}) 'component)`)
+}
+
 function fromList(key, value, name, options, descriptor) {
     if (options.includes(value.toLowerCase())) {
         let index = options.indexOf(value) + 1
@@ -800,6 +950,7 @@ function fromList(key, value, name, options, descriptor) {
         if (descriptor === "TextAlignment" || descriptor === "ListViewLayout") { index-- }
         if (descriptor === "Orientation") { if (index !== 1) { return } } //only send through request for horizonatal, vertical is default
         if (descriptor === "NotifierLength") { if (index !== 0) { return } } //only send through request for short, long is default
+        if (descriptor === "MapType" || descriptor === "ScaleUnits") { if (index === 0) { return } }
 
         output(`\n\t(set-and-coerce-property! '${name} '${descriptor} ${index} 'number)`)
     } else {
@@ -877,3 +1028,16 @@ function loadListViewData(key, value, name, descriptor) {
     output(`\n\t(set-and-coerce-property! '${name} '${descriptor} "${outputText}" 'text)`)
 }
 
+function fromTextList(key, value, name, options, descriptor) {
+    value = value.toLowerCase()
+    if (value === "driving") { value = "driving-car" }
+    else if (value === "cycling-regular") { value = "cycling" }
+    else if (value === "wheelchair") { }
+    else { return }
+    output(`\n\t(set-and-coerce-property! '${name} '${descriptor} "${value}" 'text)`)
+}
+
+function setGeoJSONData(key, value, name, descriptor) {
+    //TODO - load the data from the GeoJSON file, somehow apply 
+
+}
