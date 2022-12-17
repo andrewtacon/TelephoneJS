@@ -8,8 +8,12 @@ const convert = require("xml-js")
 //programming language
 //compilation to android app (or maybe not)
 //redo readme better 
+
 //validate component exists for get component somehow
+
 //there is an issue with the charts so not including them in current iteration
+//not including firebasedb - has fixed default values which would require special case for processing
+
 
 //////////////////////////////////////////////////
 //// INTERFACE ELEMENTS //////////////////////////
@@ -301,8 +305,28 @@ const ELEMENTS = {
     "tinywebdb": {
         "runTimeName": "TinyWebDB",
         "attributes": ["serviceurl"]
+    },
+    //connectivity elements
+    "activitystarter": {
+        "runTimeName": "ActivityStarter",
+        "attributes": ["action", "activityclass", "activitypackage", "datatype", "datauri", "extrakey", "extravalue", "resultname"]
+    },
+    "bluetoothclient": {
+        "runTimeName": "BluetoothClient",
+        "attributes": ["characterencoding", "encoding", "delimiterbyte", "delimiter", "disconnectonerror", "highbytefirst", "pollingrate", "secure"]
+    },
+    "bluetoothserver": {
+        "runTimeName": "BluetoothServer",
+        "attributes": ["characterencoding", "encoding", "delimiterbyte", "delimiter", "highbytefirst", "secure"]
+    },
+    "serial": {
+        "runTimeName": "Serial",
+        "attributes": ["baudrate", "baud", "buffersize", "buffer"]
+    },
+    "web": {
+        "runTimeName": "Web",
+        "attributes": ["allowcookies", "cookies", "responsefilename", "saveresponse", "timeout", "url"]
     }
-
 
 }
 
@@ -313,12 +337,16 @@ const ATTRIBUTES = {
     "AlignHorizontal": ["halign"],
     "AlignVertical": ["valign"],
     "AlternateText": ["alt"],
+    "AllowCookies": ["cookies"],
     "AnchorHorizontal": [],
     "AnchorVertical": [],
     "ApplicationName": [],
     "BackgroundColor": [],
     "BackgroundImage": [],
+    "BaudRate": ["baud"],
+    "BufferSize": ["buffer"],
     "CenterFromString": ["center"],
+    "CharacterEncoding": ["encoding"],
     "Checked": [],
     "Class": [], //for CSS styling
     "Clickable": [],
@@ -331,7 +359,9 @@ const ATTRIBUTES = {
     "Country": [],
     "CredentialsJSON": ["credentials"],
     "DefaultScope": ["scope"],
+    "DelimiterByte": ["delimiter"],
     "Description": [],
+    "DisconnectOnError": [],
     "Draggable": [],
     "DistanceInterval": [],
     "EastLongitude": ["east"],
@@ -358,6 +388,7 @@ const ATTRIBUTES = {
     "HasMargins": ["margins"],
     "Heading": [],
     "Height": [],
+    "HighByteFirst": [],
     "Hint": [],
     "HolePointsFromString": [],
     "HomeUrl": ["url"],
@@ -401,6 +432,7 @@ const ATTRIBUTES = {
     "Pitch": [],
     "PlayOnlyInForeground": [],
     "PointsFromString": ["points"],
+    "PollingRate": [],
     "ProjectID": [],
     "Prompt": [],
     "PromptForPermission": ["promptpermission"],
@@ -412,14 +444,17 @@ const ATTRIBUTES = {
     "RedisPort": [],
     "RedisServer": [],
     "RefreshTime": [],
+    "ResponseFileName": [],
     "Rotation": [],
     "RotationAngle": [],
     "Rotates": [],
     "Row": ["row"],
     "Rows": ["rows"],
     "SavedRecording": [],
+    "SaveResponse": [],
     "ScalePictureToFit": [],
     "ScaleUnits": [],
+    "Secure": [],
     "Selection": [],
     "SelectionColor": [],
     "Sensitivity": [],
@@ -455,6 +490,7 @@ const ATTRIBUTES = {
     "ThumbEnabled": [],
     "ThumbPosition": [],
     "TimeInterval": [],
+    "Timeout": [],
     "TimerAlwaysFires": ["alwaysfires"],
     "TimerEnabled": [],
     "TimerInterval": [],
@@ -464,6 +500,7 @@ const ATTRIBUTES = {
     "TrackColorActive": [],
     "TrackColorInactive": [],
     "TransportationMethod": ["method"],
+    "Url": [],
     "UseExternalScanner": ["externalscanner", "external"],
     "UsesLocation": ["uselocation", "location"],
     "UseLegacy": [],
@@ -478,6 +515,15 @@ const ATTRIBUTES = {
     "Z": [],
     "ZoomLevel": [],
 
+    //extra connectivity attributes (I got lazy about alphabetising)
+    "Action": [],
+    "ActivityClass": [],
+    "ActivityPackage": [],
+    "DataType": [],
+    "DataUri": [],
+    "ExtraKey": [],
+    "ExtraValue": [],
+    "ResultName": []
 }
 
 
@@ -850,6 +896,17 @@ function setAttribute(key, value, name, descriptor) {
         case "SpreadsheetID":
         case "Namespace":
         case "ServiceURL":
+        case "Action":
+        case "ActivityClass":
+        case "ActivityPackage":
+        case "DataType":
+        case "DataUri":
+        case "ExtraKey":
+        case "ExtraValue":
+        case "ResultName":
+        case "CharacterEncoding":
+        case "ResponseFileName":
+        case "Url":
         case "HolePointsFromString":
         case "PointsFromString": //this is array of arrays of x,y - should be a convience method to load these better
             //e.g. [[68.02222323204114,-127.02117919921876],[68.01142776369724,-126.99234008789064]]
@@ -873,6 +930,7 @@ function setAttribute(key, value, name, descriptor) {
         case "TimerEnabled":
         case "ReadMode":
         case "UseSSL":
+        case "Secure":
             setFalse(key, value, name, descriptor)
             break;
         case "Checked":
@@ -904,6 +962,10 @@ function setAttribute(key, value, name, descriptor) {
         case "GoogleVoiceEnabled":
         case "ReadPermission":
         case "WritePermission":
+        case "HighByteFirst":
+        case "DisconnectOnError":
+        case "AllowCookies":
+        case "SaveResponse":
             setTrue(key, value, name, descriptor)
             break;
         case "FontSize":
@@ -937,6 +999,7 @@ function setAttribute(key, value, name, descriptor) {
         case "SouthLatitude":
         case "EastLongitude":
         case "WestLongitude":
+        case "PollingRate":
             setFloat(key, value, name, descriptor)
             break;
         case "BackgroundColor":
@@ -973,6 +1036,10 @@ function setAttribute(key, value, name, descriptor) {
         case "TimeInterval":        //limit to 0, 1000, 10000, 60000, 300000 //should have this as timerinterval so not confuse users
         case "DistanceInterval":    ///limit to 0, 1, 10, 100
         case "StopDetectionTimeout":
+        case "DelimiterByte":
+        case "BaudRate":
+        case "BufferSize":
+        case "Timeout":
             setInteger(key, value, name, descriptor);
             break;
         case "Width":
