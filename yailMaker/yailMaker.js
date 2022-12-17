@@ -8,7 +8,8 @@ const convert = require("xml-js")
 //programming language
 //compilation to android app (or maybe not)
 //redo readme better 
-//validate component exists for get component
+//validate component exists for get component somehow
+//there is an issue with the charts so not including them in current iteration
 
 //////////////////////////////////////////////////
 //// INTERFACE ELEMENTS //////////////////////////
@@ -188,8 +189,65 @@ const ELEMENTS = {
     "rectangle": {
         "runTimeName": "Rectangle",
         "attributes": ["description", "draggable", "eastlongitude", "east", "enableinfobox", "fillcolor", "fillopacity", "northlatitude", "north", "southlatitude", "south", "strokecolor", "strokeopacity", "strokewidth", "title", "visible", "westlongitude", "west"]
+    },
+    //ignoring charts - not sure how they work
+    //start sensors
+    "acceleronmeter": {
+        "runTimeName": "AccelerometerSensor",
+        "attributes": ["enabled", "legacymode", "minimuminterval", "sensitivity"]
+    },
+    "barcodescanner": {
+        "runTimeName": "BarcodeScanner",
+        "attributes": ["useexternalscanner", "externalscanner", "external"]
+    },
+    "barometer": {
+        "runTimeName": "Barometer",
+        "attributes": ["enabled", "refreshtime"]
+    },
+    "clock": {
+        "runTimeName": "Clock",
+        "attributes": ["timeralwaysfires", "alwaysfires", "timerenabled", "timerinterval"]
+    },
+    "gyroscope": {
+        "runTimeName": "GyroscopeSensor",
+        "attributes": ["enabled"]
+    },
+    "hygrometer": {
+        "runTimeName": "Hygrometer",
+        "attributes": ["enabled", "refreshtime"]
+    },
+    "lightsensor": {
+        "runTimeName": "LightSensor",
+        "attributes": ["enabled", "refreshtime"]
+    },
+    "locationsensor": {
+        "runTimeName": "LocationSensor",
+        "attributes": ["distanceinterval", "enabled", "timeinterval"]
+    },
+    "magneticfieldsensor": {
+        "runTimeName": "MagneticFieldSensor",
+        "attributes": ["enabled"]
+    },
+    "nearfield": {
+        "runTimeName": "NearField",
+        "attributes": ["readmode"]
+    },
+    "orientationsensor": {
+        "runTimeName": "OrientationSensor",
+        "attributes": ["enabled"]
+    },
+    "pedometer": {
+        "runTimeName": "Pedometer",
+        "attributes": ["stopdetectiontimeout", "stridelength"]
+    },
+    "proximitysensor": {
+        "runTimeName": "ProximitySensor",
+        "attributes": ["enabled", "keeprunningwhenonpause"]
+    },
+    "thermometer": {
+        "runTimeName": "Thermometer",
+        "attributes": ["enabled", "refreshtime"]
     }
-
 }
 
 //Attributes and their synonyms
@@ -214,6 +272,7 @@ const ATTRIBUTES = {
     "Country": [],
     "Description": [],
     "Draggable": [],
+    "DistanceInterval": [],
     "EastLongitude": ["east"],
     "ElementsFromString": ["elements"],
     "Enabled": [],
@@ -250,8 +309,10 @@ const ATTRIBUTES = {
     "Interval": [],
     "ItemBackgroundColor": ["itembg", "itembackground"],
     "ItemTextColor": ["itemcolor"],
+    "KeepRunningWhenOnPause": [],
     "Language": ["lang"],
     "Latitude": ["lat"],
+    "LegacyMode": [],
     "LineWidth": [],
     "ListData": ["data"],
     "ListViewLayout": ["layout"],
@@ -279,6 +340,8 @@ const ATTRIBUTES = {
     "PromptForPermission": ["promptpermission"],
     "Radius": [],
     "ReadOnly": [],
+    "ReadMode": [],
+    "RefreshTime": [],
     "Rotation": [],
     "RotationAngle": [],
     "Rotates": [],
@@ -289,6 +352,7 @@ const ATTRIBUTES = {
     "ScaleUnits": [],
     "Selection": [],
     "SelectionColor": [],
+    "Sensitivity": [],
     "Shape": [],
     "ShowCompass": [],
     "ShowScale": [],
@@ -302,6 +366,8 @@ const ATTRIBUTES = {
     "SpeechRate": [],
     "StartLatitude": ["startlat"],
     "StartLongitude": ["startlon"],
+    "StopDetectionTimeout": [],
+    "StrideLength": [],
     "StrokeColor": [],
     "StrokeOpacity": [],
     "StrokeWidth": [],
@@ -315,11 +381,16 @@ const ATTRIBUTES = {
     "ThumbColorInactive": [],
     "ThumbEnabled": [],
     "ThumbPosition": [],
+    "TimeInterval": [],
+    "TimerAlwaysFires": ["alwaysfires"],
+    "TimerEnabled": [],
+    "TimerInterval": [],
     "Title": [],
     "TitleVisible": ["showtitle"],
     "TrackColorActive": [],
     "TrackColorInactive": [],
     "TransportationMethod": ["method"],
+    "UseExternalScanner": ["externalscanner", "external"],
     "UsesLocation": ["uselocation", "location"],
     "UseLegacy": [],
     "Visible": [],
@@ -708,6 +779,10 @@ function setAttribute(key, value, name, descriptor) {
         case "Rotates":
         case "EnablePan":
         case "EnableZoom":
+        case "UseExternalScanner":
+        case "TimerAlwaysFires":
+        case "TimerEnabled":
+        case "ReadMode":
             setFalse(key, value, name, descriptor)
             break;
         case "Checked":
@@ -734,6 +809,8 @@ function setAttribute(key, value, name, descriptor) {
         case "ShowZoom":
         case "Draggable":
         case "EnableInfoBox":
+        case "LegacyMode":
+        case "KeepRunningWhenOnPause":
             setTrue(key, value, name, descriptor)
             break;
         case "FontSize":
@@ -756,6 +833,7 @@ function setAttribute(key, value, name, descriptor) {
         case "FillOpacity":
         case "Radius": //there are cases where this should be an integer - hope this doesn't break anything
         case "StrokeOpacity":
+        case "StrideLength":
         case "Latitude":    //should be a special method to test for latitude and longitude correctness
         case "Longitude":
         case "StartLatitude":
@@ -796,6 +874,11 @@ function setAttribute(key, value, name, descriptor) {
         case "Interval":
         case "ZoomLevel":
         case "StrokeWidth":
+        case "RefreshTime":
+        case "TimerInterval":
+        case "TimeInterval":        //limit to 0, 1000, 10000, 60000, 300000 //should have this as timerinterval so not confuse users
+        case "DistanceInterval":    ///limit to 0, 1, 10, 100
+        case "StopDetectionTimeout":
             setInteger(key, value, name, descriptor);
             break;
         case "Width":
@@ -845,6 +928,9 @@ function setAttribute(key, value, name, descriptor) {
             break;
         case "ScaleUnits":
             fromList(key, value, name, ['metric', 'imperial'], "ScaleUnits")
+            break;
+        case "Sensitivity":
+            fromList(key, value, name, ['weak', 'moderate', 'strong'], "ScaleUnits")
             break;
         case "ListData":
             loadListViewData(key, value, name, "ListData")
@@ -951,6 +1037,7 @@ function fromList(key, value, name, options, descriptor) {
         if (descriptor === "Orientation") { if (index !== 1) { return } } //only send through request for horizonatal, vertical is default
         if (descriptor === "NotifierLength") { if (index !== 0) { return } } //only send through request for short, long is default
         if (descriptor === "MapType" || descriptor === "ScaleUnits") { if (index === 0) { return } }
+        if (descriptor === "Sensitivity") { if (index === 2) { } return }
 
         output(`\n\t(set-and-coerce-property! '${name} '${descriptor} ${index} 'number)`)
     } else {
