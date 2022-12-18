@@ -1,3 +1,20 @@
+### Things Not Included in the current iteration
+- charts and charts data - could not get them to work on emulator using MIT App Inventor so did not include
+- FirebaseDb - there are some fixed default values so would require special processing code for this component and I am a bit over adding components at the moment (being doing it every day for a week)
+- FeatureCollection - too hard basket for processing geojson for now
+
+### TODO
+
+[ ] Make sure only valid nesting of items can occue (ignore/error out)
+[ ] CSS type external styling
+[ ] Programming language for functionality
+[ ] Validate components for the 'setComponent' function 
+[ ] Complete this readme
+[ ] Compilation to android app (unlikely)
+
+
+### Component information *incomplete
+
 Create a ... |Tag | Allowed Attributes | Allowed Attribute values
 -|-|-|-
 New Screen<br><i>This is the root node in the XML.<br>Only one per file as root element.</i>| screen | name | any text string

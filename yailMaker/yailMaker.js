@@ -1,18 +1,7 @@
 const fs = require("fs")
 const convert = require("xml-js")
 
-//TODO: 
-//Complete elements
-//Make sure that only allowable things can nest within each other
-//CSS styling for groups, classes and names (ids)
-//programming language
-//compilation to android app (or maybe not)
-//redo readme better 
-
-//validate component exists for get component somehow
-
-//there is an issue with the charts so not including them in current iteration
-//not including firebasedb - has fixed default values which would require special case for processing
+//up to close animation screen in screen
 
 
 //////////////////////////////////////////////////
@@ -20,6 +9,17 @@ const convert = require("xml-js")
 //////////////////////////////////////////////////
 
 const ELEMENTS = {
+    "screen": {
+        "runTimeName": "Screen",
+        "attributes": ["class", "id", "aboutscreen", "accentcolor", "accent", "alignhorizontal",
+            "halign", "alignvertical", "valign", "appname", "backgroundcolor",
+            "backgroundimage", "bigdefaulttext", "closescreenanimation",
+            "defaultfilescope", "highcontrast", "icon", "openscreenanimation",
+            "primarycolor", "primarycolordark", "screenorienation",
+            "scrollable", "showlistsasjson", "sizing", "theme",
+            "showtitle", "showstatusbar", "statusbar", "title", "versioncode", "versionname"]
+    },
+
     //start UI elements
     "button": {
         "runTimeName": "Button",
@@ -80,10 +80,6 @@ const ELEMENTS = {
     'webview': {
         "runTimeName": "WebViewer",
         "attributes": ["class", "id", "followlinks", "height", "width", "url", "ignoressl", "promptpermission", "uselocation", "visible", "col", "row", "name"]
-    },
-    "screen": {
-        "runTimeName": "Screen",
-        "attributes": ["class", "id", "showtitle", "statusbar", "backgroundcolor", "appname", "title"]
     },
     //start layout elements
     "hbox": {
@@ -332,6 +328,8 @@ const ELEMENTS = {
 
 //Attributes and their synonyms
 const ATTRIBUTES = {
+    "AboutScreen": [],
+    "AccentColor": ["accent"],
     "ApiKey": [],
     "AppName": [],
     "AlignHorizontal": ["halign"],
@@ -344,12 +342,14 @@ const ATTRIBUTES = {
     "BackgroundColor": [],
     "BackgroundImage": [],
     "BaudRate": ["baud"],
+    "BigDefaultText": [],
     "BufferSize": ["buffer"],
     "CenterFromString": ["center"],
     "CharacterEncoding": ["encoding"],
     "Checked": [],
     "Class": [], //for CSS styling
     "Clickable": [],
+    "CloseScreenAnimation": [],
     "ColorLeft": ["leftcolor"],
     "ColorRight": ["rightcolor"],
     "Column": ["col"],
@@ -389,10 +389,12 @@ const ATTRIBUTES = {
     "Heading": [],
     "Height": [],
     "HighByteFirst": [],
+    "HighContrast": [],
     "Hint": [],
     "HolePointsFromString": [],
     "HomeUrl": ["url"],
     "HTMLFormat": ["html"],
+    "Icon": [],
     "Id": [], //for CSS styling
     "IgnoreSslErrors": ["ignoressl"],
     "Image": [],
@@ -424,6 +426,7 @@ const ATTRIBUTES = {
     "NotifierLength": ["length"],
     "NumbersOnly": ["numbers"],
     "On": [],
+    "OpenScreenAnimation": [],
     "Orientation": [],
     "OriginAtCenter": [],
     "PaintColor": ["paint"],
@@ -433,6 +436,8 @@ const ATTRIBUTES = {
     "PlayOnlyInForeground": [],
     "PointsFromString": ["points"],
     "PollingRate": [],
+    "PrimaryColor": [],
+    "PrimaryColorDark": [],
     "ProjectID": [],
     "Prompt": [],
     "PromptForPermission": ["promptpermission"],
@@ -454,6 +459,8 @@ const ATTRIBUTES = {
     "SaveResponse": [],
     "ScalePictureToFit": [],
     "ScaleUnits": [],
+    "ScreenOrientation": [],
+    "Scrollable": [],
     "Secure": [],
     "Selection": [],
     "SelectionColor": [],
@@ -466,7 +473,9 @@ const ATTRIBUTES = {
     "ShowZoom": [],
     "ShowFeedback": [],
     "ShowFilterBar": ["showfilter"],
+    "ShowListsAsJSON": [],
     "ShowStatusBar": ["statusbar"],
+    "Sizing": [],
     "Source": ["src"],
     "SourceFile": [],
     "SouthLatitude": ["south"],
@@ -485,6 +494,7 @@ const ATTRIBUTES = {
     "TextColor": [],
     "TextColorDetail": [],
     "TextSize": [],
+    "Theme": [],
     "ThumbColorActive": [],
     "ThumbColorInactive": [],
     "ThumbEnabled": [],
@@ -505,6 +515,8 @@ const ATTRIBUTES = {
     "UsesLocation": ["uselocation", "location"],
     "UseLegacy": [],
     "UseSSL": [],
+    "VersionCode": [],
+    "VersionName": [],
     "Visible": [],
     "Volume": ["vol"],
     "WestLongitude": ["west"],
@@ -582,8 +594,9 @@ exports.for = main
 
 function traverse(object, parent = '') {
 
-    let type = object.name
+    let type = object.name.toLowerCase()
 
+    //handle attributes and default attributes
     if (object.attributes) {
         //convert all attributes to lowercase
         object.attributes = Object.fromEntries(
@@ -594,6 +607,14 @@ function traverse(object, parent = '') {
         if (!attributes.name) {
             attributes.name = type + "_" + generator.next().value
         }
+        //default screen attributes
+        if (type === "screen") {
+            if (typeof attributes.showlistsasjson === undefined) { attributes.showlistsasjson = "true" }
+            if (typeof attributes.sizing === undefined) { attributes.sizing = "responsive" }
+            if (typeof attributes.title === undefined) { attributes.title = "Screen1" }
+            if (typeof attributes.appname === undefined) { attributes.appname = "Crazy Green Pencils" }
+        }
+
     } else {
         object.attributes = {
             name: type + "_" + generator.next().value
@@ -907,6 +928,9 @@ function setAttribute(key, value, name, descriptor) {
         case "CharacterEncoding":
         case "ResponseFileName":
         case "Url":
+        case "Icon":
+        case "AboutScreen":
+        case "VersionName":
         case "HolePointsFromString":
         case "PointsFromString": //this is array of arrays of x,y - should be a convience method to load these better
             //e.g. [[68.02222323204114,-127.02117919921876],[68.01142776369724,-126.99234008789064]]
@@ -931,6 +955,7 @@ function setAttribute(key, value, name, descriptor) {
         case "ReadMode":
         case "UseSSL":
         case "Secure":
+        case "ShowListsAsJSON":
             setFalse(key, value, name, descriptor)
             break;
         case "Checked":
@@ -966,6 +991,9 @@ function setAttribute(key, value, name, descriptor) {
         case "DisconnectOnError":
         case "AllowCookies":
         case "SaveResponse":
+        case "BigDefaultText":
+        case "HighContrast":
+        case "Scrollable":
             setTrue(key, value, name, descriptor)
             break;
         case "FontSize":
@@ -1017,6 +1045,9 @@ function setAttribute(key, value, name, descriptor) {
         case "PaintColor":
         case "FillColor":
         case "StrokeColor":
+        case "AccentColor":
+        case "PrimaryColor":
+        case "PrimaryColorDark":
             setColor(key, value, name, descriptor)
             break;
         case "Columns":
@@ -1040,6 +1071,7 @@ function setAttribute(key, value, name, descriptor) {
         case "BaudRate":
         case "BufferSize":
         case "Timeout":
+        case "VersionCode":
             setInteger(key, value, name, descriptor);
             break;
         case "Width":
@@ -1055,8 +1087,21 @@ function setAttribute(key, value, name, descriptor) {
         case "DefaultScope":
             setScope(key, value, name, descriptor)
             break;
+        case "CloseScreenAnimation":
+        case "OpenScreenAnimation":
+            fromTextList(key, value, name, ['fade', 'zoom', 'slidehorizontal', 'slidevertical', 'none'], descriptor)
+            break;
         case "TransportationMethod":
             fromTextList(key, value, name, ['driving', 'cycling', 'wheelchair'], "TransportationMethod")
+            break;
+        case "ScreenOrientation":
+            fromTextList(key, value, name, ['portrait', 'landscape', 'sensor', 'user'], "TransportationMethod")
+            break;
+        case "Sizing":
+            fromTextList(key, value, name, ['fixed', 'responsive'], descriptor)
+            break;
+        case "Theme":
+            fromTextList(key, value, name, ['devicedefault', 'blacktitle', 'dark'], descriptor)
             break;
         case "FontTypeface":
             fromList(key, value, name, ['sans serif', 'serif', 'monospace'], "FontTypeface")
@@ -1284,10 +1329,42 @@ function loadListViewData(key, value, name, descriptor) {
 
 function fromTextList(key, value, name, options, descriptor) {
     value = value.toLowerCase()
-    if (value === "driving") { value = "driving-car" }
-    else if (value === "cycling-regular") { value = "cycling" }
-    else if (value === "wheelchair") { }
-    else { return }
+    if (descriptor === "TransportationMethod") {
+        if (value === "driving") { value = "driving-car" }
+        else if (value === "cycling-regular") { value = "cycling" }
+        else if (value === "wheelchair") { }
+        else {
+            console.log(`Transportation method set to "Walking": either not supplied or invalid method given.`)
+            return
+        }
+    }
+    if (descriptor === "CloseScreenAnimation" || descriptor === "OpenScreenAnimation") {
+        if (options.indexOf(value) === -1) {
+            console.log(`Invalid option given for Open/Close Screen Animation: setting to default.`)
+            return
+        }
+    }
+    if (descriptor === "ScreenOrientation") {
+        if (options.indexOf(value) === -1) {
+            console.log(`Invalid option given for Screen Orientation: setting to default.`)
+            return
+        }
+    }
+    if (descriptor === "Sizing") {
+        if (options.indexOf(value) === -1) {
+            value = "responsive"
+            console.log(`Invalid option given for Sizing (of screen): setting to responsive.`)
+        }
+    }
+    if (descriptor === "Theme") {
+        if (value === "devicedefault") { value = "AppTheme.Light.DarkActionBar" }
+        else if (value === "blacktitle") { value = "AppTheme.Light" }
+        else if (value === "dark") { value = "AppTheme" }
+        else {
+            console.log("Invalid value for theme (of screen): setting to 'classic'.")
+            return
+        }
+    }
     output(`\n\t(set-and-coerce-property! '${name} '${descriptor} "${value}" 'text)`)
 }
 
@@ -1295,7 +1372,7 @@ function setScope(key, value, name, options, descriptor) {
     value = value.toLowerCase()
     let options = ["asset", "cache", "legacy", "private", "shared"]
     if (options.indexOf(value) === -1) {
-        console.log("Invalid deafult scope for data file. Ignoring.")
+        console.log("Invalid default scope for data file. Ignoring.")
         return
     }
     value = value[0].toUpperCase() + value.substring(1)
