@@ -1,9 +1,6 @@
 const fs = require("fs")
 const convert = require("xml-js")
 
-//up to close animation screen in screen
-
-
 //////////////////////////////////////////////////
 //// INTERFACE ELEMENTS //////////////////////////
 //////////////////////////////////////////////////
@@ -17,7 +14,7 @@ const ELEMENTS = {
             "defaultfilescope", "highcontrast", "icon", "openscreenanimation",
             "primarycolor", "primarycolordark", "screenorienation",
             "scrollable", "showlistsasjson", "sizing", "theme",
-            "showtitle", "showstatusbar", "statusbar", "title", "versioncode", "versionname"]
+            "showtitle", "showstatusbar", "statusbar", "title", "versioncode", "versionname", "name"]
     },
 
     //start UI elements
@@ -84,23 +81,23 @@ const ELEMENTS = {
     //start layout elements
     "hbox": {
         "runTimeName": "HorizontalArrangement",
-        "attributes": ["class", "id", "halign", "valign", "width", "height", "backgroundcolor", "image", "visible", "col", "row"]
+        "attributes": ["class", "id", "halign", "valign", "width", "height", "backgroundcolor", "image", "visible", "col", "row", "name"]
     },
     "vbox": {
         "runTimeName": "VerticalArrangement",
-        "attributes": ["class", "id", "halign", "valign", "width", "height", "backgroundcolor", "image", "visible", "col", "row"]
+        "attributes": ["class", "id", "halign", "valign", "width", "height", "backgroundcolor", "image", "visible", "col", "row", "name"]
     },
     "hscrollbox": {
         "runTimeName": "HorizontalScrollArrangement",
-        "attributes": ["class", "id", "halign", "valign", "width", "height", "backgroundcolor", "image", "visible", "col", "row"]
+        "attributes": ["class", "id", "halign", "valign", "width", "height", "backgroundcolor", "image", "visible", "col", "row", "name"]
     },
     "vscrollbox": {
         "runTimeName": "VerticalScrollArrangement",
-        "attributes": ["class", "id", "halign", "valign", "width", "height", "backgroundcolor", "image", "visible", "col", "row"]
+        "attributes": ["class", "id", "halign", "valign", "width", "height", "backgroundcolor", "image", "visible", "col", "row", "name"]
     },
     "table": {
         "runTimeName": "TableArrangement",
-        "attributes": ["class", "id", "width", "height", "visible", "columns", "rows", "col", "row"]
+        "attributes": ["class", "id", "width", "height", "visible", "columns", "rows", "col", "row", "name"]
     },
     //start media elements
     "camcorder": {
@@ -113,58 +110,58 @@ const ELEMENTS = {
     },
     "imagepicker": {
         "runTimeName": "ImagePicker",
-        "attributes": ["class", "id", "backgroundcolor", "enabled", "bold", "italic", "fontsize", "typeface", "height", "width", "image", "shape", "showfeedback", "text", "textalign", "textcolor", "visible"]
+        "attributes": ["class", "id", "backgroundcolor", "enabled", "bold", "italic", "fontsize", "typeface", "height", "width", "image", "shape", "showfeedback", "text", "textalign", "textcolor", "visible", "name"]
     },
     "videoplayer": {
         "runTimeName": "VideoPlayer",
-        "attributes": ["class", "id", "height", "width", "source", "visible", "volume"]
+        "attributes": ["class", "id", "height", "width", "source", "visible", "volume", "name"]
     },
     "player": {
         "runTimeName": "Player",
-        "attributes": ["class", "id", "loop", "playonlyinforeground", "source", "volume"]
+        "attributes": ["class", "id", "loop", "playonlyinforeground", "source", "volume", "name"]
     },
     "sound": {
         "runTimeName": "Sound",
-        "attributes": ["class", "id", "minimuminterval", "source"]
+        "attributes": ["class", "id", "minimuminterval", "source", "name"]
     },
     "soundrecorded": {
         "runTimeName": "SoundRecorded",
-        "attributes": ["class", "id", "savedrecording"]
+        "attributes": ["class", "id", "savedrecording", "name"]
     },
     "speechrecognizer": {
         "runTimeName": "SpeechRecognizer",
-        "attributes": ["class", "id", "uselegacy"]
+        "attributes": ["class", "id", "uselegacy", "name"]
     },
     "texttospeech": {
         "runTimeName": "TextToSpeech",
-        "attributes": ["class", "id", "country", "language", "lang", "pitch", "speechrate"]
+        "attributes": ["class", "id", "country", "language", "lang", "pitch", "speechrate", "name"]
     },
     "translator": {
         "runTimeName": "Translator",
-        "attributes": ["class", "id", "apikey"]
+        "attributes": ["class", "id", "apikey", "name"]
     },
     //start drawing and animation elements
     "canvas": {
         "runTimeName": "Canvas",
-        "attributes": ["class", "id", "backgroundcolor", "backgroundimage", "extendmovesoutsidecanvas", "extend", "fontsize", "height", "width", "linewidth", "paintcolor", "paint", 'tapthreshold', 'textalign', 'visible']
+        "attributes": ["class", "id", "backgroundcolor", "backgroundimage", "extendmovesoutsidecanvas", "extend", "fontsize", "height", "width", "linewidth", "paintcolor", "paint", 'tapthreshold', 'textalign', 'visible', "name"]
     },
     "ball": {
         "runTimeName": "Ball",
-        "attributes": ["class", "id", "enabled", "heading", "interval", "originatcenter", "paint", "paintcolor", "radius", "speed", "visible", "x", "y", "z"]
+        "attributes": ["class", "id", "enabled", "heading", "interval", "originatcenter", "paint", "paintcolor", "radius", "speed", "visible", "x", "y", "z", "name"]
     },
     "sprite": {
         "runTimeName": "ImageSprite",
-        "attributes": ["class", "id", "enabled", "heading", "height", "width", "interval", "picture", "rotates", "speed", "visible", "x", "y", "z"]
+        "attributes": ["class", "id", "enabled", "heading", "height", "width", "interval", "picture", "rotates", "speed", "visible", "x", "y", "z", "name"]
     },
     //start Maps
     //43 things to go
     "map": {
         "runTimeName": "Map",
-        "attributes": ["class", "id", "center", "centerfromstring", "enablepan", "enablerotation", "enablezoom", "height", "width", "locationsensor", "maptype", "rotation", "scaleunits", "showcompass", "showscale", "showuser", "showzoom", "visible", "zoomlevel"]
+        "attributes": ["class", "id", "center", "centerfromstring", "enablepan", "enablerotation", "enablezoom", "height", "width", "locationsensor", "maptype", "rotation", "scaleunits", "showcompass", "showscale", "showuser", "showzoom", "visible", "zoomlevel", "name"]
     },
     "circle": {
         "runTimeName": "",
-        "attributes": ["class", "id", "description", "draggable", "enableinfobox", "fillcolor", "fillopacity", "latitude", "lat", "longitude", "lon", "radius", "strokecolor", "strokewidth", "title", "visible"]
+        "attributes": ["class", "id", "description", "draggable", "enableinfobox", "fillcolor", "fillopacity", "latitude", "lat", "longitude", "lon", "radius", "strokecolor", "strokewidth", "title", "visible", "name"]
     },
     /*  "featurecollection": {      //there may be issues here - especially with url as the source of the data - unable to test
           "runTimeName": "FeatureCollection",
@@ -172,156 +169,156 @@ const ELEMENTS = {
       },*/
     "linestring": {
         "runTimeName": "LineString",
-        "attributes": ["description", "draggable", "enableinfobox", "pointsfromstring", "points", "strokecolor", "strokeopacity", "strokewidth", "title", "visible"]
+        "attributes": ["class", "id", "description", "draggable", "enableinfobox", "pointsfromstring", "points", "strokecolor", "strokeopacity", "strokewidth", "title", "visible", "name"]
     },
     "marker": {
         "runTimeName": "Marker",
-        "attributes": ["anchorhorizontal", "anchorvertical", "description", "draggable", "enableinfobox", "fillcolor", "fillopacity", "height", "width", "imageasset", "latitude", "lat", "longitude", "lon", "strokecolor", "strokeopacity", "strokewidth", "title", "visible"]
+        "attributes": ["class", "id", "anchorhorizontal", "anchorvertical", "description", "draggable", "enableinfobox", "fillcolor", "fillopacity", "height", "width", "imageasset", "latitude", "lat", "longitude", "lon", "strokecolor", "strokeopacity", "strokewidth", "title", "visible", "name"]
     },
     "navigation": {
         "runTimeName": "Navigation",
-        "attributes": ["apikey", "endlatitude", "endlat", "endlongitude", "endlon", "language", "startlatitude", "startlat", "startlongitude", "startlon", "transportationmethod", "method"]
+        "attributes": ["class", "id", "apikey", "endlatitude", "endlat", "endlongitude", "endlon", "language", "startlatitude", "startlat", "startlongitude", "startlon", "transportationmethod", "method", "name"]
     },
     "polygon": {
         "runTimeName": "Polygon",
-        "attributes": ["description", "draggable", "enableinfobox", "fillcolor", "fillopacity", "holepointsfromstring", "pointsfromstring", "strokecolor", "strokeopacity", "strokewidth", "title", "visible"]
+        "attributes": ["class", "id", "description", "draggable", "enableinfobox", "fillcolor", "fillopacity", "holepointsfromstring", "pointsfromstring", "strokecolor", "strokeopacity", "strokewidth", "title", "visible", "name"]
     },
     "rectangle": {
         "runTimeName": "Rectangle",
-        "attributes": ["description", "draggable", "eastlongitude", "east", "enableinfobox", "fillcolor", "fillopacity", "northlatitude", "north", "southlatitude", "south", "strokecolor", "strokeopacity", "strokewidth", "title", "visible", "westlongitude", "west"]
+        "attributes": ["class", "id", "description", "draggable", "eastlongitude", "east", "enableinfobox", "fillcolor", "fillopacity", "northlatitude", "north", "southlatitude", "south", "strokecolor", "strokeopacity", "strokewidth", "title", "visible", "westlongitude", "west", "name"]
     },
     //ignoring charts - not sure how they work
     //start sensors
     "acceleronmeter": {
         "runTimeName": "AccelerometerSensor",
-        "attributes": ["enabled", "legacymode", "minimuminterval", "sensitivity"]
+        "attributes": ["class", "id", "enabled", "legacymode", "minimuminterval", "sensitivity", "name"]
     },
     "barcodescanner": {
         "runTimeName": "BarcodeScanner",
-        "attributes": ["useexternalscanner", "externalscanner", "external"]
+        "attributes": ["class", "id", "useexternalscanner", "externalscanner", "external", "name"]
     },
     "barometer": {
         "runTimeName": "Barometer",
-        "attributes": ["enabled", "refreshtime"]
+        "attributes": ["class", "id", "enabled", "refreshtime", "name"]
     },
     "clock": {
         "runTimeName": "Clock",
-        "attributes": ["timeralwaysfires", "alwaysfires", "timerenabled", "timerinterval"]
+        "attributes": ["class", "id", "timeralwaysfires", "alwaysfires", "timerenabled", "timerinterval", "name"]
     },
     "gyroscope": {
         "runTimeName": "GyroscopeSensor",
-        "attributes": ["enabled"]
+        "attributes": ["class", "id", "enabled", "name"]
     },
     "hygrometer": {
         "runTimeName": "Hygrometer",
-        "attributes": ["enabled", "refreshtime"]
+        "attributes": ["class", "id", "enabled", "refreshtime", "name"]
     },
     "lightsensor": {
         "runTimeName": "LightSensor",
-        "attributes": ["enabled", "refreshtime"]
+        "attributes": ["class", "id", "enabled", "refreshtime", "name"]
     },
     "locationsensor": {
         "runTimeName": "LocationSensor",
-        "attributes": ["distanceinterval", "enabled", "timeinterval"]
+        "attributes": ["class", "id", "distanceinterval", "enabled", "timeinterval", "name"]
     },
     "magneticfieldsensor": {
         "runTimeName": "MagneticFieldSensor",
-        "attributes": ["enabled"]
+        "attributes": ["class", "id", "enabled", "name"]
     },
     "nearfield": {
         "runTimeName": "NearField",
-        "attributes": ["readmode"]
+        "attributes": ["class", "id", "readmode", "name"]
     },
     "orientationsensor": {
         "runTimeName": "OrientationSensor",
-        "attributes": ["enabled"]
+        "attributes": ["class", "id", "enabled", "name"]
     },
     "pedometer": {
         "runTimeName": "Pedometer",
-        "attributes": ["stopdetectiontimeout", "stridelength"]
+        "attributes": ["class", "id", "stopdetectiontimeout", "stridelength", "name"]
     },
     "proximitysensor": {
         "runTimeName": "ProximitySensor",
-        "attributes": ["enabled", "keeprunningwhenonpause"]
+        "attributes": ["class", "id", "enabled", "keeprunningwhenonpause", "name"]
     },
     "thermometer": {
         "runTimeName": "Thermometer",
-        "attributes": ["enabled", "refreshtime"]
+        "attributes": ["class", "id", "enabled", "refreshtime", "name"]
     },
     //social and communication tools
     "contactpicker": {
         "runTimeName": "ContactPicker",
-        "attributes": ["backgroundcolor", "enabled", "bold", "italic", "fontsize", "typeface", "height", "width", "shape", "showfeedback", "text", "textalign", "textcolor", "visible"]
+        "attributes": ["class", "id", "backgroundcolor", "enabled", "bold", "italic", "fontsize", "typeface", "height", "width", "shape", "showfeedback", "text", "textalign", "textcolor", "visible", "name"]
     },
     "emailpicker": {
         "runTimeName": "EmailPicker",
-        "attributes": ["backgroundcolor", "enabled", "bold", "italic", "fontsize", "typeface", "height", "width", "shape", "showfeedback", "hint", "text", "textalign", "textcolor", "visible"]
+        "attributes": ["class", "id", "backgroundcolor", "enabled", "bold", "italic", "fontsize", "typeface", "height", "width", "shape", "showfeedback", "hint", "text", "textalign", "textcolor", "visible", "name"]
     },
     "phonecall": {
         "runTimeName": "PhoneCall",
-        "attributes": ["phonenumber"]
+        "attributes": ["class", "id", "phonenumber", "name"]
     },
     "phonenumberpicker": {
         "runTimeName": "PhoneNumberPicker",
-        "attributes": ["backgroundcolor", "enabled", "bold", "italic", "fontsize", "typeface", "height", "width", "image", "shape", "showfeedback", "text", "textalign", "textcolor", "visible"]
+        "attributes": ["class", "id", "backgroundcolor", "enabled", "bold", "italic", "fontsize", "typeface", "height", "width", "image", "shape", "showfeedback", "text", "textalign", "textcolor", "visible", "name"]
     },
     "sharing": {
         "runTimeName": "Sharing",
-        "attributes": []
+        "attributes": ["class", "id", "name"]
     },
     "texting": {
         "runTimeName": "Texting",
-        "attributes": ["googlevoiceenabled", "message", "phonenumber", "recievingenabled"]
+        "attributes": ["class", "id", "googlevoiceenabled", "message", "phonenumber", "recievingenabled", "name"]
     },
     "twitter": {
         "runTimeName": "Twitter",
-        "attributes": ["consumerkey", "consumersecret"]
+        "attributes": ["class", "id", "consumerkey", "consumersecret", "name"]
     },
     //storage elements
     "clouddb": {
         "runTimeName": "CloudDB",
-        "attributes": ["projectid", "redisport", "redisserver", "token", "usessl"]
+        "attributes": ["class", "id", "projectid", "redisport", "redisserver", "token", "usessl", "name"]
     },
     "datafile": {
         "runTimeName": "DataFile",
-        "attributes": ["defaultscope", "scope", "sourcefile"]
+        "attributes": ["class", "id", "defaultscope", "scope", "sourcefile", "name"]
     },
     "file": {
         "runTimeName": "File",
-        "attributes": ["defaultscope", "scope", "readpermission", "writepermission"]
+        "attributes": ["class", "id", "defaultscope", "scope", "readpermission", "writepermission", "name"]
     },
     "spreadsheet": {
         "runTimeName": "Spreadsheet",
-        "attributes": ["applicationame", "credentialsjson", "credentials", "spreadsheetid"]
+        "attributes": ["class", "id", "applicationame", "credentialsjson", "credentials", "spreadsheetid", "name"]
     },
     "tinydb": {
         "runTimeName": "TinyDB",
-        "attributes": ["namespace"]
+        "attributes": ["class", "id", "namespace", "name"]
     },
     "tinywebdb": {
         "runTimeName": "TinyWebDB",
-        "attributes": ["serviceurl"]
+        "attributes": ["class", "id", "serviceurl", "name"]
     },
     //connectivity elements
     "activitystarter": {
         "runTimeName": "ActivityStarter",
-        "attributes": ["action", "activityclass", "activitypackage", "datatype", "datauri", "extrakey", "extravalue", "resultname"]
+        "attributes": ["class", "id", "action", "activityclass", "activitypackage", "datatype", "datauri", "extrakey", "extravalue", "resultname", "name"]
     },
     "bluetoothclient": {
         "runTimeName": "BluetoothClient",
-        "attributes": ["characterencoding", "encoding", "delimiterbyte", "delimiter", "disconnectonerror", "highbytefirst", "pollingrate", "secure"]
+        "attributes": ["class", "id", "characterencoding", "encoding", "delimiterbyte", "delimiter", "disconnectonerror", "highbytefirst", "pollingrate", "secure", "name"]
     },
     "bluetoothserver": {
         "runTimeName": "BluetoothServer",
-        "attributes": ["characterencoding", "encoding", "delimiterbyte", "delimiter", "highbytefirst", "secure"]
+        "attributes": ["class", "id", "characterencoding", "encoding", "delimiterbyte", "delimiter", "highbytefirst", "secure", "name"]
     },
     "serial": {
         "runTimeName": "Serial",
-        "attributes": ["baudrate", "baud", "buffersize", "buffer"]
+        "attributes": ["class", "id", "baudrate", "baud", "buffersize", "buffer", "name"]
     },
     "web": {
         "runTimeName": "Web",
-        "attributes": ["allowcookies", "cookies", "responsefilename", "saveresponse", "timeout", "url"]
+        "attributes": ["class", "id", "allowcookies", "cookies", "responsefilename", "saveresponse", "timeout", "url", "name"]
     }
 
 }
@@ -395,7 +392,6 @@ const ATTRIBUTES = {
     "HomeUrl": ["url"],
     "HTMLFormat": ["html"],
     "Icon": [],
-    "Id": [], //for CSS styling
     "IgnoreSslErrors": ["ignoressl"],
     "Image": [],
     "ImageAsset": [],
@@ -420,7 +416,7 @@ const ATTRIBUTES = {
     "MinValue": ["min"],
     "MinimumInterval": [],
     "MultiLine": [],
-    "Name": [],
+    "Name": ["id"],
     "Namespace": [],
     "NorthLatitude": ["north"],
     "NotifierLength": ["length"],
@@ -562,6 +558,11 @@ let componentList = ''
 let logFile = true
 
 function main(filename = "temp.xml") {
+
+    console.log()
+    console.log(`Compiling screen yail for "${filename}"`)
+    console.log(`*** Compiler messages ***`)
+
     yail = ""
 
     //delete base file
@@ -576,7 +577,8 @@ function main(filename = "temp.xml") {
     assetsList = []     //this is the list of media files that need to be loaded
 
     //if empty object returned then nothing in the file so crash out
-    traverse(structure)
+
+    traverse(structure.elements[0])
 
     //add lines to execute build
     output(`\n(init-runtime)`)
@@ -587,12 +589,18 @@ function main(filename = "temp.xml") {
     }
     output(`\n(call-Initialize-of-components ${componentList} )`)
 
+    console.log(`*** End compiler messages ***`)
+    console.log()
+
     return { yail: yail, assetsList: assetsList }
 }
 
 exports.for = main
 
 function traverse(object, parent = '') {
+
+    //must delete text objects or it falls apart
+    if (object.type === 'text') { return }
 
     let type = object.name.toLowerCase()
 
@@ -816,13 +824,67 @@ function traverse(object, parent = '') {
     fs.writeFileSync("assets.list", JSON.stringify(assetsList))
 
     //traverse the children
-    if (object.elements) {
+
+    //TODO: only allow traversing on the elements that can actually have children
+    /*if (object.elements) {
         for (let i = 0; i < object.elements.length; i++) {
             if (!object.name) {
                 traverse(object.elements[i])
             } else {
                 traverse(object.elements[i], object.attributes.name)
             }
+        }
+    }*/
+
+
+    if (object.elements) {
+        //determine if object can have children
+        let objectswithChildren = ['screen', "hbox", "vbox", "hscrollbox", 'vscrollbox', 'table', 'canvas', 'map']
+        if (objectswithChildren.indexOf(type) !== -1) {
+
+            for (let i = 0; i < object.elements.length; i++) {
+                //determine cases where children are limited
+                let childname = object.elements[i].name.toLowerCase()
+                let mapChildren = ["circle", "featurecollection", "linestring", "marker", "polygon", 'rectangle']
+                if (type === 'map') {
+                    if (mapChildren.indexOf(childname) === -1) {
+                        console.log(`Element "Map" cannot have child of element type "${childname}". Ignoring.`)
+                        continue
+                    }
+                } else {
+                    if (mapChildren.indexOf(childname) !== -1) {
+                        console.log(`Element "${childname}" can only be parented by a "Map" element. Ignoring.`)
+                        continue
+                    }
+                }
+
+                let canvasChildren = ["ball", "imagesprite"]
+                if (type === 'canvas') {
+                    if (canvasChildren.indexOf(childname) === -1) {
+                        console.log(`Element "Canvas" cannot have child of element type "${childname}". Ignoring.`)
+                        continue
+                    }
+                } else {
+                    if (canvasChildren.indexOf(childname) !== -1) {
+                        console.log(`Element "${childname}" can only be parented by a "Canvas" element. Ignoring.`)
+                        continue
+                    }
+                }
+
+                if (childname === "screen") {
+                    console.log(`Cannot nest "Screen" elements. Ignoring.`)
+                    continue;
+                }
+
+
+                if (!object.name) {
+                    traverse(object.elements[i])
+                } else {
+                    traverse(object.elements[i], object.attributes.name)
+                }
+            }
+        } else {
+            console.log(`Element of type '${type}' cannot have child elements. Ignoring.`)
         }
     }
 
@@ -866,7 +928,7 @@ function createElement(element, attributes, parent, elements) {
             }
 
         } else {
-            console.log(`Invalid attribute for "${element}": ignoring.`)
+            console.log(`Invalid attribute "${key}" for "${element}", Ignoring.`)
         }
 
 
@@ -1142,7 +1204,7 @@ function setAttribute(key, value, name, descriptor) {
             fromList(key, value, name, ['weak', 'moderate', 'strong'], "ScaleUnits")
             break;
         case "RecievingEnabled":
-            fromList(key, value, name, ['off', 'foreground', 'always'], "RecievingEnabled")
+            fromList(key, value, name, ['off', 'foreground', 'always'], "ReceivingEnabled")
             break;
         case "ListData":
             loadListViewData(key, value, name, "ListData")
@@ -1370,8 +1432,8 @@ function fromTextList(key, value, name, options, descriptor) {
 
 function setScope(key, value, name, options, descriptor) {
     value = value.toLowerCase()
-    let options = ["asset", "cache", "legacy", "private", "shared"]
-    if (options.indexOf(value) === -1) {
+    let options2 = ["asset", "cache", "legacy", "private", "shared"]
+    if (options2.indexOf(value) === -1) {
         console.log("Invalid default scope for data file. Ignoring.")
         return
     }
