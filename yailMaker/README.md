@@ -5,7 +5,7 @@
 
 ### TODO
 
-[x] Make sure only valid nesting of items can occue (ignore/error out)  - should test this code
+[x] Make sure only valid nesting of items can occue (ignore/error out)
 [ ] CSS type external styling
 [ ] Programming language for functionality
 [ ] Validate components for the 'setComponent' function 

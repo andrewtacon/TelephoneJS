@@ -1,5 +1,6 @@
 const fs = require("fs")
 const convert = require("xml-js")
+const transpiler = require("../transpiler/transpiler")
 
 //////////////////////////////////////////////////
 //// INTERFACE ELEMENTS //////////////////////////
@@ -14,7 +15,7 @@ const ELEMENTS = {
             "defaultfilescope", "highcontrast", "icon", "openscreenanimation",
             "primarycolor", "primarycolordark", "screenorienation",
             "scrollable", "showlistsasjson", "sizing", "theme",
-            "showtitle", "showstatusbar", "statusbar", "title", "versioncode", "versionname", "name"]
+            "showtitle", "showstatusbar", "statusbar", "title", "versioncode", "versionname", "name", "script", "style"]
     },
 
     //start UI elements
@@ -456,6 +457,8 @@ const ATTRIBUTES = {
     "ScalePictureToFit": [],
     "ScaleUnits": [],
     "ScreenOrientation": [],
+    "Script": [],
+    "Style": [],
     "Scrollable": [],
     "Secure": [],
     "Selection": [],
@@ -556,11 +559,16 @@ let elementList = []    //this is the list of elements on the page - needed so c
 let assetsList = []     //this is the list of media files that need to be loaded
 let componentList = ''
 let logFile = true
+let extractedData = []
+let scripts = []
+
+
 
 function main(filename = "temp.xml") {
 
+
     console.log()
-    console.log(`Compiling screen yail for "${filename}"`)
+    console.log(`Compiling "${filename}"...`)
     console.log(`*** Compiler messages ***`)
 
     yail = ""
@@ -575,29 +583,42 @@ function main(filename = "temp.xml") {
     let structure = JSON.parse(convert.xml2json(contents))
     elementList = []    //this is the list of elements on the page - needed so can create and activate them all later in the last line of code
     assetsList = []     //this is the list of media files that need to be loaded
+    extractedData = []
+    scripts = []
 
     //if empty object returned then nothing in the file so crash out
 
     traverse(structure.elements[0])
 
-    //add lines to execute build
+    let generatedCode = transpiler.run(scripts, extractedData)
+  //  console.log(generatedCode)
+
+       //add lines to execute build
     output(`\n(init-runtime)`)
     componentList = ''
     elementList.shift()  //kill first element - it is the root element of the JSON the CML is parsed
     for (let i = 0; i < elementList.length; i++) {
         componentList += `'${elementList[i]} `
     }
+
+    output(generatedCode)
+
     output(`\n(call-Initialize-of-components ${componentList} )`)
 
     console.log(`*** End compiler messages ***`)
     console.log()
+
+ 
 
     return { yail: yail, assetsList: assetsList }
 }
 
 exports.for = main
 
+
+
 function traverse(object, parent = '') {
+    
 
     //must delete text objects or it falls apart
     if (object.type === 'text') { return }
@@ -614,6 +635,12 @@ function traverse(object, parent = '') {
         let attributes = object.attributes
         if (!attributes.name) {
             attributes.name = type + "_" + generator.next().value
+        } else {
+            let newNamedElement = {
+                type: type,
+                name: attributes.name
+            }
+            extractedData.push(newNamedElement)
         }
         //default screen attributes
         if (type === "screen") {
@@ -621,6 +648,14 @@ function traverse(object, parent = '') {
             if (typeof attributes.sizing === undefined) { attributes.sizing = "responsive" }
             if (typeof attributes.title === undefined) { attributes.title = "Screen1" }
             if (typeof attributes.appname === undefined) { attributes.appname = "Crazy Green Pencils" }
+            if (attributes.script !== undefined) {
+                let scriptNames = attributes.script.split(",")
+
+                for (let scriptName of scriptNames) {
+                    scripts.push(scriptName.trim())
+                }
+            }
+            elementList.push(attributes.name)
         }
 
     } else {
@@ -822,20 +857,6 @@ function traverse(object, parent = '') {
         }
     }
     fs.writeFileSync("assets.list", JSON.stringify(assetsList))
-
-    //traverse the children
-
-    //TODO: only allow traversing on the elements that can actually have children
-    /*if (object.elements) {
-        for (let i = 0; i < object.elements.length; i++) {
-            if (!object.name) {
-                traverse(object.elements[i])
-            } else {
-                traverse(object.elements[i], object.attributes.name)
-            }
-        }
-    }*/
-
 
     if (object.elements) {
         //determine if object can have children
@@ -1212,6 +1233,8 @@ function setAttribute(key, value, name, descriptor) {
         case "Name":
         case "Id":      //for CSS styling
         case "Class":   //for CSS styling
+        case "Script":
+        case "Style":
             break;
         default:
             console.log(`Error: Unknown descriptor "${descriptor}". Ignoring.`)

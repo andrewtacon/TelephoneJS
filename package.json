@@ -5,11 +5,8 @@
     "adbkit": "^2.11.1",
     "adbkit-logcat": "^1.1.0",
     "appium-adb": "^9.10.18",
-    "dash-ast": "^2.0.1",
-    "estree-is-identifier": "^1.0.0",
     "google-closure-library": "^20221102.0.0",
     "node-fetch": "^2.6.7",
-    "sync-fetch": "^0.4.2",
     "wrtc": "^0.4.7",
     "xml-js": "^1.6.11"
   }
