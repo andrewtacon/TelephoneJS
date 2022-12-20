@@ -27,7 +27,7 @@ exports.run = main
 
 function transpile(input, elements) {
     const tree = parse(input)
-    //  console.log(util.inspect(tree, false, null, true)) // { type: 'Program', body: [ ... ] }
+     console.log(util.inspect(tree, false, null, true)) // { type: 'Program', body: [ ... ] }
 
     traverse(tree, {
         enter(node) {
@@ -42,7 +42,6 @@ function transpile(input, elements) {
                     } else if (node.callee.property.name === "showAlert") {
                         let text = node.arguments[0].value
                         outputCode(`(call-component-method '${node.callee.object.name} '${caseManage(node.callee.property.name)} (*list-for-runtime* "${text}") '(text)`)
-
                     }
                 }
                 //function with arguments
