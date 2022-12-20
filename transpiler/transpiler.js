@@ -3,6 +3,8 @@ const fs = require('fs')
 const { parse, traverse } = require('abstract-syntax-tree')
 const util = require('util')
 
+
+
 let generatedCode = ""
 function main(scripts, elements) {
     console.log("*** Transpiling scripts ***")
@@ -17,7 +19,6 @@ function main(scripts, elements) {
 
     console.log(generatedCode)
     return generatedCode
-
 }
 
 exports.run = main
@@ -27,67 +28,81 @@ exports.run = main
 
 function transpile(input, elements) {
     const tree = parse(input)
-     console.log(util.inspect(tree, false, null, true)) // { type: 'Program', body: [ ... ] }
+    // console.log(util.inspect(tree, false, null, true)) // { type: 'Program', body: [ ... ] }
 
     traverse(tree, {
+
+
+
         enter(node) {
             let type = node.type
-            if (type === "ExpressionStatment") { }
-            else if (type === "CallExpression") {
-                //object with method and property
-                if (node.callee.property) {
-                    if (node.callee.property.name === "addEventListener") {
-                        let eventType = node.arguments[0].value
-                        outputCode(`(define-event ${node.callee.object.name} ${caseManage(eventType)}() \n(set-this-form)`)
-                    } else if (node.callee.property.name === "showAlert") {
-                        let text = node.arguments[0].value
-                        outputCode(`(call-component-method '${node.callee.object.name} '${caseManage(node.callee.property.name)} (*list-for-runtime* "${text}") '(text)`)
-                    }
-                }
-                //function with arguments
-                else {
+            switch (type) {
+                case "ExpressionStatement":
+                    break;
+                case "CallExpression":
+                    let elementName = node.callee.object.name
 
-                }
+                    //check if a method is called on something
+                    if (node.called.property !== undefined) {
+                        let methodCalled = node.callee.property.name
+                        //check if the method that is called is a legal method for this particular element type (refer to supplied elements list)
+                        switch (methodCalled) {
+                            case "addEventListener":
+                                let eventType = node.arguments[0].value
+                                //TODO check element and type to make sure that the eventType is a legal event for that type of element/component
+                                outputCode(`(define-event ${elementName} ${camelCase(eventType)}() \n(set-this-form)`)
+                                break;
+                            case "showAlert":
+                                let messageText = node.arguments[0].value
+                                outputCode(`(call-component-method '${elementName} '${camelCase(methodCalled)} (*list-for-runtime* "${messageText}") '(text)`)
+                                break;
+                            default:
+                        }
+                    }
+
+                default:
             }
+
         },
+
+
+
         leave(node) {
             let type = node.type
-            if (type === "ExpressionStatement") { }
-            else if (type === "CallExpression") {
-                if (node.callee.property !== undefined) {
-                    if (node.callee.property.name === "addEventListener") {
-                        outputCode(`)`)
-                    } else if (node.callee.property.name === "showAlert") {
-                        outputCode(`)`)
-                    }
-                }
-                //function with arguments
-                else {
 
-                }
+            switch (type) {
+                case "ExpressionStatement":
+                    break;
+                case "CallExpression":
+                    //check a method is actually called on something
+                    if (node.callee.property !== undefined) {
+                        let methodCalled = node.callee.property.name
+                        switch (methodCalled) {
+                            case "addEventListener":
+                            case "showAlert":
+                                outputCode(`)`)
+                                break;
+                            default:
+                        }
+                    }
+                    break;
+                default:
             }
+
         }
     })
 
 }
 
+
+
+
+
+
 function outputCode(text) {
     generatedCode += text
 }
 
-
-function caseManage(text) {
-    let out = ""
-    for (const [key,value] of Object.entries(correctCases)) {
-        if (value===text) {
-            out = key
-            break;
-        }
-    }
-    return out
-}
-
-const correctCases = {
-    "Click": "click",
-    "ShowAlert": "showAlert"
+function camelCase(text) {
+    return text[0].toUpperCase() + text.substring(1)
 }

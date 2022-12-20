@@ -62,7 +62,7 @@ function main(filename = "temp.xml") {
     traverse(structure.elements[0])
 
     let generatedCode = transpiler.run(scripts, extractedData)
-    //  console.log(generatedCode)
+      console.log(generatedCode)
 
     //  process.exit(0)
 
@@ -73,17 +73,7 @@ function main(filename = "temp.xml") {
     for (let i = 0; i < elementList.length; i++) {
         componentList += `'${elementList[i]} `
     }
-
-    generatedCode = `
-    (define-event Button1 Click()
-        (set-this-form)
-        (set-and-coerce-property! 'Button1 'Shape 3 'number)
-    )
-    (define-event Button2 Click()
-        (set-this-form)
-        (set-and-coerce-property! 'Button2 'Width -2 'number)
-    )
-`
+  
 
     output(generatedCode)
 
@@ -111,7 +101,7 @@ function traverse(object, parent = '') {
 
     //handle attributes and default attributes
     if (object.attributes) {
-        //convert all attributes to lowercase
+        //convert all attributes to lowercase so can be case insensitive for the XML file
         object.attributes = Object.fromEntries(
             Object.entries(object.attributes).map(([k, v]) => [k.toLowerCase(), v])
         );
@@ -422,9 +412,14 @@ function createElement(element, attributes, parent, elements) {
         key = key.toLowerCase()
         //determine if the key is in the list for this element
         let legalAttributes = [].concat(ELEMENTS[element].attributes, ELEMENTS[element].designerAttributes)
-        if (legalAttributes.indexOf(key) !== -1) {
+        let legalAttributesLowerCase = legalAttributes.map(element => {
+            return element.toLowerCase().trim()
+        })
+
+        if (legalAttributesLowerCase.indexOf(key.toLowerCase().trim()) !== -1) {
 
             //find correct name for the attribute for the SCHEME code
+            //need to do this because converted to lowercase for the XML file 
             for (let [attrkey, attrvalue] of Object.entries(ATTRIBUTES)) {
                 if (attrkey.toLowerCase() === key || attrvalue.indexOf(key) !== -1) {
                     //process the attribute

@@ -21,24 +21,12 @@
 )
 
 (add-component Screen1 com.google.appinventor.components.runtime.Button Button1
-	(set-and-coerce-property! 'Button1 'Text "Hide" 'text)
+	(set-and-coerce-property! 'Button1 'Text "Show Messagee" 'text)
 )
 
-(add-component Screen1 com.google.appinventor.components.runtime.Button Button2
-	(set-and-coerce-property! 'Button2 'Text "Show" 'text)
+(add-component Screen1 com.google.appinventor.components.runtime.Notifier toast
 )
 
-(add-component Screen1 com.google.appinventor.components.runtime.TextBox TextBox1
-)
-
-(init-runtime)
-    (define-event Button1 Click()
-        (set-this-form)
-        (set-and-coerce-property! 'Button1 'Shape 3 'number)
-    )
-    (define-event Button2 Click()
-        (set-this-form)
-        (set-and-coerce-property! 'Button2 'Width -2 'number)
-    )
-
-(call-Initialize-of-components 'Screen1 'Button1 'Button2 'TextBox1  )
+(init-runtime)(define-event Button1 Click() 
+(set-this-form)(call-component-method 'toast 'ShowAlert (*list-for-runtime* "Hello World!") '(text)))
+(call-Initialize-of-components 'Screen1 'Button1 'toast  )
