@@ -62,9 +62,9 @@ function main(filename = "temp.xml") {
     traverse(structure.elements[0])
 
     let generatedCode = transpiler.run(scripts, extractedData)
-      console.log(generatedCode)
-
-    //  process.exit(0)
+   
+    
+    process.exit(0)
 
     //add lines to execute build
     output(`\n(init-runtime)`)
@@ -73,7 +73,7 @@ function main(filename = "temp.xml") {
     for (let i = 0; i < elementList.length; i++) {
         componentList += `'${elementList[i]} `
     }
-  
+
 
     output(generatedCode)
 

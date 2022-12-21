@@ -20,13 +20,9 @@
 	(set-and-coerce-property! 'Screen1 'Scrollable #t 'boolean)
 )
 
-(add-component Screen1 com.google.appinventor.components.runtime.Button Button1
-	(set-and-coerce-property! 'Button1 'Text "Show Messagee" 'text)
+(add-component Screen1 com.google.appinventor.components.runtime.Button button1
+	(set-and-coerce-property! 'button1 'Text "Show Message" 'text)
 )
 
 (add-component Screen1 com.google.appinventor.components.runtime.Notifier toast
 )
-
-(init-runtime)(define-event Button1 Click() 
-(set-this-form)(call-component-method 'toast 'ShowAlert (*list-for-runtime* "Hello World!") '(text)))
-(call-Initialize-of-components 'Screen1 'Button1 'toast  )
