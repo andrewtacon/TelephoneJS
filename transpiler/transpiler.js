@@ -20,9 +20,9 @@ function main(scripts, elements) {
 
     console.log("*** Transpiling complete ***")
 
-    console.log(generatedGlobalsCode)
-    console.log(generatedCode)
-    return generatedCode
+   // console.log(generatedGlobalsCode)
+   // console.log(generatedCode)
+    return generatedGlobalsCode+" "+generatedCode
 }
 
 exports.run = main
@@ -129,7 +129,7 @@ function modifyTree(tree) {
 function transpile(input, elements) {
     let tree = parse(input)
     tree = modifyTree(tree)
-    console.log(util.inspect(tree, false, null, true)) // { type: 'Program', body: [ ... ] }
+    // console.log(util.inspect(tree, false, null, true)) // { type: 'Program', body: [ ... ] }
 
     traverse(tree, {
 
@@ -144,46 +144,30 @@ function transpile(input, elements) {
                     if (node.body === "Close") {
                         //ignore close
                         break;
-                    } else if (node.body === "Global") {
-                        for (let i = 0; i < node.declarations.length; i++) {
-                            if (node.declarations[i].init.type === "Literal") {
-                                let value = node.declarations[i].init.value
-                                if (typeof node.declarations[i].init.value === "boolean") {   //need to adjust true and false in declaration to #t / #f to match YAIL syntax
-                                    value = node.declarations[i].init.value ? '#t' : '#f'
-                                }
-                                outputGlobalsCode(`(def g$${node.declarations[i].id.name} ${value}`)
-                            } else if (node.declarations[i].init.type === "Identifier") {
-                                outputGlobalsCode(`(def $${node.declarations[i].id.name} (get-var g$${node.declarations[i].init.name})`)
-                            }
-                            //outputCode(`)\n`)
-
-                        }
-                        break;
                     } else {
-                        //local variables
-                        //for variables - need to see if they are the last element in the list, if so then add another close
-                        outputCode(`(let\n`)
+                        if (node.body !== "Global") { outputCode(`(let\n`) }
                         for (let i = 0; i < node.declarations.length; i++) {
 
-                            variableStack.push(
-                                {
-                                    "type": "local",
-                                    "identifier": node.declarations[i].id.name
-                                }
-                            )
-
-                            if (node.declarations[i].init.type === "Literal") {
-                                let value = node.declarations[i].init.value
-                                if (typeof node.declarations[i].init.value === "boolean") {   //need to adjust true and false in declaration to #t / #f to match YAIL syntax
-                                    value = node.declarations[i].init.value ? '#t' : '#f'
-                                }
-                                outputCode(`(($${node.declarations[i].id.name} ${value})\n`)
-                            } else if (node.declarations[i].init.type === "Identifier") {
-                                outputCode(`(($${node.declarations[i].id.name} (lexical-value $${node.declarations[i].init.name})\n`)
+                            if (node.body !== "Global") {
+                                variableStack.push(
+                                    {
+                                        "type": "local",
+                                        "identifier": node.declarations[i].id.name
+                                    }
+                                )
                             }
-                            outputCode(`)\n`)
-                            if (node.body === "LastVariableDeclaration") {
-                                outputCode(`#f\n`)
+
+                            //recusively generate the declaration data for variables (recursive because arrays and objects can nest)
+                            let data = transpileDeclarations(node.declarations[i], node.body === "Global" ? true : false)
+
+                            if (node.body === "Global") { outputGlobalsCode(`(def g$${node.declarations[i].id.name} ${data}`) }
+                            else { outputCode(`(($${node.declarations[i].id.name} ${data})\n`) }
+
+                            if (node.body !== "Global") {
+                                    outputCode(`)\n`)
+                                if (node.body === "LastVariableDeclaration") {
+                                    outputCode(`#f\n`)
+                                }
                             }
 
                         }
@@ -204,7 +188,7 @@ function transpile(input, elements) {
                                   } else if (args[i].type === "Identifier") {
                                       args[i] = `(lexical-value $${args[i].name})`
                                   } else {
-  
+                 
                                   }
                               }
                           }*/
@@ -285,7 +269,7 @@ function transpile(input, elements) {
                         outputCode(`)`)
                         removeFromVariableStack(node.declarations[0])
                     } else if (node.body === "Global") {
-                        outputGlobalsCode(`)\n`)
+                        outputGlobalsCode(`)`)
                     } else {
                         break;
                     }
@@ -414,7 +398,6 @@ function removeFromVariableStack(declaration) {
 }
 
 function findVariableInStack(name) {
-
     for (let i = variableStack.length - 1; i >= 0; i--) {
         if (variableStack[i].identifier === name && variableStack[i].type === "local") {
             return `(lexical-value $${name})`
@@ -423,6 +406,69 @@ function findVariableInStack(name) {
 
         }
     }
-
     console.log(`Variable not found or not in scope: ${name}`)
+}
+
+
+
+
+function transpileDeclarations(declaration, isGlobal) {
+
+    let type
+    let value
+    let name
+    let elements
+
+    if (declaration === undefined) {
+        return
+    }
+
+    if (declaration.init === null) {
+        return "#f"
+    } else if (declaration.init === undefined) {
+        type = declaration.type
+        value = declaration.value
+        name = declaration.name
+        elements = declaration.elements
+    } else {
+        type = declaration.init.type
+        value = declaration.init.value
+        name = declaration.init.name
+        elements = declaration.init.elements
+    }
+
+
+    if (declaration.init === null) { //set nulls to false
+        return '#f'
+
+    } else if (type === "Identifier" && name === "undefined") { //set undefined to false
+        return '#f'
+
+    } else if (type === "Literal") {
+        if (typeof value === "string") { //need to do this first so that new booleans don't get quote marks
+            value = `"${value}"`
+        }
+        if (typeof value === "boolean") {   //need to adjust true and false in declaration to #t / #f to match YAIL syntax
+            value = value ? '#t' : '#f'
+        }
+        return value
+
+    } else if (type === "Identifier") {
+        let name2 = findVariableInStack(name)
+        return name2
+
+    } else if (type === "ArrayExpression") {
+
+        let compile = ``
+        let anys = ""
+        for (let i = 0; i < elements.length; i++) {
+            compile += transpileDeclarations(elements[i]) + " "
+            anys += "any "
+        }
+
+        let arrayCode = `(call-yail-primitive make-yail-list \n(*list-for-runtime* ${compile}) '(${anys}) "make a list")`
+        return arrayCode
+    }
+
+
 }

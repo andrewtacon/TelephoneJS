@@ -64,7 +64,7 @@ function main(filename = "temp.xml") {
     let generatedCode = transpiler.run(scripts, extractedData)
    
     
-    process.exit(0)
+  //  process.exit(0)
 
     //add lines to execute build
     output(`\n(init-runtime)`)

@@ -1,45 +1,108 @@
-let g1=1, g2=2, g3 = 3
+
+let g1 
+let g2 = ["hello", false, 23, g1, [g1, "nested", false],[[]] ]
 
 button1.addEventListener(
     "click",
     function () {
-        let name = true
-        let name2 = 456
-        toast.showPasswordDialog(123456,g1, name)
-        let name3 = 456
+        let name =[g2, "eggs"]
+        toast.showAlert(name)
     }
 )
 
 /*
+(def g$g2 
+    (call-yail-primitive make-yail-list 
+        (*list-for-runtime* ) 
+        '() 
+        "make a list"
+    )
+)
 
-
-(let 
-    ( 
-        ($name 123)  
-    )   
+(define-event Button1 Click()
+    (set-this-form)
     (let 
         ( 
-            ($name2 
-                (lexical-value $name))  
-            ) 
-            #f 
+            ($name 
+                (call-yail-primitive make-yail-list 
+                    (*list-for-runtime* ) 
+                    '() 
+                    "make a list"
+                )
+            )  
         ) 
+        #f 
     )
 )
 
-(let
-    (
-        ($a 123 )
-    )
-    (let
-        (
-            ($b 
-                (lexical-value $a )
-            )
-            #f
-        )
+--- with elements ---
+
+(def g$g2 
+    (call-yail-primitive make-yail-list 
+        (*list-for-runtime* 25 #t ) 
+        '(any any ) 
+        "make a list"
     )
 )
+
+(define-event Button1 Click()(set-this-form)
+(let 
+    ( 
+        ($name 
+            (call-yail-primitive make-yail-list 
+                (*list-for-runtime* "text" (get-var g$g2) ) 
+                '(any any ) 
+                "make a list")
+            )  
+        ) 
+        #f 
+    )
+)
+
+
+
+
+
+
+
+(def g$g2 
+    (call-yail-primitive make-yail-list 
+        (*list-for-runtime* 
+            25 
+            #t 
+            (call-yail-primitive make-yail-list 
+                (*list-for-runtime* 
+                    "" 
+                    0 
+                ) 
+                '(any any ) 
+                "make a list"
+            ) 
+        ) 
+        '(any any any ) 
+        "make a list"
+    )
+)
+
+
+
+
+
+(define-event Button1 Click()(set-this-form)
+    (let ( ($name (call-yail-primitive make-yail-list (*list-for-runtime* "text" (get-var g$g2) ) '(any any ) "make a list"))  ) #f ))
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 /*
