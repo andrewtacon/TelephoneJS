@@ -26,3 +26,11 @@
 
 (add-component Screen1 com.google.appinventor.components.runtime.Notifier toast
 )
+
+(init-runtime)(define-event button1 Click() 
+(set-this-form)(let
+(($name (call-yail-primitive make-yail-list 
+(*list-for-runtime* "hello" ) '(any ) "make a list")))
+#f
+))
+(call-Initialize-of-components 'Screen1 'button1 'toast  )
