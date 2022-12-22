@@ -12,3 +12,7 @@ Button1.addEventListener(
     }
 )
 
+
+let d = []
+
+

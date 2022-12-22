@@ -62,9 +62,9 @@ function main(filename = "temp.xml") {
     traverse(structure.elements[0])
 
     let generatedCode = transpiler.run(scripts, extractedData)
-   
-    
-  //  process.exit(0)
+        console.log(generatedCode)
+
+//    process.exit(0)
 
     //add lines to execute build
     output(`\n(init-runtime)`)

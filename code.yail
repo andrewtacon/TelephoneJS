@@ -27,16 +27,79 @@
 (add-component Screen1 com.google.appinventor.components.runtime.Notifier toast
 )
 
-(init-runtime)(def g$g1 #f)(def g$g2 (call-yail-primitive make-yail-list 
-(*list-for-runtime* "hello" #f 23 (get-var g$g1) ) '(any any any any ) "make a list"))(def g$g1 #f)(def g$g2 (call-yail-primitive make-yail-list 
-(*list-for-runtime* "hello" #f 23 (get-var g$g1) ) '(any any any any ) "make a list"))(def g$g1 #f)(def g$g2 (call-yail-primitive make-yail-list 
-(*list-for-runtime* "hello" #f 23 (get-var g$g1) (call-yail-primitive make-yail-list 
-(*list-for-runtime* (get-var g$g1) "nested" #f ) '(any any any ) "make a list") (call-yail-primitive make-yail-list 
-(*list-for-runtime* (call-yail-primitive make-yail-list 
-(*list-for-runtime* ) '() "make a list") ) '(any ) "make a list") ) '(any any any any any any ) "make a list")) (define-event button1 Click() 
-(set-this-form)(let
-(($name (call-yail-primitive make-yail-list 
-(*list-for-runtime* (get-var g$g2) "eggs" ) '(any any ) "make a list"))
-)
-(call-component-method 'toast 'ShowAlert (*list-for-runtime* (lexical-value $name)) '(text))))
+(init-runtime)(def g$g1 (call-yail-primitive make-yail-dictionary (*list-for-runtime* (call-yail-primitive make-dictionary-pair 
+                                (*list-for-runtime* 
+                                    "key0" 
+                                    #f  
+                                )
+                                '(key any)
+                                "make a pair"
+                            )(call-yail-primitive make-dictionary-pair 
+                                (*list-for-runtime* 
+                                    "key1" 
+                                    "value"  
+                                )
+                                '(key any)
+                                "make a pair"
+                            )(call-yail-primitive make-dictionary-pair 
+                                (*list-for-runtime* 
+                                    "key2" 
+                                    123  
+                                )
+                                '(key any)
+                                "make a pair"
+                            )(call-yail-primitive make-dictionary-pair 
+                                (*list-for-runtime* 
+                                    "key3" 
+                                    (get-var g$identifier)  
+                                )
+                                '(key any)
+                                "make a pair"
+                            )(call-yail-primitive make-dictionary-pair 
+                                (*list-for-runtime* 
+                                    "key4" 
+                                    (call-yail-primitive make-yail-list 
+(*list-for-runtime* ) '() "make a list")  
+                                )
+                                '(key any)
+                                "make a pair"
+                            )(call-yail-primitive make-dictionary-pair 
+                                (*list-for-runtime* 
+                                    "key5" 
+                                    (call-yail-primitive make-yail-dictionary 
+                        (*list-for-runtime* ) 
+                        '() 
+                        "make a dictionary"
+                    )   
+                                )
+                                '(key any)
+                                "make a pair"
+                            )(call-yail-primitive make-dictionary-pair 
+                                (*list-for-runtime* 
+                                    "key6" 
+                                    (call-yail-primitive make-yail-dictionary (*list-for-runtime* (call-yail-primitive make-dictionary-pair 
+                                (*list-for-runtime* 
+                                    "text" 
+                                    "text"  
+                                )
+                                '(key any)
+                                "make a pair"
+                            ))
+                
+                '(pair )
+                "make a dictionary"
+           )
+        
+          
+                                )
+                                '(key any)
+                                "make a pair"
+                            ))
+                
+                '(pair pair pair pair pair pair pair )
+                "make a dictionary"
+           )
+        
+        ) (define-event button1 Click() 
+(set-this-form)(call-component-method 'toast 'ShowAlert (*list-for-runtime* (get-var g$g1)) '(text)))
 (call-Initialize-of-components 'Screen1 'button1 'toast  )

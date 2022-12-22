@@ -12,6 +12,7 @@ let variableStack = []
 function main(scripts, elements) {
     console.log("*** Transpiling scripts ***")
     generatedCode = ""
+    generatedGlobalsCode = ""
 
     for (const script of scripts) {
         let input = fs.readFileSync(script, "utf-8")
@@ -20,9 +21,9 @@ function main(scripts, elements) {
 
     console.log("*** Transpiling complete ***")
 
-   // console.log(generatedGlobalsCode)
-   // console.log(generatedCode)
-    return generatedGlobalsCode+" "+generatedCode
+    // console.log(generatedGlobalsCode)
+    // console.log(generatedCode)
+    return generatedGlobalsCode + " " + generatedCode
 }
 
 exports.run = main
@@ -129,7 +130,7 @@ function modifyTree(tree) {
 function transpile(input, elements) {
     let tree = parse(input)
     tree = modifyTree(tree)
-    // console.log(util.inspect(tree, false, null, true)) // { type: 'Program', body: [ ... ] }
+    console.log(util.inspect(tree, false, null, true)) // { type: 'Program', body: [ ... ] }
 
     traverse(tree, {
 
@@ -164,7 +165,7 @@ function transpile(input, elements) {
                             else { outputCode(`(($${node.declarations[i].id.name} ${data})\n`) }
 
                             if (node.body !== "Global") {
-                                    outputCode(`)\n`)
+                                outputCode(`)\n`)
                                 if (node.body === "LastVariableDeclaration") {
                                     outputCode(`#f\n`)
                                 }
@@ -180,19 +181,6 @@ function transpile(input, elements) {
                     if (node.callee.property !== undefined) {
                         let methodCalled = node.callee.property.name
                         let args = JSON.parse(JSON.stringify(node.arguments))
-
-                        /*  if (args) {
-                              for (let i = 0; i < args.length; i++) {
-                                  if (args[i].type === "Literal") {
-                                    args[i] = args[i].value
-                                  } else if (args[i].type === "Identifier") {
-                                      args[i] = `(lexical-value $${args[i].name})`
-                                  } else {
-                 
-                                  }
-                              }
-                          }*/
-
 
                         //check if the method that is called is a legal method for this particular element type (refer to supplied elements list)
                         switch (methodCalled) {
@@ -418,6 +406,7 @@ function transpileDeclarations(declaration, isGlobal) {
     let value
     let name
     let elements
+    let properties
 
     if (declaration === undefined) {
         return
@@ -430,11 +419,13 @@ function transpileDeclarations(declaration, isGlobal) {
         value = declaration.value
         name = declaration.name
         elements = declaration.elements
+        properties = declaration.properties
     } else {
         type = declaration.init.type
         value = declaration.init.value
         name = declaration.init.name
         elements = declaration.init.elements
+        properties = declaration.init.properties
     }
 
 
@@ -465,9 +456,55 @@ function transpileDeclarations(declaration, isGlobal) {
             compile += transpileDeclarations(elements[i]) + " "
             anys += "any "
         }
-
         let arrayCode = `(call-yail-primitive make-yail-list \n(*list-for-runtime* ${compile}) '(${anys}) "make a list")`
         return arrayCode
+
+    } else if (type === "ObjectExpression") {
+    
+        let objectCode = `(call-yail-primitive make-yail-dictionary (*list-for-runtime* `
+        let pairs = ""
+
+        for (let i = 0; i < properties.length; i++) {
+            let key = `"${properties[i].key.value}"`
+            let value = transpileDeclarations(properties[i].value) + " "
+
+            let pairCode = `(call-yail-primitive make-dictionary-pair 
+                                (*list-for-runtime* 
+                                    ${key} 
+                                    ${value} 
+                                )
+                                '(key any)
+                                "make a pair"
+                            )`
+            pairs += "pair "
+            objectCode += pairCode
+
+            if (i === properties.length-1) {
+                objectCode+=")"
+            }
+        }
+
+        if (properties.length === 0) {
+            //need to return something here
+            return `(call-yail-primitive make-yail-dictionary 
+                        (*list-for-runtime* ) 
+                        '() 
+                        "make a dictionary"
+                    ) `
+        }
+
+        let tail = `
+                
+                '(${pairs})
+                "make a dictionary"
+           )
+        
+        `
+        objectCode += tail
+
+
+        return objectCode
+
     }
 
 

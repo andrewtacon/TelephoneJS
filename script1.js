@@ -1,12 +1,21 @@
 
-let g1 
-let g2 = ["hello", false, 23, g1, [g1, "nested", false],[[]] ]
+
+let g1 = {
+    "key0": false,
+    "key1": "value",
+    "key2": 123,
+    "key3": identifier,
+    "key4": [],
+    "key5":{},
+    "key6":{"text":"text"}
+}
+
+
 
 button1.addEventListener(
     "click",
     function () {
-        let name =[g2, "eggs"]
-        toast.showAlert(name)
+        toast.showAlert(g1)
     }
 )
 
