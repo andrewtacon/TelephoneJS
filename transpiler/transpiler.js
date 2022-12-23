@@ -3,7 +3,7 @@ const fs = require('fs')
 const { parse, traverse, walk } = require('abstract-syntax-tree')
 const util = require('util')
 
-
+let debug = false
 
 let generatedCode = ""
 let generatedGlobalsCode = ""
@@ -29,23 +29,27 @@ function main(scripts, elements) {
     let opens = 0
     let closes = 0
     let backsOn = false
-    for (let i=0; i<generatedCode.length; i++){
-        if (generatedCode[i]==="(") {opens++; backsOn = false}
-        if (generatedCode[i]===")") {closes++}
-        if (generatedCode[i]==="\b" && !backsOn) {
-            generatedCode = generatedCode.substring(0,i-1)+ generatedCode.substring(i)
-            backsOn = true; 
-            closes+=2
+    for (let i = 0; i < generatedCode.length; i++) {
+        if (generatedCode[i] === "(") { opens++; backsOn = false }
+        if (generatedCode[i] === ")") { closes++ }
+        if (generatedCode[i] === "\b" && !backsOn) {
+            generatedCode = generatedCode.substring(0, i - 1) + generatedCode.substring(i)
+            backsOn = true;
+            closes += 2
         }
 
-          if (generatedCode[i]==="\n") {
-            for (let j=0 ; j<opens-closes;j++ ){
-                generatedCode = generatedCode.substring(0,i+1)+"\t"+ generatedCode.substring(i+1)
+        if (generatedCode[i] === "\n") {
+            for (let j = 0; j < opens - closes; j++) {
+                generatedCode = generatedCode.substring(0, i + 1) + "\t" + generatedCode.substring(i + 1)
             }
         }
     }
-    generatedCode= generatedCode.replaceAll("\b", "")
+    generatedCode = generatedCode.replaceAll("\b", "")
 
+    if (debug) {
+        console.log(generatedCode)
+        process.exit(0)
+    }
 
     return generatedCode
 }
@@ -158,10 +162,11 @@ function modifyTree(tree) {
 function transpile(input, elements) {
     let tree = parse(input)
     tree = modifyTree(tree)
-    console.log(util.inspect(tree, false, null, true)) // { type: 'Program', body: [ ... ] }
-
+    if (debug) {
+        console.log(util.inspect(tree, false, null, true)) // { type: 'Program', body: [ ... ] }
+    }
     let transpilation = transpileDeclarations(tree)
-    
+
     return transpilation
 }
 
@@ -298,7 +303,7 @@ function transpileDeclarations(node) {
             return ProgramCode
 
         case "ExpressionStatement":
-            return transpileDeclarations(node.expression) +"\n"
+            return transpileDeclarations(node.expression) + "\n"
 
         case "Literal":
             if (typeof value === "string") { //need to do this first so that new booleans don't get quote marks
@@ -324,7 +329,7 @@ function transpileDeclarations(node) {
                 compile += transpileDeclarations(elements[i]) + " "
                 anys += "any "
             }
-            let arrayCode = `\n(call-yail-primitive make-yail-list \n(*list-for-runtime* ${compile}) '(${anys}) "make a list")`
+            let arrayCode = `(call-yail-primitive make-yail-list (*list-for-runtime* ${compile}) '(${anys}) "make a list")`
             return arrayCode
 
         case "ObjectExpression":
@@ -333,10 +338,10 @@ function transpileDeclarations(node) {
             let pairs = ""
 
             for (let i = 0; i < properties.length; i++) {
-                let key = `"${properties[i].key.value}"`
+                let key = `"${properties[i].key.name}"`
                 let value = transpileDeclarations(properties[i].value) + " "
 
-                let pairCode = `(call-yail-primitive make-dictionary-pair (*list-for-runtime* ${key} ${value} ) '(key any) "make a pair")`
+                let pairCode = `\n(call-yail-primitive make-dictionary-pair (*list-for-runtime* ${key} ${value} ) '(key any) "make a pair")`
                 pairs += "pair "
                 objectCode += pairCode
 
@@ -349,7 +354,7 @@ function transpileDeclarations(node) {
                 return `(call-yail-primitive make-yail-dictionary (*list-for-runtime* ) '() "make a dictionary")`
             }
 
-            let tail = `'(${pairs}) "make a dictionary" )`
+            let tail = `\n'(${pairs}) \n"make a dictionary" )`
             objectCode += tail
 
             return objectCode
@@ -359,7 +364,6 @@ function transpileDeclarations(node) {
             if (node.body === "Close") {
                 removeFromVariableStack(node.declarations[0])
                 return "\n\b)\n"
-                break;
             } else {
                 let VariableCode = ""
                 if (node.body !== "Global") { VariableCode += (`(let `) }
@@ -375,7 +379,12 @@ function transpileDeclarations(node) {
                     }
 
                     //recusively generate the declaration data for variables (recursive because arrays and objects can nest)
-                    let data = transpileDeclarations(node.declarations[i])
+                    let data;
+                    if (node.declarations[i].init) {
+                        data = transpileDeclarations(node.declarations[i].init)
+                    } else {
+                        data = transpileDeclarations(node.declarations[i])
+                    }
 
                     if (node.body === "Global") { VariableCode += (`(def g$${node.declarations[i].id.name} ${data})`) }
                     else { VariableCode += (`(($${node.declarations[i].id.name} ${data})`) }
@@ -389,13 +398,12 @@ function transpileDeclarations(node) {
                     }
 
                 }
-               // console.log(variableStack)
-                return "\n"+VariableCode+"\n"
+                // console.log(variableStack)
+                return "\n" + VariableCode + "\n"
             }
-            break;
+
 
         case "FunctionExpression":
-
             return transpileDeclarations(node.body)
 
 
@@ -410,67 +418,222 @@ function transpileDeclarations(node) {
 
             let elementName = node.callee.object.name
 
-            //check if a method is called on something
-            if (node.callee.property !== undefined) {
-                let methodCalled = node.callee.property.name
-                let args = JSON.parse(JSON.stringify(node.arguments))
+            switch (elementName) {
+                case "Math":
 
-                //check if the method that is called is a legal method for this particular element type (refer to supplied elements list)
-                switch (methodCalled) {
-                    case "addEventListener":
-                        //TODO check element and type to make sure that the eventType is a legal event for that type of element/component
-                        //args[0] here is the event type
-                        return (`(define-event ${transpileDeclarations(node.callee.object)} ${camelCase(asString(args, 0))}() (set-this-form) ${transpileDeclarations(args[1])})`)
+                    let MathOperator = ""
+                    let MathCommandOperator = ""
+                    switch (node.callee.property.name) {
+                        case "sqrt": MathOperator = "sqrt"; MathCommandOperator = "sqrt"; break;
+                        case "abs": MathOperator = "abs"; MathCommandOperator = "abs"; break;
+                        case "log": MathOperator = "log"; MathCommandOperator = "log"; break;
+                        case "exp": MathOperator = "exp"; MathCommandOperator = "exp"; break;
+                        case "round": MathOperator = "yail-round"; MathCommandOperator = "round"; break;
+                        case "ceil": MathOperator = "yail-ceiling"; MathCommandOperator = "ceiling"; break;
+                        case "floor": MathOperator = "yail-floor"; MathCommandOperator = "floor"; break;
+                        case "sin": MathOperator = "sin-degrees"; MathCommandOperator = "sin"; break;
+                        case "cos": MathOperator = "cos-degrees"; MathCommandOperator = "cos"; break;
+                        case "tan": MathOperator = "tan-degrees"; MathCommandOperator = "tan"; break;
+                        case "asin": MathOperator = "asin-degrees"; MathCommandOperator = "asin"; break;
+                        case "acos": MathOperator = "acos-degrees"; MathCommandOperator = "acos"; break;
+                        case "atan": MathOperator = "atan-degrees"; MathCommandOperator = "atan"; break;
+                        case "atan2": MathOperator = "atan2-degrees"; MathCommandOperator = "atan2"; break;
+                        case "random": MathOperator = "random-fraction"; MathCommandOperator = "random fraction"; break;
+                        case "min": MathOperator = "min"; MathCommandOperator = "min"; break;
+                        case "max": MathOperator = "max"; MathCommandOperator = "max"; break;
+                        case "range": MathOperator = "random-integer"; MathCommandOperator = "random integer"; break;
+                        case "mod": MathOperator = "modulo"; MathCommandOperator = "modulo"; break;
+                        case "quot": MathOperator = "quotient"; MathCommandOperator = "quotient"; break;
+                        case "toDegrees": MathOperator = "radians->degrees"; MathCommandOperator = "convert radians to degrees"; break;
+                        case "toRadians": MathOperator = "degrees->radians"; MathCommandOperator = "convert degrees to radians"; break;
+                        case "randomSeed": MathOperator = "random-set-seed"; MathCommandOperator = "random set seed"; break;
+                        default:
+                            console.log(`Unknown Math operation: "${node.callee.property.name}" `)
+                    }
+
+                    switch (node.callee.property.name) {
+                        case "min":
+                        case "max":
+                            let minMaxText = ""
+                            let minMaxNumbers = ""
+                            for (let mm = 0; mm < node.arguments.length; mm++) {
+                                minMaxText += transpileDeclarations(node.arguments[mm]) + " "
+                                minMaxNumbers += "number "
+                            }
+                            return `(call-yail-primitive ${MathOperator} (*list-for-runtime* ${minMaxText} ) '(${minMaxNumbers}) "${MathCommandOperator}")`
+
+                        case "range":
+                        case "atan2":
+                        case "mod":
+                        case "quot":
+                            return `(call-yail-primitive ${MathOperator} (*list-for-runtime* ${transpileDeclarations(node.arguments[0])} ${transpileDeclarations(node.arguments[1])} ) '(number number) "${MathCommandOperator}")`
+
+                        case "random":
+                            return `(call-yail-primitive ${MathOperator} (*list-for-runtime*) '() "${MathCommandOperator}")`
+
+                        default:
+                            return `(call-yail-primitive ${MathOperator} (*list-for-runtime* ${transpileDeclarations(node.arguments[0])} ) '(number) "${MathCommandOperator}")`
+                    }
 
 
-                    //methods with no inputs - no return value
-                    case "dismissProgressDialog":
-                    case "launchPicker":
-                    case "open":
-                    case "refresh":
-                        outputCode(`(call-component-method '${elementName} '${camelCase(methodCalled)} (*list-for-runtime*) '()`)
-                        break;
 
-                    //methods with one instant in time input - no return value
-                    case "setDateToDisplayFromInstant":
-                        outputCode(`(call-component-method '${elementName} '${camelCase(methodCalled)} (*list-for-runtime* ${asInstantInTime(args, 0)}) '(InstantInTime)`)
-                        break;
+                default:
 
-                    //methods with one text input - no return value
-                    case "showAlert":
-                    case "logInfo":
-                    case "logWarning":
-                    case "logError":
-                        return (`\n(call-component-method '${elementName} '${camelCase(methodCalled)} (*list-for-runtime* ${transpileDeclarations(args[0])}) '(text))`)
-                        break;
+                    //check if a method is called on something
+                    if (node.callee.property !== undefined) {
+                        let methodCalled = node.callee.property.name
+                        let args = JSON.parse(JSON.stringify(node.arguments))
 
-                    //methods with 2 text and an optional true/false (default true) - no return value
-                    case "showPasswordDialog":
-                    case "showTextDialog":
-                        outputCode(`(call-component-method '${elementName} '${camelCase(methodCalled)} (*list-for-runtime* ${asText(args, 0)} ${asText(args, 1)} ${asBoolean(args, 2)}) '(text text boolean)`)
-                        break;
+                        //check if the method that is called is a legal method for this particular element type (refer to supplied elements list)
+                        switch (methodCalled) {
+                            case "addEventListener":
+                                //TODO check element and type to make sure that the eventType is a legal event for that type of element/component
+                                //args[0] here is the event type
+                                return (`(define-event ${transpileDeclarations(node.callee.object)} ${camelCase(asString(args, 0))}() (set-this-form) ${transpileDeclarations(args[1])})`)
 
-                    //methods with 3 text inputs - no return value
-                    case "showMessageDialog":
-                        outputCode(`(call-component-method '${elementName} '${camelCase(methodCalled)} (*list-for-runtime* ${asText(args, 0)} ${asText(args, 1)} ${asText(args, 2)}) '(text text text))`)
-                        break;
+                            //methods with no inputs - no return value
+                            case "dismissProgressDialog":
+                            case "launchPicker":
+                            case "open":
+                            case "refresh":
+                                return (`(call-component-method '${elementName} '${camelCase(methodCalled)} (*list-for-runtime*) '()`)
 
-                    //methods with 3 numerical inputs - no return value
-                    case "setDateToDisplay":
-                        outputCode(`(call-component-method '${elementName} '${camelCase(methodCalled)} (*list-for-runtime* ${asNumber(args, 0)} ${asNumber(args, 1, 1, 12)} ${asNumber(args, 2, 1, 31)}) '(number number number))`)
-                        break;
+                            //methods with one instant in time input - no return value
+                            case "setDateToDisplayFromInstant":
+                                return (`(call-component-method '${elementName} '${camelCase(methodCalled)} (*list-for-runtime* ${asInstantInTime(args, 0)}) '(InstantInTime)`)
+
+                            //methods with one text input - no return value
+                            case "showAlert":
+                            case "logInfo":
+                            case "logWarning":
+                            case "logError":
+                                return (`\n(call-component-method '${elementName} '${camelCase(methodCalled)} (*list-for-runtime* ${transpileDeclarations(args[0])}) '(text))`)
+
+                            //methods with 2 text and an optional true/false (default true) - no return value
+                            case "showPasswordDialog":
+                            case "showTextDialog":
+                                return (`(call-component-method '${elementName} '${camelCase(methodCalled)} (*list-for-runtime* ${transpileDeclarations(args[0])} ${transpileDeclarations(args[1])} ${transpileDeclarations(args[2])}) '(text text boolean)`)
+
+                            //methods with 3 text inputs - no return value
+                            case "showMessageDialog":
+                                return (`(call-component-method '${elementName} '${camelCase(methodCalled)} (*list-for-runtime* ${transpileDeclarations(args[0])} ${transpileDeclarations(args[1])} ${transpileDeclarations(args[2])}) '(text text text))`)
+
+                            //methods with 3 numerical inputs - no return value
+                            case "setDateToDisplay":
+                                return (`(call-component-method '${elementName} '${camelCase(methodCalled)} (*list-for-runtime* ${transpileDeclarations(args[0])} ${transpileDeclarations(args[1])} ${transpileDeclarations(args[2])}) '(number number number))`)
+
+                            //methods with 4 text and an optional true/false (default true) - no return value
+                            case "showChooseDialog":
+                                return (`(call-component-method '${elementName} '${camelCase(methodCalled)} (*list-for-runtime* ${transpileDeclarations(args[0])} ${transpileDeclarations(args[1])} ${transpileDeclarations(args[2])} ${transpileDeclarations(args[3])} ${transpileDeclarations(args[4])}) '(text text text text boolean))`)
+
+                            default:
+                        }
+                    }
+
+            }
+            break;
+
+        case "BinaryExpression":
 
 
-                    //methods with 4 text and an optional true/false (default true) - no return value
-                    case "showChooseDialog":
-                        outputCode(`(call-component-method '${elementName} '${camelCase(methodCalled)} (*list-for-runtime* ${asText(args, 0)} ${asText(args, 1)} ${asText(args, 2)} ${asText(args, 3)} ${asBoolean(args, 4)}) '(text text text text boolean))`)
-                        break;
+            let operator = ""
+            let operatorCommand = ""
 
-
-                    default:
-                }
+            let op
+            let left
+            let right
+            if (node.init !== undefined) {
+                op = node.init.operator
+                left = node.init.left
+                right = node.init.right
+            } else {
+                op = node.operator
+                left = node.left
+                right = node.right
             }
 
+            switch (op) {
+                case "+": operator = "+"; operatorCommand = "+"; break
+                case "-": operator = "-"; operatorCommand = "-"; break
+                case "*": operator = "*"; operatorCommand = "*"; break
+                case "/": operator = "yail-divide"; operatorCommand = "yail-divide"; break
+                case "**": operator = "expt"; operatorCommand = "expt"; break
+                case "===": operator = "yail-equal?"; operatorCommand = "="; break
+                case "==": operator = "yail-equal?"; operatorCommand = "="; break
+                case "!==": operator = "yail-not-equal?"; operatorCommand = "not ="; break
+                case "!=": operator = "yail-not-equal?"; operatorCommand = "not ="; break
+                case ">": operator = ">"; operatorCommand = ">"; break
+                case ">=": operator = ">="; operatorCommand = ">="; break
+                case "<": operator = "<"; operatorCommand = "<"; break
+                case "<=": operator = "<="; operatorCommand = "<="; break
+                case "&": operator = "bitwise-and"; operatorCommand = "bitwise-and"; break
+                case "|": operator = "bitwise-ior"; operatorCommand = "bitwise-ior"; break
+                case "^": operator = "bitwise-xor"; operatorCommand = "bitwise-xor"; break
+                default:
+                    console.log(`Unknown binary operator "${JSON.stringify(op)}". Panic!`)
+            }
+
+            return `(call-yail-primitive ${operator} (*list-for-runtime* ${transpileDeclarations(left)} ${transpileDeclarations(right)} ) '(number number ) "${operatorCommand}")`
+
+
+            break;
+        case "UnaryExpression":
+
+            let UnaryOperator = ""
+            let UnaryOperatorCommand = ""
+
+            let uop
+            let uarg
+            if (node.init !== undefined) {
+                uop = node.init.operator
+                uarg = node.init.argument
+            } else {
+                uop = node.operator
+                uarg = node.argument
+            }
+
+            switch (uop) {
+                case "+":
+                    return `${transpileDeclarations(uarg)}`
+                case "-":
+                    return `(call-yail-primitive - (*list-for-runtime* ${transpileDeclarations(uarg)} ) '(number ) "negate")`
+                case "!":
+                    return `(call-yail-primitive yail-not (*list-for-runtime* ${transpileDeclarations(uarg)} ) '(boolean ) "not")`
+                default:
+                    console.log(`Unknown unary operator "${JSON.stringify(op)}". Panic!`)
+            }
+
+            /*
+                Unary   - (negate) + (ignore?)
+                (def g$identifier (call-yail-primitive - (*list-for-runtime* -1) '(number) "negate"))                       -
+                (def g$identifier (call-yail-primitive yail-not (*list-for-runtime* #t) '(boolean) "not"))                  !   //only works with boolean
+
+              
+
+
+                (def g$identifier (call-yail-primitive remainder (*list-for-runtime* 0 1) '(number number) "remainder"))     a%b
+
+
+                (def g$identifier (call-yail-primitive format-as-decimal (*list-for-runtime* 0 2) '(number number) "format as decimal"))   //2 is number of places     number.toFixed(places) 
+                (def g$identifier (call-yail-primitive is-number? (*list-for-runtime* 0) '(text) "is a number?"))           !isNaN(value)
+
+                //extra features
+
+
+                ?? (def g$identifier (call-yail-primitive is-base10? (*list-for-runtime* 0) '(text) "is base10?")) 
+                ?? (def g$identifier (call-yail-primitive is-hexadecimal? (*list-for-runtime* 0) '(text) "is hexadecimal?"))
+                ?? (def g$identifier (call-yail-primitive is-binary? (*list-for-runtime* 0) '(text) "is binary?"))
+                ?? (def g$identifier (call-yail-primitive math-convert-dec-hex (*list-for-runtime* 0) '(text) "convert Dec to Hex"))
+                ?? (def g$identifier (call-yail-primitive math-convert-hex-dec (*list-for-runtime* 0) '(text) "convert Hex to Dec"))
+                ?? (def g$identifier (call-yail-primitive math-convert-dec-bin (*list-for-runtime* 0) '(text) "convert Dec to Hex"))
+                ?? (def g$identifier (call-yail-primitive math-convert-bin-dec (*list-for-runtime* 0) '(text) "convert Hex to Dec"))
+
+
+
+
+            */
+
+            break;
         default:
 
     }

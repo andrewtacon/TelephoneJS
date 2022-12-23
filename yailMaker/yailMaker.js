@@ -62,10 +62,7 @@ function main(filename = "temp.xml") {
     traverse(structure.elements[0])
 
     let generatedCode = transpiler.run(scripts, extractedData)
-        console.log(generatedCode)
-
-    //process.exit(0)
-
+        
     //add lines to execute build
     output(`\n(init-runtime)\n`)
     componentList = ''
@@ -82,7 +79,7 @@ function main(filename = "temp.xml") {
     console.log(`*** End compiler messages ***`)
     console.log()
 
-
+    console.log(yail.length)
 
     return { yail: yail, assetsList: assetsList }
 }
