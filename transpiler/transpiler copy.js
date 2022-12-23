@@ -10,51 +10,26 @@ let generatedGlobalsCode = ""
 let variableStack = []
 
 function main(scripts, elements) {
-
-    variableStack.push(...elements)
-
-
     console.log("*** Transpiling scripts ***")
     generatedCode = ""
     generatedGlobalsCode = ""
 
     for (const script of scripts) {
         let input = fs.readFileSync(script, "utf-8")
-        generatedCode += transpile(input, elements)
+        transpile(input, elements)
     }
 
     console.log("*** Transpiling complete ***")
-    generatedCode = generatedCode.replaceAll("\n\n", "\n")
 
-    let opens = 0
-    let closes = 0
-    let backsOn = false
-    for (let i=0; i<generatedCode.length; i++){
-        if (generatedCode[i]==="(") {opens++; backsOn = false}
-        if (generatedCode[i]===")") {closes++}
-        if (generatedCode[i]==="\b" && !backsOn) {
-            generatedCode = generatedCode.substring(0,i-1)+ generatedCode.substring(i)
-            backsOn = true; 
-            closes+=2
-        }
-
-          if (generatedCode[i]==="\n") {
-            for (let j=0 ; j<opens-closes;j++ ){
-                generatedCode = generatedCode.substring(0,i+1)+"\t"+ generatedCode.substring(i+1)
-            }
-        }
-    }
-    generatedCode= generatedCode.replaceAll("\b", "")
-
-
-    return generatedCode
+    // console.log(generatedGlobalsCode)
+    // console.log(generatedCode)
+    return generatedGlobalsCode + " " + generatedCode
 }
 
 exports.run = main
 
 
 //need to modify the structure of the AST because variable declarations in YAIL are block type statements
-//don't need to float globals to the top - yay!
 function modifyTree(tree) {
 
     let variableCount = 0
@@ -86,7 +61,6 @@ function modifyTree(tree) {
         }
     })
 
-    let globals = []
     //3. find all the globals and add them to the stack
     walk(tree, (node, parent) => {
         if (node.type === "VariableDeclaration") {
@@ -97,11 +71,9 @@ function modifyTree(tree) {
                         "identifier": node.declarations[0].id.name
                     }
                 )
-
             }
         }
     })
-
 
 
     //4. close the local variables
@@ -160,9 +132,180 @@ function transpile(input, elements) {
     tree = modifyTree(tree)
     console.log(util.inspect(tree, false, null, true)) // { type: 'Program', body: [ ... ] }
 
-    let transpilation = transpileDeclarations(tree)
-    
-    return transpilation
+    traverse(tree, {
+
+
+        enter(node) {
+            let type = node.type
+
+            switch (type) {
+                case "ExpressionStatement":
+                    break;
+                case "VariableDeclaration":
+                    if (node.body === "Close") {
+                        //ignore close
+                        break;
+                    } else {
+                        if (node.body !== "Global") { outputCode(`(let\n`) }
+                        for (let i = 0; i < node.declarations.length; i++) {
+
+                            if (node.body !== "Global") {
+                                variableStack.push(
+                                    {
+                                        "type": "local",
+                                        "identifier": node.declarations[i].id.name
+                                    }
+                                )
+                            }
+
+                            //recusively generate the declaration data for variables (recursive because arrays and objects can nest)
+                            let data = transpileDeclarations(node.declarations[i])
+
+                            if (node.body === "Global") { outputGlobalsCode(`(def g$${node.declarations[i].id.name} ${data}`) }
+                            else { outputCode(`(($${node.declarations[i].id.name} ${data})\n`) }
+
+                            if (node.body !== "Global") {
+                                outputCode(`)\n`)
+                                if (node.body === "LastVariableDeclaration") {
+                                    outputCode(`#f\n`)
+                                }
+                            }
+
+                        }
+                    }
+                    break;
+                case "CallExpression":
+                    let elementName = node.callee.object.name
+
+                    //check if a method is called on something
+                    if (node.callee.property !== undefined) {
+                        let methodCalled = node.callee.property.name
+                        let args = JSON.parse(JSON.stringify(node.arguments))
+
+                        //check if the method that is called is a legal method for this particular element type (refer to supplied elements list)
+                        switch (methodCalled) {
+                            case "addEventListener":
+                                //TODO check element and type to make sure that the eventType is a legal event for that type of element/component
+                                //args[0] here is the event type
+                                outputCode(`(define-event ${elementName} ${camelCase(asString(args, 0))}() \n(set-this-form)`)
+                                break;
+
+                            //methods with no inputs - no return value
+                            case "dismissProgressDialog":
+                            case "launchPicker":
+                            case "open":
+                            case "refresh":
+                                outputCode(`(call-component-method '${elementName} '${camelCase(methodCalled)} (*list-for-runtime*) '()`)
+                                break;
+
+                            //methods with one instant in time input - no return value
+                            case "setDateToDisplayFromInstant":
+                                outputCode(`(call-component-method '${elementName} '${camelCase(methodCalled)} (*list-for-runtime* ${asInstantInTime(args, 0)}) '(InstantInTime)`)
+                                break;
+
+                            //methods with one text input - no return value
+                            case "showAlert":
+                            case "logInfo":
+                            case "logWarning":
+                            case "logError":
+                                outputCode(`(call-component-method '${elementName} '${camelCase(methodCalled)} (*list-for-runtime* ${asText(args, 0)}) '(text)`)
+                                break;
+
+                            //methods with 2 text and an optional true/false (default true) - no return value
+                            case "showPasswordDialog":
+                            case "showTextDialog":
+                                outputCode(`(call-component-method '${elementName} '${camelCase(methodCalled)} (*list-for-runtime* ${asText(args, 0)} ${asText(args, 1)} ${asBoolean(args, 2)}) '(text text boolean)`)
+                                break;
+
+                            //methods with 3 text inputs - no return value
+                            case "showMessageDialog":
+                                outputCode(`(call-component-method '${elementName} '${camelCase(methodCalled)} (*list-for-runtime* ${asText(args, 0)} ${asText(args, 1)} ${asText(args, 2)}) '(text text text))`)
+                                break;
+
+                            //methods with 3 numerical inputs - no return value
+                            case "setDateToDisplay":
+                                outputCode(`(call-component-method '${elementName} '${camelCase(methodCalled)} (*list-for-runtime* ${asNumber(args, 0)} ${asNumber(args, 1, 1, 12)} ${asNumber(args, 2, 1, 31)}) '(number number number))`)
+                                break;
+
+
+                            //methods with 4 text and an optional true/false (default true) - no return value
+                            case "showChooseDialog":
+                                outputCode(`(call-component-method '${elementName} '${camelCase(methodCalled)} (*list-for-runtime* ${asText(args, 0)} ${asText(args, 1)} ${asText(args, 2)} ${asText(args, 3)} ${asBoolean(args, 4)}) '(text text text text boolean))`)
+                                break;
+
+
+                            default:
+                        }
+                    }
+
+                default:
+            }
+
+        },
+
+
+
+        leave(node) {
+            let type = node.type
+
+
+            switch (type) {
+                case "ExpressionStatement":
+                    break;
+                case "VariableDeclaration":
+                    if (node.body === "Close") {
+                        outputCode(`)`)
+                        removeFromVariableStack(node.declarations[0])
+                    } else if (node.body === "Global") {
+                        outputGlobalsCode(`)`)
+                    } else {
+                        break;
+                    }
+                    break;
+
+                case "CallExpression":
+                    //check a method is actually called on something
+                    if (node.callee.property !== undefined) {
+                        let methodCalled = node.callee.property.name
+                        switch (methodCalled) {
+                            case "addEventListener":
+
+                            //no inputs - no return value
+                            case "dismissProgressDialog":
+                            case "launchPicker":
+                            case "open":
+                            case "refresh":
+
+                            //methods with one instant in time input - no return value
+                            case "setDateToDisplayFromInstant":
+
+                            //one text input - no return value
+                            case "showAlert":
+                            case "logInfo":
+                            case "logWarning":
+                            case "logError":
+
+                            //two text and optional true/false input - no return value
+                            case "showPasswordDialog":
+                            case "showTextDialog":
+
+                            //three text inputs - no return value
+                            case "showMessageDialog":
+
+                            //fours text inputs and optional true/false - no return value
+                            case "showChooseDialog":
+                                outputCode(`)`)
+                                break;
+                            default:
+                        }
+                    }
+                    break;
+                default:
+            }
+
+        }
+    })
+
 }
 
 
@@ -249,8 +392,6 @@ function findVariableInStack(name) {
         } else if (variableStack[i].identifier === name && variableStack[i].type === "global") {
             return `(get-var g$${name})`
 
-        } else if (variableStack[i].type !== "global" && variableStack[i].type !== "local") {
-            return name
         }
     }
     console.log(`Variable not found or not in scope: "${name}".`)
@@ -290,16 +431,6 @@ function transpileDeclarations(node) {
 
     switch (type) {
 
-        case "Program":
-            let ProgramCode = ""
-            for (let n of node.body) {
-                ProgramCode += transpileDeclarations(n)
-            }
-            return ProgramCode
-
-        case "ExpressionStatement":
-            return transpileDeclarations(node.expression) +"\n"
-
         case "Literal":
             if (typeof value === "string") { //need to do this first so that new booleans don't get quote marks
                 value = `"${value}"`
@@ -324,7 +455,7 @@ function transpileDeclarations(node) {
                 compile += transpileDeclarations(elements[i]) + " "
                 anys += "any "
             }
-            let arrayCode = `\n(call-yail-primitive make-yail-list \n(*list-for-runtime* ${compile}) '(${anys}) "make a list")`
+            let arrayCode = `(call-yail-primitive make-yail-list \n(*list-for-runtime* ${compile}) '(${anys}) "make a list")`
             return arrayCode
 
         case "ObjectExpression":
@@ -349,128 +480,10 @@ function transpileDeclarations(node) {
                 return `(call-yail-primitive make-yail-dictionary (*list-for-runtime* ) '() "make a dictionary")`
             }
 
-            let tail = `'(${pairs}) "make a dictionary" )`
+            let tail = ` '(${pairs}) "make a dictionary" )`
             objectCode += tail
 
             return objectCode
-
-
-        case "VariableDeclaration":
-            if (node.body === "Close") {
-                removeFromVariableStack(node.declarations[0])
-                return "\n\b)\n"
-                break;
-            } else {
-                let VariableCode = ""
-                if (node.body !== "Global") { VariableCode += (`(let `) }
-                for (let i = 0; i < node.declarations.length; i++) {
-
-                    if (node.body !== "Global") {
-                        variableStack.push(
-                            {
-                                "type": "local",
-                                "identifier": node.declarations[i].id.name
-                            }
-                        )
-                    }
-
-                    //recusively generate the declaration data for variables (recursive because arrays and objects can nest)
-                    let data = transpileDeclarations(node.declarations[i])
-
-                    if (node.body === "Global") { VariableCode += (`(def g$${node.declarations[i].id.name} ${data})`) }
-                    else { VariableCode += (`(($${node.declarations[i].id.name} ${data})`) }
-
-                    if (node.body !== "Global") {
-                        VariableCode += (`)`)
-                        if (node.body === "LastVariableDeclaration") {
-                            VariableCode += (`#f`)
-                        }
-
-                    }
-
-                }
-               // console.log(variableStack)
-                return "\n"+VariableCode+"\n"
-            }
-            break;
-
-        case "FunctionExpression":
-
-            return transpileDeclarations(node.body)
-
-
-        case "BlockStatement":
-            let BlockStatementCode = ""
-            for (let n of node.body) {
-                BlockStatementCode += transpileDeclarations(n)
-            }
-            return BlockStatementCode
-
-        case "CallExpression":
-
-            let elementName = node.callee.object.name
-
-            //check if a method is called on something
-            if (node.callee.property !== undefined) {
-                let methodCalled = node.callee.property.name
-                let args = JSON.parse(JSON.stringify(node.arguments))
-
-                //check if the method that is called is a legal method for this particular element type (refer to supplied elements list)
-                switch (methodCalled) {
-                    case "addEventListener":
-                        //TODO check element and type to make sure that the eventType is a legal event for that type of element/component
-                        //args[0] here is the event type
-                        return (`(define-event ${transpileDeclarations(node.callee.object)} ${camelCase(asString(args, 0))}() (set-this-form) ${transpileDeclarations(args[1])})`)
-
-
-                    //methods with no inputs - no return value
-                    case "dismissProgressDialog":
-                    case "launchPicker":
-                    case "open":
-                    case "refresh":
-                        outputCode(`(call-component-method '${elementName} '${camelCase(methodCalled)} (*list-for-runtime*) '()`)
-                        break;
-
-                    //methods with one instant in time input - no return value
-                    case "setDateToDisplayFromInstant":
-                        outputCode(`(call-component-method '${elementName} '${camelCase(methodCalled)} (*list-for-runtime* ${asInstantInTime(args, 0)}) '(InstantInTime)`)
-                        break;
-
-                    //methods with one text input - no return value
-                    case "showAlert":
-                    case "logInfo":
-                    case "logWarning":
-                    case "logError":
-                        return (`\n(call-component-method '${elementName} '${camelCase(methodCalled)} (*list-for-runtime* ${transpileDeclarations(args[0])}) '(text))`)
-                        break;
-
-                    //methods with 2 text and an optional true/false (default true) - no return value
-                    case "showPasswordDialog":
-                    case "showTextDialog":
-                        outputCode(`(call-component-method '${elementName} '${camelCase(methodCalled)} (*list-for-runtime* ${asText(args, 0)} ${asText(args, 1)} ${asBoolean(args, 2)}) '(text text boolean)`)
-                        break;
-
-                    //methods with 3 text inputs - no return value
-                    case "showMessageDialog":
-                        outputCode(`(call-component-method '${elementName} '${camelCase(methodCalled)} (*list-for-runtime* ${asText(args, 0)} ${asText(args, 1)} ${asText(args, 2)}) '(text text text))`)
-                        break;
-
-                    //methods with 3 numerical inputs - no return value
-                    case "setDateToDisplay":
-                        outputCode(`(call-component-method '${elementName} '${camelCase(methodCalled)} (*list-for-runtime* ${asNumber(args, 0)} ${asNumber(args, 1, 1, 12)} ${asNumber(args, 2, 1, 31)}) '(number number number))`)
-                        break;
-
-
-                    //methods with 4 text and an optional true/false (default true) - no return value
-                    case "showChooseDialog":
-                        outputCode(`(call-component-method '${elementName} '${camelCase(methodCalled)} (*list-for-runtime* ${asText(args, 0)} ${asText(args, 1)} ${asText(args, 2)} ${asText(args, 3)} ${asBoolean(args, 4)}) '(text text text text boolean))`)
-                        break;
-
-
-                    default:
-                }
-            }
-
         default:
 
     }

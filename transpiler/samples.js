@@ -12,7 +12,22 @@ Button1.addEventListener(
     }
 )
 
+//dictionaries / objects
+let object = {
+    "key0": false,
+    "key1": "value",
+    "key2": 123,
+    "key3": identifier,
+    "key4": [],
+    "key5":{},
+    "key6":{"text":"text"}
+}
 
-let d = []
+
+//arrays
+let array = [
+    {"key":"value"},
+    {"key":"value"}
+]
 
 

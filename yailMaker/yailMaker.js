@@ -64,10 +64,10 @@ function main(filename = "temp.xml") {
     let generatedCode = transpiler.run(scripts, extractedData)
         console.log(generatedCode)
 
-//    process.exit(0)
+    //process.exit(0)
 
     //add lines to execute build
-    output(`\n(init-runtime)`)
+    output(`\n(init-runtime)\n`)
     componentList = ''
     elementList.shift()  //kill first element - it is the root element of the JSON the CML is parsed
     for (let i = 0; i < elementList.length; i++) {
