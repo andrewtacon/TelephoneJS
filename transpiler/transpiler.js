@@ -1,17 +1,94 @@
+/*
+
+Hard problems:
+1. Logical operators like NOT to evaluate correctly
+2. Format as decimal (.toFixed)
+                (def g$identifier (call-yail-primitive format-as-decimal (*list-for-runtime* 0 2) '(number number) "format as decimal"))   //2 is number of places     number.toFixed(places) 
+                (def g$identifier (call-yail-primitive is-number? (*list-for-runtime* 0) '(text) "is a number?"))           !isNaN(value)
+
+    /*
+        REPL features skipped
+        //extra features
+        ?? (def g$identifier (call-yail-primitive is-base10? (*list-for-runtime* 0) '(text) "is base10?")) 
+        ?? (def g$identifier (call-yail-primitive is-hexadecimal? (*list-for-runtime* 0) '(text) "is hexadecimal?"))
+        ?? (def g$identifier (call-yail-primitive is-binary? (*list-for-runtime* 0) '(text) "is binary?"))
+        ?? (def g$identifier (call-yail-primitive math-convert-dec-hex (*list-for-runtime* 0) '(text) "convert Dec to Hex"))
+        ?? (def g$identifier (call-yail-primitive math-convert-hex-dec (*list-for-runtime* 0) '(text) "convert Hex to Dec"))
+        ?? (def g$identifier (call-yail-primitive math-convert-dec-bin (*list-for-runtime* 0) '(text) "convert Dec to Hex"))
+        ?? (def g$identifier (call-yail-primitive math-convert-bin-dec (*list-for-runtime* 0) '(text) "convert Hex to Dec"))
+    */
+
+/*
+    object/dictionary methods
+
+*/
+
+
+
+/*
+    text methods
+
+    //binary operation
+    (def g$name (call-yail-primitive string-append (*list-for-runtime* "a" "b" ) '(text text ) "join"))                     //join strings   +
+    (def g$name (call-yail-primitive string<? (*list-for-runtime* "a" "b") '(text text) "text<"))                           //compare texts
+    (def g$name (call-yail-primitive string=? (*list-for-runtime* "a" "b") '(text text) "text="))  
+    (def g$name (not (call-yail-primitive string=? (*list-for-runtime* "a" "b") '(text text) "not =")))
+    (def g$name (call-yail-primitive string>? (*list-for-runtime* "a" "b") '(text text) "text>"))
+    
+    //string properties
+    (def g$name (call-yail-primitive string-length (*list-for-runtime* "a") '(text) "length"))                              //.length
+    (def g$name (call-yail-primitive string-empty? (*list-for-runtime* "a") '(text) "is text empty?"))                      //.length == 0
+
+    //string methods
+    (def g$name (call-yail-primitive string-trim (*list-for-runtime* "a") '(text) "trim"))                                  //.trim() 
+    (def g$name (call-yail-primitive string-to-upper-case (*list-for-runtime* "a") '(text) "upcase"))                       //.toUpperCase()
+    (def g$name (call-yail-primitive string-to-lower-case (*list-for-runtime* "a") '(text) "downcase"))                     //.toLowerCase()
+    (def g$name (call-yail-primitive string-replace-all (*list-for-runtime* "" "" "") '(text text text) "replace all"))     //.replaceAll(a,b)
+    (def g$name (call-yail-primitive string-split (*list-for-runtime* "a" "2") '(text text) "split"))                       //.split at?
+    (def g$name (call-yail-primitive string-split-at-spaces (*list-for-runtime* "2") '(text) "split at spaces"))            //.split(" ")
+    (def g$name (call-yail-primitive string-contains (*list-for-runtime* "a" "2") '(text text) "string contains"))          //.includes() 
+
+    //bonus string methods
+    (def g$name (call-yail-primitive string-reverse (*list-for-runtime* "a") '(text) "reverse"))                            //.reverse() //bonus method
+
+    //not sure
+    (def g$name (call-yail-primitive string-split-at-first (*list-for-runtime* "a" "2") '(text text) "split at first"))
+    (def g$name (call-yail-primitive string-split-at-any (*list-for-runtime* "a" 1) '(text list) "split at any")) 
+    (def g$name (call-yail-primitive string-split-at-first-of-any (*list-for-runtime* "a" 1) '(text list) "split at first of any"))
+    (def g$name (call-yail-primitive string-contains-any (*list-for-runtime* "a" "") '(text list) "string contains any"))   
+    (def g$name (call-yail-primitive string-contains-all (*list-for-runtime* "a" "") '(text list) "string contains all"))
+    (def g$name (call-yail-primitive string-substring (*list-for-runtime* "" 1 1) '(text number number) "segment"))         //.substring() sort of   (text, start, length)
+    (def g$name (call-yail-primitive text-deobfuscate (*list-for-runtime* "JI" "zzwkbxab") '(text text) "deobfuscate text"))
+    (def g$name (call-yail-primitive string? (*list-for-runtime* "a" ) '(any) "is a string?"))                              //is a string
+    
+
+    (def g$name (call-yail-primitive string-replace-mappings-longest-string (*list-for-runtime* "" "") '(text dictionary) "replace with mappings"))
+    (def g$name (call-yail-primitive string-replace-mappings-dictionary (*list-for-runtime* "" "") '(text dictionary) "replace with mappings"))
+
+
+
+
+
+*/
 
 const fs = require('fs')
 const { parse, traverse, walk } = require('abstract-syntax-tree')
 const util = require('util')
 
-let debug = false
+let debug = true
 
 let generatedCode = ""
 let generatedGlobalsCode = ""
+let globalStack = []
 let variableStack = []
 
 function main(scripts, elements) {
 
-    variableStack.push(...elements)
+    for (let i = 0; i < elements.length; i++) {
+        elements[i].scope = "component"
+    }
+
+    globalStack.push(...elements)
 
 
     console.log("*** Transpiling scripts ***")
@@ -95,9 +172,9 @@ function modifyTree(tree) {
     walk(tree, (node, parent) => {
         if (node.type === "VariableDeclaration") {
             if (node.body === "Global") {
-                variableStack.push(
+                globalStack.push(
                     {
-                        "type": "global",
+                        "scope": "global",
                         "identifier": node.declarations[0].id.name
                     }
                 )
@@ -162,6 +239,9 @@ function modifyTree(tree) {
 function transpile(input, elements) {
     let tree = parse(input)
     tree = modifyTree(tree)
+
+    variableStack.push(globalStack)
+
     if (debug) {
         console.log(util.inspect(tree, false, null, true)) // { type: 'Program', body: [ ... ] }
     }
@@ -239,22 +319,25 @@ function camelCase(text) {
 function removeFromVariableStack(declaration) {
     let name = declaration.id.name
 
-    for (let i = variableStack.length - 1; i >= 0; i--) {
-        if (variableStack[i].identifier === name && variableStack[i].type === "local") {
-            variableStack.splice(i, 1)
+    let currentStack = variableStack[variableStack.length - 1]
+
+    for (let i = currentStack.length - 1; i >= 0; i--) {
+        if (currentStack[i].identifier === name && currentStack[i].scope === "local") {
+            currentStack.splice(i, 1)
             break
         }
     }
 }
 
 function findVariableInStack(name) {
-    for (let i = variableStack.length - 1; i >= 0; i--) {
-        if (variableStack[i].identifier === name && variableStack[i].type === "local") {
+    let currentStack = variableStack[variableStack.length - 1]
+    for (let i = currentStack.length - 1; i >= 0; i--) {
+        if (currentStack[i].identifier === name && currentStack[i].scope === "local") {
             return `(lexical-value $${name})`
-        } else if (variableStack[i].identifier === name && variableStack[i].type === "global") {
+        } else if (currentStack[i].identifier === name && currentStack[i].scope === "global") {
             return `(get-var g$${name})`
 
-        } else if (variableStack[i].type !== "global" && variableStack[i].type !== "local") {
+        } else if (currentStack[i].scope !== "global" && currentStack[i].scope !== "local") {
             return name
         }
     }
@@ -338,7 +421,7 @@ function transpileDeclarations(node) {
             let pairs = ""
 
             for (let i = 0; i < properties.length; i++) {
-                let key = `"${properties[i].key.name}"`
+                let key = properties[i].key.name ? `"${properties[i].key.name}"` : `"${properties[i].key.value}"`
                 let value = transpileDeclarations(properties[i].value) + " "
 
                 let pairCode = `\n(call-yail-primitive make-dictionary-pair (*list-for-runtime* ${key} ${value} ) '(key any) "make a pair")`
@@ -369,22 +452,73 @@ function transpileDeclarations(node) {
                 if (node.body !== "Global") { VariableCode += (`(let `) }
                 for (let i = 0; i < node.declarations.length; i++) {
 
+                    let scope
+                    let identifier
                     if (node.body !== "Global") {
-                        variableStack.push(
+                        variableStack[variableStack.length - 1].push(
                             {
-                                "type": "local",
+                                "scope": "local",
                                 "identifier": node.declarations[i].id.name
                             }
                         )
+                        scope = "local"
+                        identifier = node.declarations[i].id.name
+                    } else {
+                        scope = "global"
+                        identifier = node.declarations[i].id.name
                     }
 
                     //recusively generate the declaration data for variables (recursive because arrays and objects can nest)
-                    let data;
+                    let source;
                     if (node.declarations[i].init) {
-                        data = transpileDeclarations(node.declarations[i].init)
+                        source = node.declarations[i].init
                     } else {
-                        data = transpileDeclarations(node.declarations[i])
+                        source = node.declarations[i]
                     }
+
+                    let dataType
+                    if (source.type === "ObjectExpression") { dataType = "object" }
+                    else if (source.type === "ArrayExpression") { dataType = "array" }
+                    else if (source.type === "Literal") {
+                        if (typeof source.value === "string") { dataType = "string" }
+                        else if (typeof source.value === "number") { dataType = "number" }
+                        else if (typeof source.value === "boolean") { dataType = "boolean" }
+                        else if (source.value === null) { dataType = null }
+                    }
+                    else if (source.type === "VariableDeclarator") {
+                        if (source.init === null) {
+                            dataType = null
+                        }
+                    }
+                    else if (source.type === "Identifier") {
+                        if (source.name === "undefined") { dataType = undefined }
+                        else {
+                            let currentStack = variableStack[variableStack.length-1]
+                            for (let i=currentStack.length-2; i>=0; i--){   //-2 because cannot initialise as self
+                                if (currentStack[i].identifier === source.name) {
+                                    dataType = currentStack[i].type
+                                    break;
+                                }
+                            }
+                        }
+                    }
+
+                    //variable
+                    //nothing
+
+                    let currentStack = variableStack[variableStack.length-1]
+                    for (let i = currentStack.length-1; i>=0; i--) {
+                        if (currentStack[i].scope === scope && currentStack[i].identifier === identifier) {
+                            currentStack[i].type = dataType
+                            break;
+                        }
+                    }
+                    console.log(currentStack)
+                    console.log(scope, identifier, source.type, dataType)
+
+
+                    let data = transpileDeclarations(source)
+
 
                     if (node.body === "Global") { VariableCode += (`(def g$${node.declarations[i].id.name} ${data})`) }
                     else { VariableCode += (`(($${node.declarations[i].id.name} ${data})`) }
@@ -414,8 +548,13 @@ function transpileDeclarations(node) {
             }
             return BlockStatementCode
 
-        case "CallExpression":
+        case "MemberExpression":
+            console.log("Member Expression")
+            break;
 
+        case "CallExpression":
+            //whilst a "CallExpression" does contain a "MemberExpression" in the callee, the "MemberExpression" is stepped over because
+            //I think (currently) it is easier to deal with things this way
             let elementName = node.callee.object.name
 
             switch (elementName) {
@@ -569,6 +708,7 @@ function transpileDeclarations(node) {
                 case "&": operator = "bitwise-and"; operatorCommand = "bitwise-and"; break
                 case "|": operator = "bitwise-ior"; operatorCommand = "bitwise-ior"; break
                 case "^": operator = "bitwise-xor"; operatorCommand = "bitwise-xor"; break
+                case "%": operator = "remainder"; operatorCommand = "remainder"; break
                 default:
                     console.log(`Unknown binary operator "${JSON.stringify(op)}". Panic!`)
             }
@@ -596,42 +736,14 @@ function transpileDeclarations(node) {
                 case "+":
                     return `${transpileDeclarations(uarg)}`
                 case "-":
-                    return `(call-yail-primitive - (*list-for-runtime* ${transpileDeclarations(uarg)} ) '(number ) "negate")`
+                    return `(call-yail-primitive - (*list-for-runtime*  ${transpileDeclarations(uarg)} ) '(number ) "negate")`
                 case "!":
-                    return `(call-yail-primitive yail-not (*list-for-runtime* ${transpileDeclarations(uarg)} ) '(boolean ) "not")`
+                    return `(not ${transpileDeclarations(uarg)})`  //this returns false for anything that is not #t
+                    return `(call-yail-primitive yail-not (*list-for-runtime* ${transpileDeclarations(uarg)} )  '(boolean ) "not")`  //only works for boolean
                 default:
                     console.log(`Unknown unary operator "${JSON.stringify(op)}". Panic!`)
             }
 
-            /*
-                Unary   - (negate) + (ignore?)
-                (def g$identifier (call-yail-primitive - (*list-for-runtime* -1) '(number) "negate"))                       -
-                (def g$identifier (call-yail-primitive yail-not (*list-for-runtime* #t) '(boolean) "not"))                  !   //only works with boolean
-
-              
-
-
-                (def g$identifier (call-yail-primitive remainder (*list-for-runtime* 0 1) '(number number) "remainder"))     a%b
-
-
-                (def g$identifier (call-yail-primitive format-as-decimal (*list-for-runtime* 0 2) '(number number) "format as decimal"))   //2 is number of places     number.toFixed(places) 
-                (def g$identifier (call-yail-primitive is-number? (*list-for-runtime* 0) '(text) "is a number?"))           !isNaN(value)
-
-                //extra features
-
-
-                ?? (def g$identifier (call-yail-primitive is-base10? (*list-for-runtime* 0) '(text) "is base10?")) 
-                ?? (def g$identifier (call-yail-primitive is-hexadecimal? (*list-for-runtime* 0) '(text) "is hexadecimal?"))
-                ?? (def g$identifier (call-yail-primitive is-binary? (*list-for-runtime* 0) '(text) "is binary?"))
-                ?? (def g$identifier (call-yail-primitive math-convert-dec-hex (*list-for-runtime* 0) '(text) "convert Dec to Hex"))
-                ?? (def g$identifier (call-yail-primitive math-convert-hex-dec (*list-for-runtime* 0) '(text) "convert Hex to Dec"))
-                ?? (def g$identifier (call-yail-primitive math-convert-dec-bin (*list-for-runtime* 0) '(text) "convert Dec to Hex"))
-                ?? (def g$identifier (call-yail-primitive math-convert-bin-dec (*list-for-runtime* 0) '(text) "convert Hex to Dec"))
-
-
-
-
-            */
 
             break;
         default:
