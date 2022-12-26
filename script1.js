@@ -1,4 +1,12 @@
-let string = "stingvalue"
+let a = [1,2,3]
+a[0] = 5
+a[1] = 6
+a[2] = 7
+textbox.value =a[0]+","+a[1]+","+a[2]
+
+
+
+/*let string = "stingvalue"
 let number = 2 
 let bool = true
 let object = {"key":{"nestedkey":"nestedvalue"}, "array":[1,2,3,4]}
@@ -18,7 +26,7 @@ button1.addEventListener(
     }
 )
 
-
+*/
 
 /*
 

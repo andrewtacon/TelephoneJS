@@ -666,7 +666,7 @@ function transpileDeclarations(node) {
                                         (call-yail-primitive yail-list-set-item! 
                                             (*list-for-runtime* 
                                                ${transpileDeclarations(node.object)} 
-                                               ${node.property.value} 
+                                               (+ ${node.property.value} 1)
                                                ${transpileDeclarations(node.assignedRight)}
                                             ) 
                                             '(list number any) 
@@ -735,7 +735,7 @@ function transpileDeclarations(node) {
                         (
                             if 
                                 (call-yail-primitive yail-list? (*list-for-runtime* ${transpileDeclarations(node.object)} ) '(any) "is a list?") 
-                                (call-yail-primitive yail-list-get-item (*list-for-runtime*   ${transpileDeclarations(node.object)}  ${transpileDeclarations(node.property)} ) '(list number) "select list item") 
+                                (call-yail-primitive yail-list-get-item (*list-for-runtime*   ${transpileDeclarations(node.object)}  (+ ${transpileDeclarations(node.property)} 1) ) '(list number) "select list item") 
                                 #f
                         )
                     )`
@@ -774,7 +774,7 @@ function transpileDeclarations(node) {
                                         (call-yail-primitive yail-list-get-item 
                                             (*list-for-runtime*  
                                                 ${transpileDeclarations(node.object)} 
-                                                 ${transpileDeclarations(node.property)} 
+                                                (+ ${transpileDeclarations(node.property)} 1)
                                             ) 
                                             '(list number) 
                                             "select list item"
