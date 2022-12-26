@@ -363,7 +363,7 @@ exports.run = poll
 //i think this is the only way to do this.
 async function loadAssets() {
 
-    let assetList = ["frown2.png"]
+    let assetList = []
 
     for (let i = 0; i < assetList.length; i++) {
         let asset = assetList[i]

@@ -75,7 +75,7 @@ const fs = require('fs')
 const { parse, traverse, walk } = require('abstract-syntax-tree')
 const util = require('util')
 
-let debug = true
+let debug = false
 
 let generatedCode = ""
 let generatedGlobalsCode = ""
@@ -102,6 +102,7 @@ function main(scripts, elements) {
 
     console.log("*** Transpiling complete ***")
     generatedCode = generatedCode.replaceAll("\n\n", "\n")
+    generatedCode = generatedCode.replaceAll("\t", "")
 
     let opens = 0
     let closes = 0
@@ -127,6 +128,83 @@ function main(scripts, elements) {
         console.log(generatedCode)
         process.exit(0)
     }
+
+    //extra functions for pass-by-reference so that you can pass arrays and objects by reference, as opposed to passing by value
+    //https://books.google.com.au/books?id=vKIvIXSxcCgC&lpg=PP1&dq=little+schemer&pg=PA181&redir_esc=y&hl=en#v=snippet&q=(define%20box&f=false
+
+    let boxdefinitions = `
+;; Prepare to redefine pair?.
+(define %true-pair? pair?)
+
+;; Unique object in the cdr of a pair flags it as a box.
+(define %box-flag (string-copy "box flag"))
+
+;; Predicate
+(define (box? x) (and (%true-pair? x) (eq? (cdr x) %box-flag)))
+
+;; Constructor
+(define (box x) (cons x %box-flag))
+
+;; Accessor
+(define (unbox x)
+  (if (box? x)
+    (car x)
+    (error "Attempt to unbox non-box")))
+    
+;; Mutator
+(define (set-box! x y)
+  (if (box? x)
+    (set-car! x y)
+    (error "Attempt to mutate non-box")))
+
+;; Override pair?.
+(set! pair?
+  (lambda (x)
+    (and (%true-pair? x) (not (box? x)))))
+    `
+
+    let defineBox = `
+        (define box
+            (lambda (it)
+                (lambda (sel)
+                    (sel it (lambda (new)
+                        (set! it new))))))
+    `
+
+    let defineUnbox = `
+        (define unbox
+            (lambda (box)
+                (box (lambda (it set) it))))
+    `
+
+    let setbox = `
+        (define setbox
+            (lambda (box new)
+                (box (lambda (it set) (set new)))))
+    `
+
+    //and from https://srfi.schemers.org/srfi-111/srfi-111.html
+
+    let MyBoxCode = `
+    (define %box-flag (string-copy "box flag"))     ;;define the flag for a box
+    (define (box? x) (eq? (cdr x) %box-flag))       ;; is this a box
+    (define (box x) (cons x %box-flag))             ;;build a box
+    (define (unbox x)                               ;;unbox
+        (if (box? x)                                ;;if box
+            (car x)                                 ;;then return the box component
+            (x)                                     ;;else return what sent in (no change - basically ignore erroroneous input)
+        )
+    )
+    (define (set-box! x y)                          ;;change box contents
+        (if (box? x)                                ;;if box
+            (set-car! x y)                          ;;then change contents
+            (#f)                                    ;;else do nothing     
+        )
+    )   
+    `
+
+
+    generatedCode = MyBoxCode + "\n" + generatedCode
 
     return generatedCode
 }
@@ -252,57 +330,6 @@ function transpile(input, elements) {
 
 
 
-function asInstantInTime(args, index) {
-
-}
-
-function asNumber(args, index, min, max) {
-    if (args[index] === undefined) { if (typeof min === "number") { return min } else { return 0 } } //return min or zero
-    if (args[index].type === "Identifier") {
-        return findVariableInStack(args[index].name)
-    }
-    if (typeof args[index].value === "number") {
-        if (min && typeof min === 'number') { if (args[index].value < min) { return min } }
-        if (max && typeof max === 'number') { if (args[index].value > max) { return max } }
-        return args[index].value
-    } else {
-        return 0
-    }
-
-}
-
-function asBoolean(args, index) {
-    if (args[index] === undefined) { return '#t' } //true by default
-    if (args[index].type === "Identifier") {
-        return findVariableInStack(args[index].name)
-    }
-    if (typeof args[index].value === "boolean") {
-        return args[index].value ? "#t" : "#f"
-    } else {
-        return '#t'
-    }
-}
-
-function asString(args, index) {
-    if (args[index] === undefined) { return `""` }
-    if (args[index].type === "Literal") {
-        return `${args[index].value}`
-    }
-}
-
-function asText(args, index) {
-    if (args[index] === undefined) { return `""` }
-
-    if (args[index].type === "Literal") {
-        return `"${args[index].value}"`
-    } else if (args[index].type === "Identifier") {
-        return findVariableInStack(args[index].name)
-    } else {
-
-    }
-}
-
-
 function outputCode(text) {
     generatedCode += text
 }
@@ -343,7 +370,6 @@ function findVariableInStack(name) {
     }
     console.log(`Variable not found or not in scope: "${name}".`)
 }
-
 
 
 
@@ -413,7 +439,7 @@ function transpileDeclarations(node) {
                 anys += "any "
             }
             let arrayCode = `(call-yail-primitive make-yail-list (*list-for-runtime* ${compile}) '(${anys}) "make a list")`
-            return arrayCode
+            return `${arrayCode}`
 
         case "ObjectExpression":
 
@@ -423,8 +449,9 @@ function transpileDeclarations(node) {
             for (let i = 0; i < properties.length; i++) {
                 let key = properties[i].key.name ? `"${properties[i].key.name}"` : `"${properties[i].key.value}"`
                 let value = transpileDeclarations(properties[i].value) + " "
+                console.log("value", value, properties)
 
-                let pairCode = `\n(call-yail-primitive make-dictionary-pair (*list-for-runtime* ${key} ${value} ) '(key any) "make a pair")`
+                let pairCode = `\n(call-yail-primitive make-dictionary-pair (*list-for-runtime* ${key}  ${transpileDeclarations(properties[i].value)} ) '(key any) "make a pair")`
                 pairs += "pair "
                 objectCode += pairCode
 
@@ -440,10 +467,33 @@ function transpileDeclarations(node) {
             let tail = `\n'(${pairs}) \n"make a dictionary" )`
             objectCode += tail
 
-            return objectCode
+            return `${objectCode}`
+
+        case "AssignmentExpression":        //this feels pretty clumsy
+
+            isAssigning = true
+            let AssignmentExpressionLeft = node.left
+            let AssignmentExpressionRight = node.right
+
+            if (AssignmentExpressionLeft.type === "MemberExpression") {
+                AssignmentExpressionLeft.type = "MemberExpressionSet"
+            }
+            AssignmentExpressionLeft.assignedRight = AssignmentExpressionRight     //need to send the right hand side on for insertion later on 
+
+            AssignmentExpressionLeft = transpileDeclarations(AssignmentExpressionLeft)
+            if (AssignmentExpressionLeft.startsWith("(get-var ")) {  //this is string, numbers and bools (simple cases)
+                AssignmentExpressionLeft = AssignmentExpressionLeft.substring(8, AssignmentExpressionLeft.length - 1)
+                return `(set-var! ${AssignmentExpressionLeft} ${transpileDeclarations(AssignmentExpressionRight)}  )`
+            } else {
+                return AssignmentExpressionLeft
+            }
+
+            break;
+
 
 
         case "VariableDeclaration":
+
             if (node.body === "Close") {
                 removeFromVariableStack(node.declarations[0])
                 return "\n\b)\n"
@@ -477,6 +527,8 @@ function transpileDeclarations(node) {
                     }
 
                     let dataType
+
+
                     if (source.type === "ObjectExpression") { dataType = "object" }
                     else if (source.type === "ArrayExpression") { dataType = "array" }
                     else if (source.type === "Literal") {
@@ -493,8 +545,8 @@ function transpileDeclarations(node) {
                     else if (source.type === "Identifier") {
                         if (source.name === "undefined") { dataType = undefined }
                         else {
-                            let currentStack = variableStack[variableStack.length-1]
-                            for (let i=currentStack.length-2; i>=0; i--){   //-2 because cannot initialise as self
+                            let currentStack = variableStack[variableStack.length - 1]
+                            for (let i = currentStack.length - 2; i >= 0; i--) {   //-2 because cannot initialise as self
                                 if (currentStack[i].identifier === source.name) {
                                     dataType = currentStack[i].type
                                     break;
@@ -502,23 +554,24 @@ function transpileDeclarations(node) {
                             }
                         }
                     }
+                    else if (source.type === "MemberExpression") {
+                        //TODO --> variable declared as member expression
+                        dataType = "object or array"
+
+                    }
 
                     //variable
                     //nothing
 
-                    let currentStack = variableStack[variableStack.length-1]
-                    for (let i = currentStack.length-1; i>=0; i--) {
+                    let currentStack = variableStack[variableStack.length - 1]
+                    for (let i = currentStack.length - 1; i >= 0; i--) {
                         if (currentStack[i].scope === scope && currentStack[i].identifier === identifier) {
                             currentStack[i].type = dataType
                             break;
                         }
                     }
-                    console.log(currentStack)
-                    console.log(scope, identifier, source.type, dataType)
-
 
                     let data = transpileDeclarations(source)
-
 
                     if (node.body === "Global") { VariableCode += (`(def g$${node.declarations[i].id.name} ${data})`) }
                     else { VariableCode += (`(($${node.declarations[i].id.name} ${data})`) }
@@ -548,8 +601,125 @@ function transpileDeclarations(node) {
             }
             return BlockStatementCode
 
+        case "MemberExpressionSet":
+            let MemberExpressionSetProperty = node.property.name       // .text
+            let MemberExpressionSetValue = node.property.value         // ["text"] or [2]    //need to work out if the is whole number 
+            console.log("insert at "+node.property.value)
+
+
+            console.log("MemberExpressionSet " +JSON.stringify(node.object))
+            if (node.type === "MemberExpression") { node.type = "MemberExpressionSet" } //make it come back to here
+
+            switch (MemberExpressionSetProperty) {
+                default:
+                    return `(if 
+                                (call-yail-primitive yail-dictionary? (*list-for-runtime*  ${transpileDeclarations(node.object)} ) '(any)  "check if something is a dictionary") 
+                                (call-yail-primitive yail-dictionary-set-pair 
+                                    (*list-for-runtime* 
+                                        "${transpileDeclarations(node.property)}" 
+                                        ${transpileDeclarations(node.object)} 
+                                        ${transpileDeclarations(node.assignedRight)}
+                                    ) 
+                                    '(key dictionary any)  
+                                    "set value for key in dictionary to value"
+                                )
+                                (
+                                    if 
+                                        (call-yail-primitive yail-list? 
+                                            (*list-for-runtime* ${transpileDeclarations(node.object)} ) 
+                                            '(any) 
+                                            "is a list?"
+                                        ) 
+                                        (call-yail-primitive yail-list-set-item! 
+                                            (*list-for-runtime* 
+                                               ${transpileDeclarations(node.object)} 
+                                               ${node.property.value} 
+                                               ${transpileDeclarations(node.assignedRight)}
+                                            ) 
+                                            '(list number any) 
+                                            "replace list item"
+                                        )
+                                        (#f)
+                                    
+                                )
+                            )`
+            }
+
+
+
+
+
+            break;
+
+
         case "MemberExpression":
-            console.log("Member Expression")
+            //this is for a GET case
+
+            let MemberExpressionProperty = node.property.name       // .text
+            let MemberExpressionValue = node.property.value         // ["text"] or [2]    //need to work out if the is whole number 
+
+
+            //  '()   is an empty list - it is equivalent to null
+
+            if (!MemberExpressionProperty) {
+                return `
+                    (if 
+                        (call-yail-primitive yail-dictionary? (*list-for-runtime* ${transpileDeclarations(node.object)} ) '(any)  "check if something is a dictionary") 
+                        (call-yail-primitive yail-dictionary-lookup (*list-for-runtime* "${transpileDeclarations(node.property)}" ${transpileDeclarations(node.object)} "not found") '(key any any) "dictionary lookup") 
+                        (
+                            if 
+                                (call-yail-primitive yail-list? (*list-for-runtime* ${transpileDeclarations(node.object)} ) '(any) "is a list?") 
+                                (call-yail-primitive yail-list-get-item (*list-for-runtime*   ${transpileDeclarations(node.object)}  ${transpileDeclarations(node.property)} ) '(list number) "select list item") 
+                                #f
+                        )
+                    )`
+            }
+
+            switch (MemberExpressionProperty) {
+                case "length":
+                    return `
+                        (if 
+                            (call-yail-primitive yail-dictionary? (*list-for-runtime* ${transpileDeclarations(node.object)} ) '(any)  "check if something is a dictionary") 
+                            (call-yail-primitive yail-dictionary-lookup (*list-for-runtime* "${transpileDeclarations(node.property)}" ${transpileDeclarations(node.object)} "not found") '(key any any) "dictionary lookup") 
+                            (
+                                if 
+                                    (call-yail-primitive yail-list? (*list-for-runtime* ${transpileDeclarations(node.object)} ) '(any) "is a list?") 
+                                    (call-yail-primitive yail-list-length (*list-for-runtime* ${transpileDeclarations(node.object)} ) '(list) "length of list") 
+                                    (if 
+                                        (call-yail-primitive string? (*list-for-runtime* ${transpileDeclarations(node.object)} ) '(any) "is a string?") 
+                                        (call-yail-primitive string-length (*list-for-runtime* ${transpileDeclarations(node.object)} ) '(text) "length") 
+                                        #f
+                                    )
+                            )
+                        )`
+
+                default:
+                    return `(if 
+                                (call-yail-primitive yail-dictionary? (*list-for-runtime*  ${transpileDeclarations(node.object)} ) '(any)  "check if something is a dictionary") 
+                                (call-yail-primitive yail-dictionary-lookup (*list-for-runtime* "${transpileDeclarations(node.property)}"  ${transpileDeclarations(node.object)}  "not found") '(key any any) "dictionary lookup") 
+                                (
+                                    if 
+                                        (call-yail-primitive yail-list? 
+                                            (*list-for-runtime* ${transpileDeclarations(node.object)} ) 
+                                            '(any) 
+                                            "is a list?"
+                                        ) 
+                                        (call-yail-primitive yail-list-get-item 
+                                            (*list-for-runtime*  
+                                                ${transpileDeclarations(node.object)} 
+                                                 ${transpileDeclarations(node.property)} 
+                                            ) 
+                                            '(list number) 
+                                            "select list item"
+                                        ) 
+                                        (#f)
+                                )
+                            )`
+            }
+
+
+
+
             break;
 
         case "CallExpression":
@@ -557,12 +727,14 @@ function transpileDeclarations(node) {
             //I think (currently) it is easier to deal with things this way
             let elementName = node.callee.object.name
 
+
             switch (elementName) {
                 case "Math":
 
                     let MathOperator = ""
                     let MathCommandOperator = ""
-                    switch (node.callee.property.name) {
+                    let MathMethod = node.callee.property.name
+                    switch (MathMethod) {
                         case "sqrt": MathOperator = "sqrt"; MathCommandOperator = "sqrt"; break;
                         case "abs": MathOperator = "abs"; MathCommandOperator = "abs"; break;
                         case "log": MathOperator = "log"; MathCommandOperator = "log"; break;
@@ -590,7 +762,7 @@ function transpileDeclarations(node) {
                             console.log(`Unknown Math operation: "${node.callee.property.name}" `)
                     }
 
-                    switch (node.callee.property.name) {
+                    switch (MathMethod) {
                         case "min":
                         case "max":
                             let minMaxText = ""
@@ -614,61 +786,83 @@ function transpileDeclarations(node) {
                             return `(call-yail-primitive ${MathOperator} (*list-for-runtime* ${transpileDeclarations(node.arguments[0])} ) '(number) "${MathCommandOperator}")`
                     }
 
+                //END OF MATH
 
 
                 default:
 
-                    //check if a method is called on something
-                    if (node.callee.property !== undefined) {
-                        let methodCalled = node.callee.property.name
-                        let args = JSON.parse(JSON.stringify(node.arguments))
+                    //if not MATH then a variable so find variable type and work based off that
+                    //components have built in fixed methods
+                    //other variable types have different methods
 
-                        //check if the method that is called is a legal method for this particular element type (refer to supplied elements list)
-                        switch (methodCalled) {
-                            case "addEventListener":
-                                //TODO check element and type to make sure that the eventType is a legal event for that type of element/component
-                                //args[0] here is the event type
-                                return (`(define-event ${transpileDeclarations(node.callee.object)} ${camelCase(asString(args, 0))}() (set-this-form) ${transpileDeclarations(args[1])})`)
-
-                            //methods with no inputs - no return value
-                            case "dismissProgressDialog":
-                            case "launchPicker":
-                            case "open":
-                            case "refresh":
-                                return (`(call-component-method '${elementName} '${camelCase(methodCalled)} (*list-for-runtime*) '()`)
-
-                            //methods with one instant in time input - no return value
-                            case "setDateToDisplayFromInstant":
-                                return (`(call-component-method '${elementName} '${camelCase(methodCalled)} (*list-for-runtime* ${asInstantInTime(args, 0)}) '(InstantInTime)`)
-
-                            //methods with one text input - no return value
-                            case "showAlert":
-                            case "logInfo":
-                            case "logWarning":
-                            case "logError":
-                                return (`\n(call-component-method '${elementName} '${camelCase(methodCalled)} (*list-for-runtime* ${transpileDeclarations(args[0])}) '(text))`)
-
-                            //methods with 2 text and an optional true/false (default true) - no return value
-                            case "showPasswordDialog":
-                            case "showTextDialog":
-                                return (`(call-component-method '${elementName} '${camelCase(methodCalled)} (*list-for-runtime* ${transpileDeclarations(args[0])} ${transpileDeclarations(args[1])} ${transpileDeclarations(args[2])}) '(text text boolean)`)
-
-                            //methods with 3 text inputs - no return value
-                            case "showMessageDialog":
-                                return (`(call-component-method '${elementName} '${camelCase(methodCalled)} (*list-for-runtime* ${transpileDeclarations(args[0])} ${transpileDeclarations(args[1])} ${transpileDeclarations(args[2])}) '(text text text))`)
-
-                            //methods with 3 numerical inputs - no return value
-                            case "setDateToDisplay":
-                                return (`(call-component-method '${elementName} '${camelCase(methodCalled)} (*list-for-runtime* ${transpileDeclarations(args[0])} ${transpileDeclarations(args[1])} ${transpileDeclarations(args[2])}) '(number number number))`)
-
-                            //methods with 4 text and an optional true/false (default true) - no return value
-                            case "showChooseDialog":
-                                return (`(call-component-method '${elementName} '${camelCase(methodCalled)} (*list-for-runtime* ${transpileDeclarations(args[0])} ${transpileDeclarations(args[1])} ${transpileDeclarations(args[2])} ${transpileDeclarations(args[3])} ${transpileDeclarations(args[4])}) '(text text text text boolean))`)
-
-                            default:
+                    let isVariableOfType = undefined
+                    let isVariableOfScope = undefined
+                    let currentStack = variableStack[variableStack.length - 1]
+                    for (let i = currentStack.length - 1; i >= 0; i--) {
+                        if (currentStack[i].name === elementName) {
+                            isVariableOfType = currentStack[i].type
+                            isVariableOfScope = currentStack[i].scope
+                            break
                         }
                     }
 
+                    console.log(isVariableOfScope)
+                    switch (isVariableOfScope) {
+                        case "component":
+
+                            //check if a method is called on something
+                            if (node.callee.property !== undefined) {
+                                let methodCalled = node.callee.property.name
+                                let args = JSON.parse(JSON.stringify(node.arguments))
+
+                                //check if the method that is called is a legal method for this particular element type (refer to supplied elements list)
+                                switch (methodCalled) {
+                                    case "addEventListener":
+                                        //TODO check element and type to make sure that the eventType is a legal event for that type of element/component
+                                        //args[0] here is the event type
+                                        return (`(define-event ${transpileDeclarations(node.callee.object)} ${camelCase(asString(args, 0))}() (set-this-form) ${transpileDeclarations(args[1])})`)
+
+                                    //methods with no inputs - no return value
+                                    case "dismissProgressDialog":
+                                    case "launchPicker":
+                                    case "open":
+                                    case "refresh":
+                                        return (`(call-component-method '${elementName} '${camelCase(methodCalled)} (*list-for-runtime*) '()`)
+
+                                    //methods with one instant in time input - no return value
+                                    case "setDateToDisplayFromInstant":
+                                        return (`(call-component-method '${elementName} '${camelCase(methodCalled)} (*list-for-runtime* ${asInstantInTime(args, 0)}) '(InstantInTime)`)
+
+                                    //methods with one text input - no return value
+                                    case "showAlert":
+                                    case "logInfo":
+                                    case "logWarning":
+                                    case "logError":
+                                        return (`\n(call-component-method '${elementName} '${camelCase(methodCalled)}  (*list-for-runtime*  ${transpileDeclarations(args[0])} )  '(text))`)
+
+                                    //methods with 2 text and an optional true/false (default true) - no return value
+                                    case "showPasswordDialog":
+                                    case "showTextDialog":
+                                        return (`(call-component-method '${elementName} '${camelCase(methodCalled)} (*list-for-runtime* ${transpileDeclarations(args[0])} ${transpileDeclarations(args[1])} ${transpileDeclarations(args[2])}) '(text text boolean)`)
+
+                                    //methods with 3 text inputs - no return value
+                                    case "showMessageDialog":
+                                        return (`(call-component-method '${elementName} '${camelCase(methodCalled)} (*list-for-runtime* ${transpileDeclarations(args[0])} ${transpileDeclarations(args[1])} ${transpileDeclarations(args[2])}) '(text text text))`)
+
+                                    //methods with 3 numerical inputs - no return value
+                                    case "setDateToDisplay":
+                                        return (`(call-component-method '${elementName} '${camelCase(methodCalled)} (*list-for-runtime* ${transpileDeclarations(args[0])} ${transpileDeclarations(args[1])} ${transpileDeclarations(args[2])}) '(number number number))`)
+
+                                    //methods with 4 text and an optional true/false (default true) - no return value
+                                    case "showChooseDialog":
+                                        return (`(call-component-method '${elementName} '${camelCase(methodCalled)} (*list-for-runtime* ${transpileDeclarations(args[0])} ${transpileDeclarations(args[1])} ${transpileDeclarations(args[2])} ${transpileDeclarations(args[3])} ${transpileDeclarations(args[4])}) '(text text text text boolean))`)
+
+                                    default:
+                                }
+                            } // case "component"
+
+                        default:
+                    } // end isVariableOfScope
             }
             break;
 
@@ -751,3 +945,76 @@ function transpileDeclarations(node) {
     }
 
 }
+
+
+
+
+
+
+
+
+
+function asString(args, index) {
+    if (args[index] === undefined) { return `""` }
+    if (args[index].type === "Literal") {
+        return `${args[index].value}`
+    }
+}
+
+
+
+
+
+
+
+
+
+
+/*
+
+/*
+function asInstantInTime(args, index) {
+
+}
+
+function asNumber(args, index, min, max) {
+    if (args[index] === undefined) { if (typeof min === "number") { return min } else { return 0 } } //return min or zero
+    if (args[index].type === "Identifier") {
+        return findVariableInStack(args[index].name)
+    }
+    if (typeof args[index].value === "number") {
+        if (min && typeof min === 'number') { if (args[index].value < min) { return min } }
+        if (max && typeof max === 'number') { if (args[index].value > max) { return max } }
+        return args[index].value
+    } else {
+        return 0
+    }
+
+}
+
+function asBoolean(args, index) {
+    if (args[index] === undefined) { return '#t' } //true by default
+    if (args[index].type === "Identifier") {
+        return findVariableInStack(args[index].name)
+    }
+    if (typeof args[index].value === "boolean") {
+        return args[index].value ? "#t" : "#f"
+    } else {
+        return '#t'
+    }
+}
+
+
+
+function asText(args, index) {
+    if (args[index] === undefined) { return `""` }
+
+    if (args[index].type === "Literal") {
+        return `"${args[index].value}"`
+    } else if (args[index].type === "Identifier") {
+        return findVariableInStack(args[index].name)
+    } else {
+
+    }
+}
+*/

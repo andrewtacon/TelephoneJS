@@ -21,8 +21,276 @@
 )
 
 (add-component Screen1 com.google.appinventor.components.runtime.Button button1
-	(set-and-coerce-property! 'button1 'Text "Show Message" 'text)
+	(set-and-coerce-property! 'button1 'Text "Show Message 1" 'text)
 )
 
 (add-component Screen1 com.google.appinventor.components.runtime.Notifier toast
 )
+
+(init-runtime)
+
+    (define %box-flag (string-copy "box flag"))     ;;define the flag for a box
+    (define (box? x) (eq? (cdr x) %box-flag))       ;; is this a box
+    (define (box x) (cons x %box-flag))             ;;build a box
+    (define (unbox x)                               ;;unbox
+        (if (box? x)                                ;;if box
+            (car x)                                 ;;then return the box component
+            (x)                                     ;;else return what sent in (no change - basically ignore erroroneous input)
+        )
+    )
+    (define (set-box! x y)                          ;;change box contents
+        (if (box? x)                                ;;if box
+            (set-car! x y)                          ;;then change contents
+            (#f)                                    ;;else do nothing     
+        )
+    )   
+    
+
+(def g$string "stingvalue")
+(def g$number 2)
+(def g$bool #t)
+(def g$object (call-yail-primitive make-yail-dictionary (*list-for-runtime* 
+			(call-yail-primitive make-dictionary-pair (*list-for-runtime* "key"  (call-yail-primitive make-yail-dictionary (*list-for-runtime* 
+							(call-yail-primitive make-dictionary-pair (*list-for-runtime* "nestedkey"  "nestedvalue" ) '(key any) "make a pair"))
+						'(pair ) 
+						"make a dictionary" ) ) '(key any) "make a pair")
+			(call-yail-primitive make-dictionary-pair (*list-for-runtime* "array"  (call-yail-primitive make-yail-list (*list-for-runtime* 1 2 3 4 ) '(any any any any ) "make a list") ) '(key any) "make a pair"))
+		'(pair pair ) 
+		"make a dictionary" ))
+(def g$list (call-yail-primitive make-yail-list (*list-for-runtime* "item1" (get-var g$object) ) '(any any ) "make a list"))
+(set-var!  g$string "newstring"  )
+(set-var!  g$number (call-yail-primitive + (*list-for-runtime* 2 (call-yail-primitive * (*list-for-runtime* (call-yail-primitive yail-divide (*list-for-runtime* 3 4 ) '(number number ) "yail-divide") (call-yail-primitive expt (*list-for-runtime* 7 2 ) '(number number ) "expt") ) '(number number ) "*") ) '(number number ) "+")  )
+(set-var!  g$bool #f  )
+(define-event button1 Click() (set-this-form) (if 
+		                                (call-yail-primitive yail-dictionary? (*list-for-runtime*  (if 
+					                                (call-yail-primitive yail-dictionary? (*list-for-runtime*  (get-var g$object) ) '(any)  "check if something is a dictionary") 
+					                                (call-yail-primitive yail-dictionary-lookup (*list-for-runtime* "key"  (get-var g$object)  "not found") '(key any any) "dictionary lookup") 
+					                                (
+						                                    if 
+						                                        (call-yail-primitive yail-list? 
+							                                            (*list-for-runtime* (get-var g$object) ) 
+							                                            '(any) 
+							                                            "is a list?"
+							                                        ) 
+						                                        (call-yail-primitive yail-list-get-item 
+							                                            (*list-for-runtime*  
+								                                                (get-var g$object) 
+								                                                 key 
+								                                            ) 
+							                                            '(list number) 
+							                                            "select list item"
+							                                        ) 
+						                                        (#f)
+						                                )
+					                            ) ) '(any)  "check if something is a dictionary") 
+		                                (call-yail-primitive yail-dictionary-set-pair 
+			                                    (*list-for-runtime* 
+				                                        "nestedkey" 
+				                                        (if 
+					                                (call-yail-primitive yail-dictionary? (*list-for-runtime*  (get-var g$object) ) '(any)  "check if something is a dictionary") 
+					                                (call-yail-primitive yail-dictionary-lookup (*list-for-runtime* "key"  (get-var g$object)  "not found") '(key any any) "dictionary lookup") 
+					                                (
+						                                    if 
+						                                        (call-yail-primitive yail-list? 
+							                                            (*list-for-runtime* (get-var g$object) ) 
+							                                            '(any) 
+							                                            "is a list?"
+							                                        ) 
+						                                        (call-yail-primitive yail-list-get-item 
+							                                            (*list-for-runtime*  
+								                                                (get-var g$object) 
+								                                                 key 
+								                                            ) 
+							                                            '(list number) 
+							                                            "select list item"
+							                                        ) 
+						                                        (#f)
+						                                )
+					                            ) 
+				                                        "insert"
+				                                    ) 
+			                                    '(key dictionary any)  
+			                                    "set value for key in dictionary to value"
+			                                )
+		                                (
+			                                    if 
+			                                        (call-yail-primitive yail-list? 
+				                                            (*list-for-runtime* (if 
+						                                (call-yail-primitive yail-dictionary? (*list-for-runtime*  (get-var g$object) ) '(any)  "check if something is a dictionary") 
+						                                (call-yail-primitive yail-dictionary-lookup (*list-for-runtime* "key"  (get-var g$object)  "not found") '(key any any) "dictionary lookup") 
+						                                (
+							                                    if 
+							                                        (call-yail-primitive yail-list? 
+								                                            (*list-for-runtime* (get-var g$object) ) 
+								                                            '(any) 
+								                                            "is a list?"
+								                                        ) 
+							                                        (call-yail-primitive yail-list-get-item 
+								                                            (*list-for-runtime*  
+									                                                (get-var g$object) 
+									                                                 key 
+									                                            ) 
+								                                            '(list number) 
+								                                            "select list item"
+								                                        ) 
+							                                        (#f)
+							                                )
+						                            ) ) 
+				                                            '(any) 
+				                                            "is a list?"
+				                                        ) 
+			                                        (call-yail-primitive yail-list-set-item! 
+				                                            (*list-for-runtime* 
+					                                               (if 
+						                                (call-yail-primitive yail-dictionary? (*list-for-runtime*  (get-var g$object) ) '(any)  "check if something is a dictionary") 
+						                                (call-yail-primitive yail-dictionary-lookup (*list-for-runtime* "key"  (get-var g$object)  "not found") '(key any any) "dictionary lookup") 
+						                                (
+							                                    if 
+							                                        (call-yail-primitive yail-list? 
+								                                            (*list-for-runtime* (get-var g$object) ) 
+								                                            '(any) 
+								                                            "is a list?"
+								                                        ) 
+							                                        (call-yail-primitive yail-list-get-item 
+								                                            (*list-for-runtime*  
+									                                                (get-var g$object) 
+									                                                 key 
+									                                            ) 
+								                                            '(list number) 
+								                                            "select list item"
+								                                        ) 
+							                                        (#f)
+							                                )
+						                            ) 
+					                                               undefined 
+					                                               "insert"
+					                                            ) 
+				                                            '(list number any) 
+				                                            "replace list item"
+				                                        )
+			                                        (#f)
+			                                    
+			                                )
+		                            )
+	(if 
+		                                (call-yail-primitive yail-dictionary? (*list-for-runtime*  (if 
+					                                (call-yail-primitive yail-dictionary? (*list-for-runtime*  (get-var g$object) ) '(any)  "check if something is a dictionary") 
+					                                (call-yail-primitive yail-dictionary-lookup (*list-for-runtime* "array"  (get-var g$object)  "not found") '(key any any) "dictionary lookup") 
+					                                (
+						                                    if 
+						                                        (call-yail-primitive yail-list? 
+							                                            (*list-for-runtime* (get-var g$object) ) 
+							                                            '(any) 
+							                                            "is a list?"
+							                                        ) 
+						                                        (call-yail-primitive yail-list-get-item 
+							                                            (*list-for-runtime*  
+								                                                (get-var g$object) 
+								                                                 array 
+								                                            ) 
+							                                            '(list number) 
+							                                            "select list item"
+							                                        ) 
+						                                        (#f)
+						                                )
+					                            ) ) '(any)  "check if something is a dictionary") 
+		                                (call-yail-primitive yail-dictionary-set-pair 
+			                                    (*list-for-runtime* 
+				                                        "2" 
+				                                        (if 
+					                                (call-yail-primitive yail-dictionary? (*list-for-runtime*  (get-var g$object) ) '(any)  "check if something is a dictionary") 
+					                                (call-yail-primitive yail-dictionary-lookup (*list-for-runtime* "array"  (get-var g$object)  "not found") '(key any any) "dictionary lookup") 
+					                                (
+						                                    if 
+						                                        (call-yail-primitive yail-list? 
+							                                            (*list-for-runtime* (get-var g$object) ) 
+							                                            '(any) 
+							                                            "is a list?"
+							                                        ) 
+						                                        (call-yail-primitive yail-list-get-item 
+							                                            (*list-for-runtime*  
+								                                                (get-var g$object) 
+								                                                 array 
+								                                            ) 
+							                                            '(list number) 
+							                                            "select list item"
+							                                        ) 
+						                                        (#f)
+						                                )
+					                            ) 
+				                                        "hello"
+				                                    ) 
+			                                    '(key dictionary any)  
+			                                    "set value for key in dictionary to value"
+			                                )
+		                                (
+			                                    if 
+			                                        (call-yail-primitive yail-list? 
+				                                            (*list-for-runtime* (if 
+						                                (call-yail-primitive yail-dictionary? (*list-for-runtime*  (get-var g$object) ) '(any)  "check if something is a dictionary") 
+						                                (call-yail-primitive yail-dictionary-lookup (*list-for-runtime* "array"  (get-var g$object)  "not found") '(key any any) "dictionary lookup") 
+						                                (
+							                                    if 
+							                                        (call-yail-primitive yail-list? 
+								                                            (*list-for-runtime* (get-var g$object) ) 
+								                                            '(any) 
+								                                            "is a list?"
+								                                        ) 
+							                                        (call-yail-primitive yail-list-get-item 
+								                                            (*list-for-runtime*  
+									                                                (get-var g$object) 
+									                                                 array 
+									                                            ) 
+								                                            '(list number) 
+								                                            "select list item"
+								                                        ) 
+							                                        (#f)
+							                                )
+						                            ) ) 
+				                                            '(any) 
+				                                            "is a list?"
+				                                        ) 
+			                                        (call-yail-primitive yail-list-set-item! 
+				                                            (*list-for-runtime* 
+					                                               (if 
+						                                (call-yail-primitive yail-dictionary? (*list-for-runtime*  (get-var g$object) ) '(any)  "check if something is a dictionary") 
+						                                (call-yail-primitive yail-dictionary-lookup (*list-for-runtime* "array"  (get-var g$object)  "not found") '(key any any) "dictionary lookup") 
+						                                (
+							                                    if 
+							                                        (call-yail-primitive yail-list? 
+								                                            (*list-for-runtime* (get-var g$object) ) 
+								                                            '(any) 
+								                                            "is a list?"
+								                                        ) 
+							                                        (call-yail-primitive yail-list-get-item 
+								                                            (*list-for-runtime*  
+									                                                (get-var g$object) 
+									                                                 array 
+									                                            ) 
+								                                            '(list number) 
+								                                            "select list item"
+								                                        ) 
+							                                        (#f)
+							                                )
+						                            ) 
+					                                               2 
+					                                               "hello"
+					                                            ) 
+				                                            '(list number any) 
+				                                            "replace list item"
+				                                        )
+			                                        (#f)
+			                                    
+			                                )
+		                            )
+	(call-component-method 'toast 'ShowAlert  (*list-for-runtime*  "Object and Array assignment" )  '(text))
+	(call-component-method 'toast 'ShowAlert  (*list-for-runtime*  (get-var g$list) )  '(text))
+	(call-component-method 'toast 'ShowAlert  (*list-for-runtime*  "String assignment" )  '(text))
+	(call-component-method 'toast 'ShowAlert  (*list-for-runtime*  (get-var g$string) )  '(text))
+	(call-component-method 'toast 'ShowAlert  (*list-for-runtime*  "Number assignment" )  '(text))
+	(call-component-method 'toast 'ShowAlert  (*list-for-runtime*  (get-var g$number) )  '(text))
+	(call-component-method 'toast 'ShowAlert  (*list-for-runtime*  "Boolean assignment" )  '(text))
+	(call-component-method 'toast 'ShowAlert  (*list-for-runtime*  (get-var g$bool) )  '(text))
+	)
+
+(call-Initialize-of-components 'Screen1 'button1 'toast  )
