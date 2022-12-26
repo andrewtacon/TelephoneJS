@@ -8,19 +8,13 @@ string = "newstring"
 number = 2 + 3 /4 * 7 **2
 bool = false
 
+textbox.value = "hello"
+textbox.value = textbox.value + object + list
+
 button1.addEventListener(
     "click",
     function(){
-        object.key.nestedkey="insert"
-        object.array[2]="hello"
-        toast.showAlert("Object and Array assignment")
-        toast.showAlert(list)
-        toast.showAlert("String assignment")
-        toast.showAlert(string)
-        toast.showAlert("Number assignment")
-        toast.showAlert(number)
-        toast.showAlert("Boolean assignment")
-        toast.showAlert(bool)
+        toast.showAlert(textbox.value)
     }
 )
 

@@ -29,7 +29,7 @@ Hard problems:
     text methods
 
     //binary operation
-    (def g$name (call-yail-primitive string-append (*list-for-runtime* "a" "b" ) '(text text ) "join"))                     //join strings   +
+    done (def g$name (call-yail-primitive string-append (*list-for-runtime* "a" "b" ) '(text text ) "join"))                     //join strings   +
     (def g$name (call-yail-primitive string<? (*list-for-runtime* "a" "b") '(text text) "text<"))                           //compare texts
     (def g$name (call-yail-primitive string=? (*list-for-runtime* "a" "b") '(text text) "text="))  
     (def g$name (not (call-yail-primitive string=? (*list-for-runtime* "a" "b") '(text text) "not =")))
@@ -357,6 +357,7 @@ function removeFromVariableStack(declaration) {
 }
 
 function findVariableInStack(name) {
+
     let currentStack = variableStack[variableStack.length - 1]
     for (let i = currentStack.length - 1; i >= 0; i--) {
         if (currentStack[i].identifier === name && currentStack[i].scope === "local") {
@@ -366,6 +367,8 @@ function findVariableInStack(name) {
 
         } else if (currentStack[i].scope !== "global" && currentStack[i].scope !== "local") {
             return name
+        } else if (currentStack[i].name === name && currentStack[i].scope === "component") {
+            return currentStack[i]
         }
     }
     console.log(`Variable not found or not in scope: "${name}".`)
@@ -604,15 +607,45 @@ function transpileDeclarations(node) {
         case "MemberExpressionSet":
             let MemberExpressionSetProperty = node.property.name       // .text
             let MemberExpressionSetValue = node.property.value         // ["text"] or [2]    //need to work out if the is whole number 
-            console.log("insert at "+node.property.value)
 
-
-            console.log("MemberExpressionSet " +JSON.stringify(node.object))
             if (node.type === "MemberExpression") { node.type = "MemberExpressionSet" } //make it come back to here
 
-            switch (MemberExpressionSetProperty) {
+            let MESelementName = node.object.name
+
+            let MESisVariableOfType = undefined
+            let MESisVariableOfScope = undefined
+            let currentStack = variableStack[variableStack.length - 1]
+            for (let i = currentStack.length - 1; i >= 0; i--) {
+                if (currentStack[i].name === MESelementName) {
+                    MESisVariableOfType = currentStack[i].type
+                    MESisVariableOfScope = currentStack[i].scope
+                    break
+                }
+            }
+
+
+            switch (MESisVariableOfScope) {
+                case "component":
+                    switch (MemberExpressionSetProperty) {
+                        case "value":
+
+                            if (MESisVariableOfType === "textbox") {
+                                console.log("found textbox" + findVariableInStack(node.object.name))
+                                return `(set-and-coerce-property! 'textbox 'Text ${transpileDeclarations(node.assignedRight)} 'text)`
+
+                            }
+                            //(set-and-coerce-property! 'TextBox1 'Text "text value" 'text)
+                            return ""
+
+                    }
+
                 default:
-                    return `(if 
+
+                    switch (MemberExpressionSetProperty) {
+
+                        default:
+
+                            return `(if 
                                 (call-yail-primitive yail-dictionary? (*list-for-runtime*  ${transpileDeclarations(node.object)} ) '(any)  "check if something is a dictionary") 
                                 (call-yail-primitive yail-dictionary-set-pair 
                                     (*list-for-runtime* 
@@ -643,10 +676,12 @@ function transpileDeclarations(node) {
                                     
                                 )
                             )`
-            }
+                    } // END Memeber expression set property
 
 
 
+
+            } // END Member Expression set Scope
 
 
             break;
@@ -659,10 +694,41 @@ function transpileDeclarations(node) {
             let MemberExpressionValue = node.property.value         // ["text"] or [2]    //need to work out if the is whole number 
 
 
+            let MEelementName = node.object.name
+
+            let MEisVariableOfType = undefined
+            let MEisVariableOfScope = undefined
+            let MEcurrentStack = variableStack[variableStack.length - 1]
+            for (let i = MEcurrentStack.length - 1; i >= 0; i--) {
+                if (MEcurrentStack[i].name === MEelementName) {
+                    MEisVariableOfType = MEcurrentStack[i].type
+                    MEisVariableOfScope = MEcurrentStack[i].scope
+                    break
+                }
+            }
+
             //  '()   is an empty list - it is equivalent to null
 
-            if (!MemberExpressionProperty) {
-                return `
+            switch (MEisVariableOfScope) { 
+                //Do components first
+                case "component":
+                    switch (MemberExpressionProperty) {
+                        case "value":
+
+                            if (MEisVariableOfType === "textbox") {
+                                return `(get-property 'textbox 'Text)`
+
+                            }
+                            //(set-and-coerce-property! 'TextBox1 'Text "text value" 'text)
+                            return ""
+
+                    }
+                    break;
+
+                //then deal with everything else
+                default:
+                    if (!MemberExpressionProperty) {
+                        return `
                     (if 
                         (call-yail-primitive yail-dictionary? (*list-for-runtime* ${transpileDeclarations(node.object)} ) '(any)  "check if something is a dictionary") 
                         (call-yail-primitive yail-dictionary-lookup (*list-for-runtime* "${transpileDeclarations(node.property)}" ${transpileDeclarations(node.object)} "not found") '(key any any) "dictionary lookup") 
@@ -673,11 +739,12 @@ function transpileDeclarations(node) {
                                 #f
                         )
                     )`
-            }
+                    }
 
-            switch (MemberExpressionProperty) {
-                case "length":
-                    return `
+                    switch (MemberExpressionProperty) {
+
+                        case "length":
+                            return `
                         (if 
                             (call-yail-primitive yail-dictionary? (*list-for-runtime* ${transpileDeclarations(node.object)} ) '(any)  "check if something is a dictionary") 
                             (call-yail-primitive yail-dictionary-lookup (*list-for-runtime* "${transpileDeclarations(node.property)}" ${transpileDeclarations(node.object)} "not found") '(key any any) "dictionary lookup") 
@@ -693,8 +760,8 @@ function transpileDeclarations(node) {
                             )
                         )`
 
-                default:
-                    return `(if 
+                        default:
+                            return `(if 
                                 (call-yail-primitive yail-dictionary? (*list-for-runtime*  ${transpileDeclarations(node.object)} ) '(any)  "check if something is a dictionary") 
                                 (call-yail-primitive yail-dictionary-lookup (*list-for-runtime* "${transpileDeclarations(node.property)}"  ${transpileDeclarations(node.object)}  "not found") '(key any any) "dictionary lookup") 
                                 (
@@ -715,10 +782,10 @@ function transpileDeclarations(node) {
                                         (#f)
                                 )
                             )`
+                    }
+
+
             }
-
-
-
 
             break;
 
@@ -886,16 +953,23 @@ function transpileDeclarations(node) {
             }
 
             switch (op) {
-                case "+": operator = "+"; operatorCommand = "+"; break
+                case "+":   //the addition operator is overloaded to allow it to add numbers and append string(y) values together
+                    operator = "+"; 
+                    operatorCommand = "+"; 
+                    return `(if 
+                                (and (call-yail-primitive is-number? (*list-for-runtime* ${transpileDeclarations(left)}) '(text) "is a number?") (call-yail-primitive is-number? (*list-for-runtime* ${transpileDeclarations(right)}) '(text) "is a number?") )
+                                (call-yail-primitive ${operator} (*list-for-runtime* ${transpileDeclarations(left)} ${transpileDeclarations(right)} ) '(number number ) "${operatorCommand}")
+                                (call-yail-primitive string-append (*list-for-runtime* ${transpileDeclarations(left)} ${transpileDeclarations(right)} ) '(text text ) "join")
+                            )`
                 case "-": operator = "-"; operatorCommand = "-"; break
                 case "*": operator = "*"; operatorCommand = "*"; break
                 case "/": operator = "yail-divide"; operatorCommand = "yail-divide"; break
                 case "**": operator = "expt"; operatorCommand = "expt"; break
-                case "===": operator = "yail-equal?"; operatorCommand = "="; break
-                case "==": operator = "yail-equal?"; operatorCommand = "="; break
-                case "!==": operator = "yail-not-equal?"; operatorCommand = "not ="; break
-                case "!=": operator = "yail-not-equal?"; operatorCommand = "not ="; break
-                case ">": operator = ">"; operatorCommand = ">"; break
+                case "===": operator = "yail-equal?"; operatorCommand = "="; break              
+                case "==": operator = "yail-equal?"; operatorCommand = "="; break               
+                case "!==": operator = "yail-not-equal?"; operatorCommand = "not ="; break      
+                case "!=": operator = "yail-not-equal?"; operatorCommand = "not ="; break       
+                case ">": operator = ">"; operatorCommand = ">"; break      
                 case ">=": operator = ">="; operatorCommand = ">="; break
                 case "<": operator = "<"; operatorCommand = "<"; break
                 case "<=": operator = "<="; operatorCommand = "<="; break
