@@ -27,18 +27,8 @@ Hard problems:
 
 /*
     text methods
-
-    //binary operation
-    done (def g$name (call-yail-primitive string-append (*list-for-runtime* "a" "b" ) '(text text ) "join"))                     //join strings   +
-    done(def g$name (call-yail-primitive string<? (*list-for-runtime* "a" "b") '(text text) "text<"))                           //compare texts
-    done(def g$name (call-yail-primitive string=? (*list-for-runtime* "a" "b") '(text text) "text="))  
-    done(def g$name (not (call-yail-primitive string=? (*list-for-runtime* "a" "b") '(text text) "not =")))
-    done (def g$name (call-yail-primitive string>? (*list-for-runtime* "a" "b") '(text text) "text>"))
     
-    //string properties
-    (def g$name (call-yail-primitive string-length (*list-for-runtime* "a") '(text) "length"))                              //.length
-    (def g$name (call-yail-primitive string-empty? (*list-for-runtime* "a") '(text) "is text empty?"))                      //.length == 0
-
+    
     //string methods
     (def g$name (call-yail-primitive string-trim (*list-for-runtime* "a") '(text) "trim"))                                  //.trim() 
     (def g$name (call-yail-primitive string-to-upper-case (*list-for-runtime* "a") '(text) "upcase"))                       //.toUpperCase()
@@ -181,7 +171,40 @@ function main(scripts, elements) {
     )
     `
 
-
+    let trimStart = `
+    (define 
+        (trimstart initString) 
+        (let 
+             (  
+                (counter 0)
+             )
+             (let   
+                (
+                    (shortString (substring initString 0 counter))
+                )
+                (while
+                    (and
+                        (= (string-length (string-trim shortString)) 0)
+                        (<= counter (string-length initString))
+                    )
+                    (begin
+                        (set! counter (+ counter 1))
+                        (set! shortString (substring initString 0 counter))
+                    )
+                 )
+                 (begin
+                    (set! counter (- counter 1))
+                    (substring
+                        initString
+                        counter
+                        (string-length initString)
+                    )
+                )
+            )
+        )
+    )
+    
+    `
 
 
 
@@ -191,6 +214,7 @@ function main(scripts, elements) {
         overloadNotEqual +
         overloadGreaterThan +
         overloadLessThan +
+        trimStart +
         generatedCode
 
     return generatedCode
@@ -781,6 +805,7 @@ function transpileDeclarations(node) {
             //I think (currently) it is easier to deal with things this way
             let elementName = node.callee.object.name
 
+            console.log("Call expression on element: " + elementName)
 
             switch (elementName) {
                 case "Math":
@@ -853,14 +878,14 @@ function transpileDeclarations(node) {
                     let isVariableOfScope = undefined
                     let currentStack = variableStack[variableStack.length - 1]
                     for (let i = currentStack.length - 1; i >= 0; i--) {
-                        if (currentStack[i].name === elementName) {
+                        if (currentStack[i].name === elementName || currentStack[i].identifier === elementName) {
                             isVariableOfType = currentStack[i].type
                             isVariableOfScope = currentStack[i].scope
                             break
                         }
                     }
 
-                    console.log(isVariableOfScope)
+                    console.log("Variable scope " + isVariableOfScope)
                     switch (isVariableOfScope) {
                         case "component":
 
@@ -916,6 +941,26 @@ function transpileDeclarations(node) {
                             } // case "component"
 
                         default:
+                            //for global and local variables
+                            if (node.callee.property !== undefined) {
+                                let methodCalled = node.callee.property.name
+                                let args = JSON.parse(JSON.stringify(node.arguments))
+
+                                //check if the method that is called is a legal method for this particular element type (refer to supplied elements list)
+
+                                console.log(methodCalled)
+                                switch (methodCalled) {
+                                    case "trim": return `(if (string? ${transpileDeclarations(node.callee.object)})(string-trim ${transpileDeclarations(node.callee.object)}) #f)`
+                                    case "trimStart": return `(if (string? ${transpileDeclarations(node.callee.object)})(trimstart ${transpileDeclarations(node.callee.object)}) #f)`
+                                        //case "trimEnd":  return `(if (string? ${transpileDeclarations(node.callee.object)})(substring ${transpileDeclarations(node.callee.object)} 0 1) #f)`
+                                        break;
+                                    default:
+                                }
+
+                            }
+
+
+
                     } // end isVariableOfScope
             }
             break;

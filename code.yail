@@ -75,19 +75,55 @@
         )
     )
     
-(def g$a ((get-var p$eql) "a" "a" yail-equal? =))
-(def g$b ((get-var p$eql) "a" "a" yail-equal? =))
-(def g$c ((get-var p$neq) "a" "a" yail-not-equal? "not ="))
-(def g$d ((get-var p$neq) "a" "a" yail-not-equal? "not ="))
-(def g$e ((get-var p$eql) "a" "b" yail-equal? =))
-(def g$f ((get-var p$eql) "a" "b" yail-equal? =))
-(def g$g ((get-var p$neq) "a" "b" yail-not-equal? "not ="))
-(def g$h ((get-var p$neq) "a" "b" yail-not-equal? "not ="))
-(def g$i ((get-var p$gt) "a" "b"))
-(def g$j ((get-var p$lt) "a" "b"))
-(set-and-coerce-property! 'textbox 'Text ((get-var p$add) ((get-var p$add) ((get-var p$add) ((get-var p$add) ((get-var p$add) ((get-var p$add) ((get-var p$add) ((get-var p$add) ((get-var p$add) ((get-var p$add) ((get-var p$add) ((get-var p$add) ((get-var p$add) ((get-var p$gt) 1 2) ",") ((get-var p$lt) 1 2)) ",") ((get-var p$lt) "a" "b")) ",") ((get-var p$gt) "a" "b")) (or ((get-var p$lt) 1 2) ((get-var p$eql) 1 2 yail-equal? =))) ",") (or ((get-var p$gt) 1 2) ((get-var p$eql) 1 2 yail-equal? =))) ",") (or ((get-var p$lt) "a" "b") ((get-var p$eql) "a" "b" yail-equal? =))) ",") (or ((get-var p$gt) "a" "b") ((get-var p$eql) "a" "b" yail-equal? =))) 'text)
-(define-event button1 Click() (set-this-form) 
-	(call-component-method 'toast 'ShowAlert  (*list-for-runtime*  (get-property 'textbox 'Text) )  '(text))
-	)
+    (define 
+        (trimstart initString) 
+        (let 
+             (  
+                (counter 0)
+             )
+             (let   
+                (
+                    (shortString (substring initString 0 counter))
+                )
+                (while
+                    (and
+                        (= (string-length (string-trim shortString)) 0)
+                        (<= counter (string-length initString))
+                    )
+                    (begin
+                        (set! counter (+ counter 1))
+                        (set! shortString (substring initString 0 counter))
+                    )
+                 )
+                 (begin
+                    (set! counter (- counter 1))
+                    (substring
+                        initString
+                        counter
+                        (string-length initString)
+                    )
+                )
+            )
+        )
+    )
+    
+    
+(def g$a "123456789")
+(set-var!  g$a (if (string? (get-var g$a))(trimstart (get-var g$a)) #f)  )
+(set-and-coerce-property! 'textbox 'Text ((get-var p$add) ((get-var p$add) (get-var g$a) ",") 
+		                        (if 
+			                            (call-yail-primitive yail-dictionary? (*list-for-runtime* (get-var g$a) ) '(any)  "check if something is a dictionary") 
+			                            (call-yail-primitive yail-dictionary-lookup (*list-for-runtime* "length" (get-var g$a) "not found") '(key any any) "dictionary lookup") 
+			                            (
+				                                if 
+				                                    (call-yail-primitive yail-list? (*list-for-runtime* (get-var g$a) ) '(any) "is a list?") 
+				                                    (call-yail-primitive yail-list-length (*list-for-runtime* (get-var g$a) ) '(list) "length of list") 
+				                                    (if 
+					                                        (call-yail-primitive string? (*list-for-runtime* (get-var g$a) ) '(any) "is a string?") 
+					                                        (call-yail-primitive string-length (*list-for-runtime* (get-var g$a) ) '(text) "length") 
+					                                        #f
+					                                    )
+				                            )
+			                        )) 'text)
 
 (call-Initialize-of-components 'Screen1 'button1 'textbox 'toast  )

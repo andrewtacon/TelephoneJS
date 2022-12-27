@@ -1,11 +1,9 @@
 const adb = require('adbkit')
 const client = adb.createClient()
 
-
 const logger = require("./logger")
 const log = logger.log
 const debug = logger.debug
-
 
 async function getFiles(devices) {
   let foundFiles = []
@@ -27,6 +25,11 @@ async function startMonitorLog(device) {
   let logcat = await client.openLogcat(device.id, { clear: true } )
 
   logcat.on('entry', entry => {
+    
+    if (entry.tag ==="System.err") {
+      console.error("System Error: "+entry.message)
+    }
+
     if (entry.message.indexOf("Incoming seq") !== -1 || entry.message.indexOf("Computed seq") !== -1) {
       let incoming = entry.message.indexOf("Incoming seq")
       let computed = entry.message.indexOf("Computed seq")
