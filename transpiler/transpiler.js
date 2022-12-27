@@ -66,6 +66,7 @@ Hard problems:
 const fs = require('fs')
 const { parse, traverse, walk } = require('abstract-syntax-tree')
 const util = require('util')
+const procedures = require("./procedures.js")
 
 let debug = false
 
@@ -73,6 +74,8 @@ let generatedCode = ""
 let generatedGlobalsCode = ""
 let globalStack = []
 let variableStack = []
+
+let proceduresUsed = new Set()
 
 function main(scripts, elements) {
 
@@ -133,7 +136,13 @@ function main(scripts, elements) {
         process.exit(0)
     }
 
-    let procedures = fs.readFileSync("transpiler/procedures.scm", "utf-8")
+    //let procedures = fs.readFileSync("transpiler/procedures.scm", "utf-8")
+    let procedures = ""
+    proceduresUsed.forEach(
+        function(value) {
+            procedures+=value
+        }
+    )
     generatedCode = ";;Procedures\n" + procedures + "\n\n;;Transpiled Code\n" + generatedCode
 
     return generatedCode
@@ -574,7 +583,8 @@ function transpileDeclarations(node) {
                     switch (MemberExpressionSetProperty) {
 
                         default:
-
+                            proceduresUsed.add(procedures.isDictionary)
+                            proceduresUsed.add(procedures.isList)
                             return `
                             (cond 
                                 ((isDictionary  ${transpileDeclarations(node.object)} ) (call-yail-primitive yail-dictionary-set-pair (*list-for-runtime* "${transpileDeclarations(node.property)}" ${transpileDeclarations(node.object)} ${transpileDeclarations(node.assignedRight)}) '(key dictionary any) "set value for key in dictionary to value"))
@@ -633,6 +643,11 @@ function transpileDeclarations(node) {
                 //then deal with everything else
                 default:
                     if (!MemberExpressionProperty) {
+                        proceduresUsed.add(procedures.isDictionary)
+                        proceduresUsed.add(procedures.getFromDict)
+                        proceduresUsed.add(procedures.isList)
+                        proceduresUsed.add(procedures.getFromList)
+
                         return `
                     (cond 
                         ((isDictionary  ${transpileDeclarations(node.object)}) (getFromDict "${transpileDeclarations(node.property)}" ${transpileDeclarations(node.object)}) )
@@ -644,6 +659,10 @@ function transpileDeclarations(node) {
                     switch (MemberExpressionProperty) {
 
                         case "length":
+                            proceduresUsed.add(procedures.isDictionary)
+                            proceduresUsed.add(procedures.getFromDict)
+                            proceduresUsed.add(procedures.isList)
+
                             return `
                         (cond
                             ((isDictionary  ${transpileDeclarations(node.object)} ) (getFromDict "${transpileDeclarations(node.property)}" ${transpileDeclarations(node.object)}) )
@@ -653,6 +672,10 @@ function transpileDeclarations(node) {
                         )`
 
                         default:
+                            proceduresUsed.add(procedures.isDictionary)
+                            proceduresUsed.add(procedures.getFromDict)
+                            proceduresUsed.add(procedures.isList)
+                            proceduresUsed.add(procedures.getFromList)
                             return `
                             (cond 
                                 ((isDictionary  ${transpileDeclarations(node.object)} ) (getFromDict "${transpileDeclarations(node.property)}" ${transpileDeclarations(node.object)}) )
@@ -817,15 +840,28 @@ function transpileDeclarations(node) {
                                 console.log(methodCalled)
                                 switch (methodCalled) {
                                     //methods for strings
-                                    case "trim": return `(if (string? ${transpileDeclarations(node.callee.object)})(string-trim ${transpileDeclarations(node.callee.object)}) #f)`
-                                    case "trimStart": return `(if (string? ${transpileDeclarations(node.callee.object)})(trim-start ${transpileDeclarations(node.callee.object)}) #f)`
-                                    case "trimEnd": return `(if (string? ${transpileDeclarations(node.callee.object)})(trim-end ${transpileDeclarations(node.callee.object)}) #f)`
-                                    case "toUpperCase": return `(if (string? ${transpileDeclarations(node.callee.object)})(string-upcase ${transpileDeclarations(node.callee.object)}) #f)`
-                                    case "toLowerCase": return `(if (string? ${transpileDeclarations(node.callee.object)})(string-downcase ${transpileDeclarations(node.callee.object)}) #f)`
-                                    case "at": return `(if (string? ${transpileDeclarations(node.callee.object)})(at ${transpileDeclarations(node.callee.object)} ${transpileDeclarations(args[0])}) #f)`
-                                    case "charAt": return `(if (string? ${transpileDeclarations(node.callee.object)})(char-at ${transpileDeclarations(node.callee.object)} ${transpileDeclarations(args[0])}) #f)`
+                                    case "trim":
+                                        return `(if (string? ${transpileDeclarations(node.callee.object)})(string-trim ${transpileDeclarations(node.callee.object)}) #f)`
+                                    case "trimStart":
+                                        proceduresUsed.add(procedures.trim_start)
+                                        return `(if (string? ${transpileDeclarations(node.callee.object)})(trim-start ${transpileDeclarations(node.callee.object)}) #f)`
+                                    case "trimEnd":
+                                        proceduresUsed.add(procedures.trim_end)
+                                        return `(if (string? ${transpileDeclarations(node.callee.object)})(trim-end ${transpileDeclarations(node.callee.object)}) #f)`
+                                    case "toUpperCase":
+                                        return `(if (string? ${transpileDeclarations(node.callee.object)})(string-upcase ${transpileDeclarations(node.callee.object)}) #f)`
+                                    case "toLowerCase":
+                                        return `(if (string? ${transpileDeclarations(node.callee.object)})(string-downcase ${transpileDeclarations(node.callee.object)}) #f)`
+                                    case "at":
+                                        proceduresUsed.add(procedures.at)
+                                        return `(if (string? ${transpileDeclarations(node.callee.object)})(at ${transpileDeclarations(node.callee.object)} ${transpileDeclarations(args[0])}) #f)`
+                                    case "charAt":
+                                        proceduresUsed.add(procedures.char_at)
+                                        return `(if (string? ${transpileDeclarations(node.callee.object)})(char-at ${transpileDeclarations(node.callee.object)} ${transpileDeclarations(args[0])}) #f)`
                                         break;
-                                    case "charCodeAt": return `(if (string? ${transpileDeclarations(node.callee.object)})(char-code-at ${transpileDeclarations(node.callee.object)} ${transpileDeclarations(args[0])}) #f)`
+                                    case "charCodeAt":
+                                        proceduresUsed.add(procedures.char_code_at)
+                                        return `(if (string? ${transpileDeclarations(node.callee.object)})(char-code-at ${transpileDeclarations(node.callee.object)} ${transpileDeclarations(args[0])}) #f)`
                                     case "concat":
                                         let concatArgs = ""
                                         for (let concatArgCount = 0; concatArgCount < args.length; concatArgCount++) {
@@ -869,20 +905,54 @@ function transpileDeclarations(node) {
                 right = node.right
             }
             switch (op) {
-                case "+": operator = "+"; operatorCommand = "+"; return `((get-var add) ${transpileDeclarations(left)} ${transpileDeclarations(right)})`
-                case "-": operator = "-"; operatorCommand = "-"; break
-                case "*": operator = "*"; operatorCommand = "*"; break
-                case "/": operator = "yail-divide"; operatorCommand = "yail-divide"; break
-                case "**": operator = "expt"; operatorCommand = "expt"; break
+                case "+":
+                    operator = "+";
+                    operatorCommand = "+";
+                    proceduresUsed.add(procedures.add)
+                    return `((get-var add) ${transpileDeclarations(left)} ${transpileDeclarations(right)})`
+                case "-":
+                    operator = "-";
+                    operatorCommand = "-";
+                    break
+                case "*":
+                    operator = "*";
+                    operatorCommand = "*";
+                    break
+                case "/":
+                    operator = "yail-divide";
+                    operatorCommand = "yail-divide";
+                    break
+                case "**":
+                    operator = "expt";
+                    operatorCommand = "expt";
+                    break
                 case "===":     //this is not correct - there should be type checking but not going to bother
-                case "==": operator = "yail-equal?"; operatorCommand = "="; return `((get-var eql) ${transpileDeclarations(left)} ${transpileDeclarations(right)} ${operator} ${operatorCommand})`
+                case "==":
+                    operator = "yail-equal?";
+                    operatorCommand = "=";
+                    proceduresUsed.add(procedures.eql)
+                    return `((get-var eql) ${transpileDeclarations(left)} ${transpileDeclarations(right)} ${operator} ${operatorCommand})`
                 case "!==":     //this is not correct - there should be type checking
-                case "!=": operator = "yail-not-equal?"; operatorCommand = `"not ="`; return `((get-var neq) ${transpileDeclarations(left)} ${transpileDeclarations(right)} ${operator} ${operatorCommand})`
-                case "<": return `((get-var lt) ${transpileDeclarations(left)} ${transpileDeclarations(right)})`
-                case ">": return `((get-var gt) ${transpileDeclarations(left)} ${transpileDeclarations(right)})`
-                case ">=": operator = "yail-equal?"; operatorCommand = "=";
+                case "!=":
+                    operator = "yail-not-equal?";
+                    operatorCommand = `"not ="`;
+                    proceduresUsed.add(procedures.neq)
+                    return `((get-var neq) ${transpileDeclarations(left)} ${transpileDeclarations(right)} ${operator} ${operatorCommand})`
+                case "<":
+                    proceduresUsed.add(procedures.lt)
+                    return `((get-var lt) ${transpileDeclarations(left)} ${transpileDeclarations(right)})`
+                case ">":
+                    proceduresUsed.add(procedures.gt)
+                    return `((get-var gt) ${transpileDeclarations(left)} ${transpileDeclarations(right)})`
+                case ">=":
+                    operator = "yail-equal?";
+                    operatorCommand = "=";
+                    proceduresUsed.add(procedures.gt)
+                    proceduresUsed.add(procedures.eql)
                     return `(or ((get-var gt) ${transpileDeclarations(left)} ${transpileDeclarations(right)}) ((get-var eql) ${transpileDeclarations(left)} ${transpileDeclarations(right)} ${operator} ${operatorCommand}))`
                 case "<=": operator = "yail-equal?"; operatorCommand = "=";
+                    proceduresUsed.add(procedures.lt)
+                    proceduresUsed.add(procedures.eql)
                     return `(or ((get-var lt) ${transpileDeclarations(left)} ${transpileDeclarations(right)}) ((get-var eql) ${transpileDeclarations(left)} ${transpileDeclarations(right)} ${operator} ${operatorCommand}))`
                 case "&": operator = "bitwise-and"; operatorCommand = "bitwise-and"; break
                 case "|": operator = "bitwise-ior"; operatorCommand = "bitwise-ior"; break
