@@ -82,6 +82,42 @@
 )
 
 
+
+;;Adds the functionality to trim from the end of a string e.g.   content.trimEnd()
+(define 
+    (trimend initString) 
+    (let 
+            (  
+            (counter 0)
+            )
+            (let   
+            (
+                (shortString (substring initString (-(string-length initString) counter) (string-length initString)))
+            )
+            (while
+                (and
+                    (= (string-length (string-trim shortString)) 0)
+                    (<= counter (string-length initString))
+                )
+                (begin
+                    (set! counter (+ counter 1))
+                    (set! shortString (substring initString (-(string-length initString) counter) (string-length initString)))
+                )
+                )
+                (begin
+                (set! counter (- counter 1))
+                (substring
+                    initString
+                    0
+                    (- (string-length initString) counter)
+                )
+            )
+        )
+    )
+)
+
+
+
 ;;Simplifies checking if something is a dictionary / object
 (define 
     (isDictionary testItem)

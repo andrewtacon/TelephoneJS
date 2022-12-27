@@ -30,7 +30,9 @@ Hard problems:
     
     
     //string methods
-    (def g$name (call-yail-primitive string-trim (*list-for-runtime* "a") '(text) "trim"))                                  //.trim() 
+    done (def g$name (call-yail-primitive string-trim (*list-for-runtime* "a") '(text) "trim"))                                  //.trim() 
+    done .trimStart()
+    .trimEnd()
     (def g$name (call-yail-primitive string-to-upper-case (*list-for-runtime* "a") '(text) "upcase"))                       //.toUpperCase()
     (def g$name (call-yail-primitive string-to-lower-case (*list-for-runtime* "a") '(text) "downcase"))                     //.toLowerCase()
     (def g$name (call-yail-primitive string-replace-all (*list-for-runtime* "" "" "") '(text text text) "replace all"))     //.replaceAll(a,b)
@@ -816,7 +818,7 @@ function transpileDeclarations(node) {
                                 switch (methodCalled) {
                                     case "trim": return `(if (string? ${transpileDeclarations(node.callee.object)})(string-trim ${transpileDeclarations(node.callee.object)}) #f)`
                                     case "trimStart": return `(if (string? ${transpileDeclarations(node.callee.object)})(trimstart ${transpileDeclarations(node.callee.object)}) #f)`
-                                        //case "trimEnd":  return `(if (string? ${transpileDeclarations(node.callee.object)})(substring ${transpileDeclarations(node.callee.object)} 0 1) #f)`
+                                    case "trimEnd":  return `(if (string? ${transpileDeclarations(node.callee.object)})(trimend ${transpileDeclarations(node.callee.object)}) #f)`
                                         break;
                                     default:
                                 }
