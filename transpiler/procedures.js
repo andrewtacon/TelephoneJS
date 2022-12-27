@@ -204,3 +204,31 @@ exports.getFromList = `
     (call-yail-primitive yail-list-get-item (*list-for-runtime*  object (+ property 1) ) '(list number) "select list item") 
 )
 `
+
+
+exports.endsWith = `
+(define
+    (endsWith fullString endString)
+    (if
+        (string=?
+          (substring fullString (- (string-length fullString) (string-length endString)) (string-length fullString)  )  
+            endString
+        )    
+        #t
+        #f
+    )    
+    
+)
+`
+
+exports.indexOf = `
+(define (indexOf t s)
+  (let* ((len (string-length s))
+        (max (- (string-length t) len)))        
+    (let loop ((i 0))
+      (cond ((> i max) 
+             -1)
+            ((string=? s
+                       (substring t i (+ i len)))
+             i)
+            (else (loop (+ i 1)))))))`

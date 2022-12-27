@@ -139,8 +139,8 @@ function main(scripts, elements) {
     //let procedures = fs.readFileSync("transpiler/procedures.scm", "utf-8")
     let procedures = ""
     proceduresUsed.forEach(
-        function(value) {
-            procedures+=value
+        function (value) {
+            procedures += value
         }
     )
     generatedCode = ";;Procedures\n" + procedures + "\n\n;;Transpiled Code\n" + generatedCode
@@ -871,10 +871,37 @@ function transpileDeclarations(node) {
                                             }
                                         }
                                         return `(if (string? ${transpileDeclarations(node.callee.object)})(string-append ${transpileDeclarations(node.callee.object)} ${concatArgs}) #f)`
+                                    case "endsWith":
+                                        proceduresUsed.add(procedures.endsWith)
+                                        return `(if (string? ${transpileDeclarations(node.callee.object)})(endsWith ${transpileDeclarations(node.callee.object)} ${transpileDeclarations(args[0])}) #f)`
+                                    case "fromCharCode":
+                                        let fromCharCodeArgs = ""
+                                        for (let fromCharCodeArgCount = 0; fromCharCodeArgCount < args.length; fromCharCodeArgCount++) {
+                                            fromCharCodeArgs += `(integer->char ${transpileDeclarations(args[fromCharCodeArgCount])})`
+                                            if (fromCharCodeArgCount != args.length - 1) {
+                                                fromCharCodeArgs += " "
+                                            }
+                                        }
+                                        return `(if 
+                                                    (string=? ${transpileDeclarations(node.callee.object)} String)
+                                                    (string ${fromCharCodeArgs}) 
+                                                    "not the string"
+                                                )`
+                                    case "includes":
+                                        return `(if 
+                                                    (string? ${transpileDeclarations(node.callee.object)})
+                                                    (string-contains ${transpileDeclarations(node.callee.object)} ${transpileDeclarations(args[0])}) 
+                                                    #f
+                                                )`
+                                    case "indexOf":
+                                        proceduresUsed.add(procedures.indexOf)
+                                        return `(if 
+                                                    (string? ${transpileDeclarations(node.callee.object)})
+                                                    (indexOf ${transpileDeclarations(node.callee.object)} ${transpileDeclarations(args[0])}    ) 
+                                                    -1
+                                                )`
 
 
-
-                                        break;
                                     default:
                                 }
 
