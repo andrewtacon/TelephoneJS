@@ -32,13 +32,13 @@ Hard problems:
     //string methods
     done (def g$name (call-yail-primitive string-trim (*list-for-runtime* "a") '(text) "trim"))                                  //.trim() 
     done .trimStart()
-    .trimEnd()
-    (def g$name (call-yail-primitive string-to-upper-case (*list-for-runtime* "a") '(text) "upcase"))                       //.toUpperCase()
-    (def g$name (call-yail-primitive string-to-lower-case (*list-for-runtime* "a") '(text) "downcase"))                     //.toLowerCase()
-    (def g$name (call-yail-primitive string-replace-all (*list-for-runtime* "" "" "") '(text text text) "replace all"))     //.replaceAll(a,b)
-    (def g$name (call-yail-primitive string-split (*list-for-runtime* "a" "2") '(text text) "split"))                       //.split at?
-    (def g$name (call-yail-primitive string-split-at-spaces (*list-for-runtime* "2") '(text) "split at spaces"))            //.split(" ")
-    (def g$name (call-yail-primitive string-contains (*list-for-runtime* "a" "2") '(text text) "string contains"))          //.includes() 
+    done .trimEnd()
+    done (call-yail-primitive string-to-upper-case (*list-for-runtime* "a") '(text) "upcase")                       //.toUpperCase()
+    done (call-yail-primitive string-to-lower-case (*list-for-runtime* "a") '(text) "downcase")                     //.toLowerCase()
+     (call-yail-primitive string-replace-all (*list-for-runtime* "" "" "") '(text text text) "replace all")     //.replaceAll(a,b)
+    (call-yail-primitive string-split (*list-for-runtime* "a" "2") '(text text) "split")                       //.split at?
+    (call-yail-primitive string-split-at-spaces (*list-for-runtime* "2") '(text) "split at spaces")           //.split(" ")
+    (call-yail-primitive string-contains (*list-for-runtime* "a" "2") '(text text) "string contains")          //.includes() 
 
     //bonus string methods
     (def g$name (call-yail-primitive string-reverse (*list-for-runtime* "a") '(text) "reverse"))                            //.reverse() //bonus method
@@ -93,20 +93,20 @@ function main(scripts, elements) {
     }
 
     console.log("*** Transpiling complete ***")
-  
+
     let gcode = generatedCode.split("\n")
-    for (let i=gcode.length-1; i>=0; i--){
+    for (let i = gcode.length - 1; i >= 0; i--) {
         if (gcode[i].length === 0) {
-            gcode.splice(i,1)
+            gcode.splice(i, 1)
         } else {
             gcode[i] = gcode[i].trim()
         }
     }
-  
+
     generatedCode = gcode.join("\n")
 
-  //  generatedCode = generatedCode.replaceAll("\n\n", "\n")
-  //  generatedCode = generatedCode.replaceAll("\t", "")
+    //  generatedCode = generatedCode.replaceAll("\n\n", "\n")
+    //  generatedCode = generatedCode.replaceAll("\t", "")
 
     let opens = 0
     let closes = 0
@@ -134,7 +134,7 @@ function main(scripts, elements) {
     }
 
     let procedures = fs.readFileSync("transpiler/procedures.scm", "utf-8")
-    generatedCode =  ";;Procedures\n"+procedures+"\n\n;;Transpiled Code\n"+generatedCode
+    generatedCode = ";;Procedures\n" + procedures + "\n\n;;Transpiled Code\n" + generatedCode
 
     return generatedCode
 }
@@ -816,9 +816,28 @@ function transpileDeclarations(node) {
 
                                 console.log(methodCalled)
                                 switch (methodCalled) {
+                                    //methods for strings
                                     case "trim": return `(if (string? ${transpileDeclarations(node.callee.object)})(string-trim ${transpileDeclarations(node.callee.object)}) #f)`
-                                    case "trimStart": return `(if (string? ${transpileDeclarations(node.callee.object)})(trimstart ${transpileDeclarations(node.callee.object)}) #f)`
-                                    case "trimEnd":  return `(if (string? ${transpileDeclarations(node.callee.object)})(trimend ${transpileDeclarations(node.callee.object)}) #f)`
+                                    case "trimStart": return `(if (string? ${transpileDeclarations(node.callee.object)})(trim-start ${transpileDeclarations(node.callee.object)}) #f)`
+                                    case "trimEnd": return `(if (string? ${transpileDeclarations(node.callee.object)})(trim-end ${transpileDeclarations(node.callee.object)}) #f)`
+                                    case "toUpperCase": return `(if (string? ${transpileDeclarations(node.callee.object)})(string-upcase ${transpileDeclarations(node.callee.object)}) #f)`
+                                    case "toLowerCase": return `(if (string? ${transpileDeclarations(node.callee.object)})(string-downcase ${transpileDeclarations(node.callee.object)}) #f)`
+                                    case "at": return `(if (string? ${transpileDeclarations(node.callee.object)})(at ${transpileDeclarations(node.callee.object)} ${transpileDeclarations(args[0])}) #f)`
+                                    case "charAt": return `(if (string? ${transpileDeclarations(node.callee.object)})(char-at ${transpileDeclarations(node.callee.object)} ${transpileDeclarations(args[0])}) #f)`
+                                        break;
+                                    case "charCodeAt": return `(if (string? ${transpileDeclarations(node.callee.object)})(char-code-at ${transpileDeclarations(node.callee.object)} ${transpileDeclarations(args[0])}) #f)`
+                                    case "concat":
+                                        let concatArgs = ""
+                                        for (let concatArgCount = 0; concatArgCount < args.length; concatArgCount++) {
+                                            concatArgs += transpileDeclarations(args[concatArgCount])
+                                            if (concatArgCount != args.length - 1) {
+                                                concatArgs += " "
+                                            }
+                                        }
+                                        return `(if (string? ${transpileDeclarations(node.callee.object)})(string-append ${transpileDeclarations(node.callee.object)} ${concatArgs}) #f)`
+
+
+
                                         break;
                                     default:
                                 }

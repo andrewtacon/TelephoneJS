@@ -50,7 +50,7 @@
 
 ;;Adds the functionality to trim from the start of a string e.g.   content.trimStart()
 (define 
-    (trimstart initString) 
+    (trim-start initString) 
     (let 
             (  
             (counter 0)
@@ -85,7 +85,7 @@
 
 ;;Adds the functionality to trim from the end of a string e.g.   content.trimEnd()
 (define 
-    (trimend initString) 
+    (trim-end initString) 
     (let 
             (  
             (counter 0)
@@ -116,6 +116,43 @@
     )
 )
 
+
+;;adds the 'at' method for strings  "hello".at(1) =>  e
+(define
+    (at object property)
+    (begin
+        (if 
+            (< property 0)
+            (set! property (+ (string-length object) property))
+            #f
+        )
+        (if
+            (and (>= property 0) (< property (string-length object))   )
+            (substring object property (+ property 1))
+            '()    
+        )
+    )
+)
+
+;;adds the 'charat' method for strings  "hello".charAt(1)
+(define
+    (char-at object property)
+    (if
+        (and (>= property 0) (< property (string-length object))   )
+        (substring object property (+ property 1))
+        '()    
+    )
+)
+
+;;adds the 'charcodeat' method for strings  "hello".charCodeAt(1) =>  number
+(define
+    (char-code-at object property)
+    (if
+        (and (>= property 0) (< property (string-length object))   )
+        (char->integer (object:charAt property)  )
+        '()    
+    )
+)
 
 
 ;;Simplifies checking if something is a dictionary / object
