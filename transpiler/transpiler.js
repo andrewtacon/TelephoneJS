@@ -30,10 +30,10 @@ Hard problems:
 
     //binary operation
     done (def g$name (call-yail-primitive string-append (*list-for-runtime* "a" "b" ) '(text text ) "join"))                     //join strings   +
-    (def g$name (call-yail-primitive string<? (*list-for-runtime* "a" "b") '(text text) "text<"))                           //compare texts
-    (def g$name (call-yail-primitive string=? (*list-for-runtime* "a" "b") '(text text) "text="))  
-    (def g$name (not (call-yail-primitive string=? (*list-for-runtime* "a" "b") '(text text) "not =")))
-    (def g$name (call-yail-primitive string>? (*list-for-runtime* "a" "b") '(text text) "text>"))
+    done(def g$name (call-yail-primitive string<? (*list-for-runtime* "a" "b") '(text text) "text<"))                           //compare texts
+    done(def g$name (call-yail-primitive string=? (*list-for-runtime* "a" "b") '(text text) "text="))  
+    done(def g$name (not (call-yail-primitive string=? (*list-for-runtime* "a" "b") '(text text) "not =")))
+    done (def g$name (call-yail-primitive string>? (*list-for-runtime* "a" "b") '(text text) "text>"))
     
     //string properties
     (def g$name (call-yail-primitive string-length (*list-for-runtime* "a") '(text) "length"))                              //.length
@@ -129,82 +129,69 @@ function main(scripts, elements) {
         process.exit(0)
     }
 
-    //extra functions for pass-by-reference so that you can pass arrays and objects by reference, as opposed to passing by value
-    //https://books.google.com.au/books?id=vKIvIXSxcCgC&lpg=PP1&dq=little+schemer&pg=PA181&redir_esc=y&hl=en#v=snippet&q=(define%20box&f=false
-
-    let boxdefinitions = `
-;; Prepare to redefine pair?.
-(define %true-pair? pair?)
-
-;; Unique object in the cdr of a pair flags it as a box.
-(define %box-flag (string-copy "box flag"))
-
-;; Predicate
-(define (box? x) (and (%true-pair? x) (eq? (cdr x) %box-flag)))
-
-;; Constructor
-(define (box x) (cons x %box-flag))
-
-;; Accessor
-(define (unbox x)
-  (if (box? x)
-    (car x)
-    (error "Attempt to unbox non-box")))
-    
-;; Mutator
-(define (set-box! x y)
-  (if (box? x)
-    (set-car! x y)
-    (error "Attempt to mutate non-box")))
-
-;; Override pair?.
-(set! pair?
-  (lambda (x)
-    (and (%true-pair? x) (not (box? x)))))
-    `
-
-    let defineBox = `
-        (define box
-            (lambda (it)
-                (lambda (sel)
-                    (sel it (lambda (new)
-                        (set! it new))))))
-    `
-
-    let defineUnbox = `
-        (define unbox
-            (lambda (box)
-                (box (lambda (it set) it))))
-    `
-
-    let setbox = `
-        (define setbox
-            (lambda (box new)
-                (box (lambda (it set) (set new)))))
-    `
-
-    //and from https://srfi.schemers.org/srfi-111/srfi-111.html
-
-    let MyBoxCode = `
-    (define %box-flag (string-copy "box flag"))     ;;define the flag for a box
-    (define (box? x) (eq? (cdr x) %box-flag))       ;; is this a box
-    (define (box x) (cons x %box-flag))             ;;build a box
-    (define (unbox x)                               ;;unbox
-        (if (box? x)                                ;;if box
-            (car x)                                 ;;then return the box component
-            (x)                                     ;;else return what sent in (no change - basically ignore erroroneous input)
+    //helper functions
+    //these could probably be written more efficiently and shorter not using the MIT App Inventor macros but they will do for now
+    let overloadAddition = `
+    (def (p$add $a $b) 
+        (if    
+            (and-delayed (call-yail-primitive is-number? (*list-for-runtime* (lexical-value $a)) '(text) "is a number?") (call-yail-primitive is-number? (*list-for-runtime* (lexical-value $b)) '(text) "is a number?")) 
+            (call-yail-primitive + (*list-for-runtime* (lexical-value $a) (lexical-value $b) ) '(number number ) "+") 
+            (call-yail-primitive string-append (*list-for-runtime* (lexical-value $a) (lexical-value $b) ) '(text text ) "join")
         )
     )
-    (define (set-box! x y)                          ;;change box contents
-        (if (box? x)                                ;;if box
-            (set-car! x y)                          ;;then change contents
-            (#f)                                    ;;else do nothing     
+    `
+
+    let overloadEqual = `
+    (def (p$eql $a $b $operator $operatorCommand ) 
+        (if 
+            (and (call-yail-primitive string? (*list-for-runtime* $a) '(any) "is a string?")  (call-yail-primitive string? (*list-for-runtime* $b) '(any) "is a string?")  )
+            (call-yail-primitive string=? (*list-for-runtime* $a $b) '(text text) "text=")
+            (call-yail-primitive $operator (*list-for-runtime* $a $b) '(number number ) "$operatorCommand")
         )
-    )   
+    )
+    `
+
+    let overloadNotEqual = `
+    (def (p$neq $a $b $operator $operatorCommand ) 
+        (if 
+            (and (call-yail-primitive string? (*list-for-runtime* $a) '(any) "is a string?")  (call-yail-primitive string? (*list-for-runtime* $b) '(any) "is a string?")  )
+            (not (call-yail-primitive string=? (*list-for-runtime* $a $b) '(text text) "not ="))
+            (call-yail-primitive $operator (*list-for-runtime* $a $b) '(number number ) "$operatorCommand")
+        )
+    )
+    `
+
+    let overloadGreaterThan = `
+    (def (p$gt $a $b ) 
+        (if 
+            (and (call-yail-primitive string? (*list-for-runtime* $a) '(any) "is a string?")  (call-yail-primitive string? (*list-for-runtime* $b) '(any) "is a string?")  )
+            (call-yail-primitive string>? (*list-for-runtime* $a $b) '(text text) "text>")
+            (call-yail-primitive > (*list-for-runtime* $a $b ) '(number number ) ">")
+        )
+    )
+    `
+
+    let overloadLessThan = `
+    (def (p$lt $a $b ) 
+        (if 
+            (and (call-yail-primitive string? (*list-for-runtime* $a) '(any) "is a string?")  (call-yail-primitive string? (*list-for-runtime* $b) '(any) "is a string?")  )
+            (call-yail-primitive string<? (*list-for-runtime* $a $b) '(text text) "text>")
+            (call-yail-primitive < (*list-for-runtime* $a $b ) '(number number ) "<")
+        )
+    )
     `
 
 
-    generatedCode = MyBoxCode + "\n" + generatedCode
+
+
+
+    generatedCode =
+        overloadAddition +
+        overloadEqual +
+        overloadNotEqual +
+        overloadGreaterThan +
+        overloadLessThan +
+        generatedCode
 
     return generatedCode
 }
@@ -709,7 +696,7 @@ function transpileDeclarations(node) {
 
             //  '()   is an empty list - it is equivalent to null
 
-            switch (MEisVariableOfScope) { 
+            switch (MEisVariableOfScope) {
                 //Do components first
                 case "component":
                     switch (MemberExpressionProperty) {
@@ -951,28 +938,22 @@ function transpileDeclarations(node) {
                 left = node.left
                 right = node.right
             }
-
             switch (op) {
-                case "+":   //the addition operator is overloaded to allow it to add numbers and append string(y) values together
-                    operator = "+"; 
-                    operatorCommand = "+"; 
-                    return `(if 
-                                (and (call-yail-primitive is-number? (*list-for-runtime* ${transpileDeclarations(left)}) '(text) "is a number?") (call-yail-primitive is-number? (*list-for-runtime* ${transpileDeclarations(right)}) '(text) "is a number?") )
-                                (call-yail-primitive ${operator} (*list-for-runtime* ${transpileDeclarations(left)} ${transpileDeclarations(right)} ) '(number number ) "${operatorCommand}")
-                                (call-yail-primitive string-append (*list-for-runtime* ${transpileDeclarations(left)} ${transpileDeclarations(right)} ) '(text text ) "join")
-                            )`
+                case "+": operator = "+"; operatorCommand = "+"; return `((get-var p$add) ${transpileDeclarations(left)} ${transpileDeclarations(right)})`
                 case "-": operator = "-"; operatorCommand = "-"; break
                 case "*": operator = "*"; operatorCommand = "*"; break
                 case "/": operator = "yail-divide"; operatorCommand = "yail-divide"; break
                 case "**": operator = "expt"; operatorCommand = "expt"; break
-                case "===": operator = "yail-equal?"; operatorCommand = "="; break              
-                case "==": operator = "yail-equal?"; operatorCommand = "="; break               
-                case "!==": operator = "yail-not-equal?"; operatorCommand = "not ="; break      
-                case "!=": operator = "yail-not-equal?"; operatorCommand = "not ="; break       
-                case ">": operator = ">"; operatorCommand = ">"; break      
-                case ">=": operator = ">="; operatorCommand = ">="; break
-                case "<": operator = "<"; operatorCommand = "<"; break
-                case "<=": operator = "<="; operatorCommand = "<="; break
+                case "===":     //this is not correct - there should be type checking but not going to bother
+                case "==": operator = "yail-equal?"; operatorCommand = "="; return `((get-var p$eql) ${transpileDeclarations(left)} ${transpileDeclarations(right)} ${operator} ${operatorCommand})`
+                case "!==":     //this is not correct - there should be type checking
+                case "!=": operator = "yail-not-equal?"; operatorCommand = `"not ="`; return `((get-var p$neq) ${transpileDeclarations(left)} ${transpileDeclarations(right)} ${operator} ${operatorCommand})`
+                case "<": return `((get-var p$lt) ${transpileDeclarations(left)} ${transpileDeclarations(right)})`
+                case ">": return `((get-var p$gt) ${transpileDeclarations(left)} ${transpileDeclarations(right)})`
+                case ">=": operator = "yail-equal?"; operatorCommand = "=";
+                    return `(or ((get-var p$gt) ${transpileDeclarations(left)} ${transpileDeclarations(right)}) ((get-var p$eql) ${transpileDeclarations(left)} ${transpileDeclarations(right)} ${operator} ${operatorCommand}))`
+                case "<=": operator = "yail-equal?"; operatorCommand = "=";
+                    return `(or ((get-var p$lt) ${transpileDeclarations(left)} ${transpileDeclarations(right)}) ((get-var p$eql) ${transpileDeclarations(left)} ${transpileDeclarations(right)} ${operator} ${operatorCommand}))`
                 case "&": operator = "bitwise-and"; operatorCommand = "bitwise-and"; break
                 case "|": operator = "bitwise-ior"; operatorCommand = "bitwise-ior"; break
                 case "^": operator = "bitwise-xor"; operatorCommand = "bitwise-xor"; break

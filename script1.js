@@ -1,9 +1,24 @@
-let a = [1,2,3]
-a[0] = 5
-a[1] = 6
-a[2] = 7
-textbox.value =a[0]+","+a[1]+","+a[2]
 
+let a = "a"==="a"
+let b = "a"=="a"
+let c = "a"!=="a"
+let d = "a"!="a"
+let e = "a"==="b"
+let f = "a"=="b"
+let g = "a"!=="b"
+let h = "a"!="b"
+let i = "a">"b"
+let j = "a"<"b"
+
+textbox.value = (1>2)+","+(1<2)+","+("a"<"b")+","+("a">"b")+(1<=2)+","+(1>=2)+","+("a"<="b") + ","+("a">="b")
+
+
+button1.addEventListener(
+    "click",
+    function(){
+        toast.showAlert(textbox.value)
+    }
+)
 
 
 /*let string = "stingvalue"
@@ -58,13 +73,7 @@ button1.addEventListener(
     )
 )
 
-(call-yail-primitive string? 
-    (*list-for-runtime* 
-        #f 
-    ) 
-    '(any) 
-    "is a string?"
-) 
+(call-yail-primitive string? (*list-for-runtime* #f ) '(any) "is a string?") 
 
 (call-yail-primitive is-number? 
     (*list-for-runtime* 
