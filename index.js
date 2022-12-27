@@ -32,7 +32,7 @@ for (let i = 0; i < files.length; i++) {
 
 
 //this sets up the folder watcher for any saved or changed files
-//currently only focusses on the xml files
+//currently it watches all files - and refreshes if an xml file is changed or and js file with a matching xml file is changed
 let changedFiles = []
 fs.watch(__dirname, 'utf8', function (eventType, filename) {
     if (filename === null) { return }
@@ -40,6 +40,10 @@ fs.watch(__dirname, 'utf8', function (eventType, filename) {
         if (!changedFiles.includes(filename)) {
             changedFiles.push(filename)
         }
+    }
+    if (filename.toLowerCase().endsWith(".js")) {
+        filename = filename.replaceAll(".js", ".xml")
+        changedFiles.push(filename)
     }
 })
 
@@ -67,7 +71,7 @@ function checkForChanges() {
         console.log("Changes found. Updating.")
         if (mode !== IS_NET && emulatorInterface) {
             emulatorInterface.update(yail)
-        } else if (mode===IS_NET && networkInterface){
+        } else if (mode === IS_NET && networkInterface) {
             networkInterface.update(yail)
         }
     }

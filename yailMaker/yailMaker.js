@@ -20,7 +20,7 @@ function* getNumber() {
 let generator = getNumber();
 
 function output(text) {
-    if (logFile) { fs.appendFileSync("code.yail", text) }
+    if (logFile) { fs.appendFileSync("code.scm", text) }
     yail += text
 }
 
@@ -45,7 +45,7 @@ function main(filename = "temp.xml") {
     yail = ""
 
     //delete base file
-    if (logFile) { fs.writeFileSync("code.yail", "") }
+    if (logFile) { fs.writeFileSync("code.scm", "") }
 
     //get input
     let contents = fs.readFileSync(filename, "utf-8")

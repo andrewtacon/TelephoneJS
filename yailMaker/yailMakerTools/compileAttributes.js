@@ -1,4 +1,4 @@
-const {ELEMENTS} =  require("./elements")
+const {ELEMENTS} =  require("../elements")
 const fs = require('fs')
 
 let list = []

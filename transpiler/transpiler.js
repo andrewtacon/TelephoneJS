@@ -91,8 +91,20 @@ function main(scripts, elements) {
     }
 
     console.log("*** Transpiling complete ***")
-    generatedCode = generatedCode.replaceAll("\n\n", "\n")
-    generatedCode = generatedCode.replaceAll("\t", "")
+  
+    let gcode = generatedCode.split("\n")
+    for (let i=gcode.length-1; i>=0; i--){
+        if (gcode[i].length === 0) {
+            gcode.splice(i,1)
+        } else {
+            gcode[i] = gcode[i].trim()
+        }
+    }
+  
+    generatedCode = gcode.join("\n")
+
+  //  generatedCode = generatedCode.replaceAll("\n\n", "\n")
+  //  generatedCode = generatedCode.replaceAll("\t", "")
 
     let opens = 0
     let closes = 0
@@ -119,103 +131,8 @@ function main(scripts, elements) {
         process.exit(0)
     }
 
-    //helper functions
-    //these could probably be written more efficiently and shorter not using the MIT App Inventor macros but they will do for now
-    let overloadAddition = `
-    (def (p$add $a $b) 
-        (if    
-            (and-delayed (call-yail-primitive is-number? (*list-for-runtime* (lexical-value $a)) '(text) "is a number?") (call-yail-primitive is-number? (*list-for-runtime* (lexical-value $b)) '(text) "is a number?")) 
-            (call-yail-primitive + (*list-for-runtime* (lexical-value $a) (lexical-value $b) ) '(number number ) "+") 
-            (call-yail-primitive string-append (*list-for-runtime* (lexical-value $a) (lexical-value $b) ) '(text text ) "join")
-        )
-    )
-    `
-
-    let overloadEqual = `
-    (def (p$eql $a $b $operator $operatorCommand ) 
-        (if 
-            (and (call-yail-primitive string? (*list-for-runtime* $a) '(any) "is a string?")  (call-yail-primitive string? (*list-for-runtime* $b) '(any) "is a string?")  )
-            (call-yail-primitive string=? (*list-for-runtime* $a $b) '(text text) "text=")
-            (call-yail-primitive $operator (*list-for-runtime* $a $b) '(number number ) "$operatorCommand")
-        )
-    )
-    `
-
-    let overloadNotEqual = `
-    (def (p$neq $a $b $operator $operatorCommand ) 
-        (if 
-            (and (call-yail-primitive string? (*list-for-runtime* $a) '(any) "is a string?")  (call-yail-primitive string? (*list-for-runtime* $b) '(any) "is a string?")  )
-            (not (call-yail-primitive string=? (*list-for-runtime* $a $b) '(text text) "not ="))
-            (call-yail-primitive $operator (*list-for-runtime* $a $b) '(number number ) "$operatorCommand")
-        )
-    )
-    `
-
-    let overloadGreaterThan = `
-    (def (p$gt $a $b ) 
-        (if 
-            (and (call-yail-primitive string? (*list-for-runtime* $a) '(any) "is a string?")  (call-yail-primitive string? (*list-for-runtime* $b) '(any) "is a string?")  )
-            (call-yail-primitive string>? (*list-for-runtime* $a $b) '(text text) "text>")
-            (call-yail-primitive > (*list-for-runtime* $a $b ) '(number number ) ">")
-        )
-    )
-    `
-
-    let overloadLessThan = `
-    (def (p$lt $a $b ) 
-        (if 
-            (and (call-yail-primitive string? (*list-for-runtime* $a) '(any) "is a string?")  (call-yail-primitive string? (*list-for-runtime* $b) '(any) "is a string?")  )
-            (call-yail-primitive string<? (*list-for-runtime* $a $b) '(text text) "text>")
-            (call-yail-primitive < (*list-for-runtime* $a $b ) '(number number ) "<")
-        )
-    )
-    `
-
-    let trimStart = `
-    (define 
-        (trimstart initString) 
-        (let 
-             (  
-                (counter 0)
-             )
-             (let   
-                (
-                    (shortString (substring initString 0 counter))
-                )
-                (while
-                    (and
-                        (= (string-length (string-trim shortString)) 0)
-                        (<= counter (string-length initString))
-                    )
-                    (begin
-                        (set! counter (+ counter 1))
-                        (set! shortString (substring initString 0 counter))
-                    )
-                 )
-                 (begin
-                    (set! counter (- counter 1))
-                    (substring
-                        initString
-                        counter
-                        (string-length initString)
-                    )
-                )
-            )
-        )
-    )
-    
-    `
-
-
-
-    generatedCode =
-        overloadAddition +
-        overloadEqual +
-        overloadNotEqual +
-        overloadGreaterThan +
-        overloadLessThan +
-        trimStart +
-        generatedCode
+    let procedures = fs.readFileSync("transpiler/procedures.scm", "utf-8")
+    generatedCode =  ";;Procedures\n"+procedures+"\n\n;;Transpiled Code\n"+generatedCode
 
     return generatedCode
 }
@@ -465,7 +382,7 @@ function transpileDeclarations(node) {
                 let value = transpileDeclarations(properties[i].value) + " "
                 console.log("value", value, properties)
 
-                let pairCode = `\n(call-yail-primitive make-dictionary-pair (*list-for-runtime* ${key}  ${transpileDeclarations(properties[i].value)} ) '(key any) "make a pair")`
+                let pairCode = `(call-yail-primitive make-dictionary-pair (*list-for-runtime* ${key}  ${transpileDeclarations(properties[i].value)} ) '(key any) "make a pair")`
                 pairs += "pair "
                 objectCode += pairCode
 
@@ -478,7 +395,7 @@ function transpileDeclarations(node) {
                 return `(call-yail-primitive make-yail-dictionary (*list-for-runtime* ) '() "make a dictionary")`
             }
 
-            let tail = `\n'(${pairs}) \n"make a dictionary" )`
+            let tail = ` '(${pairs}) "make a dictionary" )`
             objectCode += tail
 
             return `${objectCode}`
@@ -656,36 +573,11 @@ function transpileDeclarations(node) {
 
                         default:
 
-                            return `(if 
-                                (call-yail-primitive yail-dictionary? (*list-for-runtime*  ${transpileDeclarations(node.object)} ) '(any)  "check if something is a dictionary") 
-                                (call-yail-primitive yail-dictionary-set-pair 
-                                    (*list-for-runtime* 
-                                        "${transpileDeclarations(node.property)}" 
-                                        ${transpileDeclarations(node.object)} 
-                                        ${transpileDeclarations(node.assignedRight)}
-                                    ) 
-                                    '(key dictionary any)  
-                                    "set value for key in dictionary to value"
-                                )
-                                (
-                                    if 
-                                        (call-yail-primitive yail-list? 
-                                            (*list-for-runtime* ${transpileDeclarations(node.object)} ) 
-                                            '(any) 
-                                            "is a list?"
-                                        ) 
-                                        (call-yail-primitive yail-list-set-item! 
-                                            (*list-for-runtime* 
-                                               ${transpileDeclarations(node.object)} 
-                                               (+ ${node.property.value} 1)
-                                               ${transpileDeclarations(node.assignedRight)}
-                                            ) 
-                                            '(list number any) 
-                                            "replace list item"
-                                        )
-                                        (#f)
-                                    
-                                )
+                            return `
+                            (cond 
+                                ((isDictionary  ${transpileDeclarations(node.object)} ) (call-yail-primitive yail-dictionary-set-pair (*list-for-runtime* "${transpileDeclarations(node.property)}" ${transpileDeclarations(node.object)} ${transpileDeclarations(node.assignedRight)}) '(key dictionary any) "set value for key in dictionary to value"))
+                                ((isList ${transpileDeclarations(node.object)}) (call-yail-primitive yail-list-set-item! (*list-for-runtime* ${transpileDeclarations(node.object)} (+ ${node.property.value} 1) ${transpileDeclarations(node.assignedRight)}) '(list number any) "replace list item"))
+                                (else #f)
                             )`
                     } // END Memeber expression set property
 
@@ -740,15 +632,10 @@ function transpileDeclarations(node) {
                 default:
                     if (!MemberExpressionProperty) {
                         return `
-                    (if 
-                        (call-yail-primitive yail-dictionary? (*list-for-runtime* ${transpileDeclarations(node.object)} ) '(any)  "check if something is a dictionary") 
-                        (call-yail-primitive yail-dictionary-lookup (*list-for-runtime* "${transpileDeclarations(node.property)}" ${transpileDeclarations(node.object)} "not found") '(key any any) "dictionary lookup") 
-                        (
-                            if 
-                                (call-yail-primitive yail-list? (*list-for-runtime* ${transpileDeclarations(node.object)} ) '(any) "is a list?") 
-                                (call-yail-primitive yail-list-get-item (*list-for-runtime*   ${transpileDeclarations(node.object)}  (+ ${transpileDeclarations(node.property)} 1) ) '(list number) "select list item") 
-                                #f
-                        )
+                    (cond 
+                        ((isDictionary  ${transpileDeclarations(node.object)}) (getFromDict "${transpileDeclarations(node.property)}" ${transpileDeclarations(node.object)}) )
+                        ((isList ${transpileDeclarations(node.object)}) (getFromList ${transpileDeclarations(node.property)} ${transpileDeclarations(node.object)} ))
+                        (else #f)
                     )`
                     }
 
@@ -756,42 +643,19 @@ function transpileDeclarations(node) {
 
                         case "length":
                             return `
-                        (if 
-                            (call-yail-primitive yail-dictionary? (*list-for-runtime* ${transpileDeclarations(node.object)} ) '(any)  "check if something is a dictionary") 
-                            (call-yail-primitive yail-dictionary-lookup (*list-for-runtime* "${transpileDeclarations(node.property)}" ${transpileDeclarations(node.object)} "not found") '(key any any) "dictionary lookup") 
-                            (
-                                if 
-                                    (call-yail-primitive yail-list? (*list-for-runtime* ${transpileDeclarations(node.object)} ) '(any) "is a list?") 
-                                    (call-yail-primitive yail-list-length (*list-for-runtime* ${transpileDeclarations(node.object)} ) '(list) "length of list") 
-                                    (if 
-                                        (call-yail-primitive string? (*list-for-runtime* ${transpileDeclarations(node.object)} ) '(any) "is a string?") 
-                                        (call-yail-primitive string-length (*list-for-runtime* ${transpileDeclarations(node.object)} ) '(text) "length") 
-                                        #f
-                                    )
-                            )
+                        (cond
+                            ((isDictionary  ${transpileDeclarations(node.object)} ) (getFromDict "${transpileDeclarations(node.property)}" ${transpileDeclarations(node.object)}) )
+                            ((isList ${transpileDeclarations(node.object)}) (call-yail-primitive yail-list-length (*list-for-runtime* ${transpileDeclarations(node.object)} ) '(list) "length of list") )
+                            ((isString? ${transpileDeclarations(node.object)}) (call-yail-primitive string-length (*list-for-runtime* ${transpileDeclarations(node.object)} ) '(text) "length") )
+                            (else #f)
                         )`
 
                         default:
-                            return `(if 
-                                (call-yail-primitive yail-dictionary? (*list-for-runtime*  ${transpileDeclarations(node.object)} ) '(any)  "check if something is a dictionary") 
-                                (call-yail-primitive yail-dictionary-lookup (*list-for-runtime* "${transpileDeclarations(node.property)}"  ${transpileDeclarations(node.object)}  "not found") '(key any any) "dictionary lookup") 
-                                (
-                                    if 
-                                        (call-yail-primitive yail-list? 
-                                            (*list-for-runtime* ${transpileDeclarations(node.object)} ) 
-                                            '(any) 
-                                            "is a list?"
-                                        ) 
-                                        (call-yail-primitive yail-list-get-item 
-                                            (*list-for-runtime*  
-                                                ${transpileDeclarations(node.object)} 
-                                                (+ ${transpileDeclarations(node.property)} 1)
-                                            ) 
-                                            '(list number) 
-                                            "select list item"
-                                        ) 
-                                        (#f)
-                                )
+                            return `
+                            (cond 
+                                ((isDictionary  ${transpileDeclarations(node.object)} ) (getFromDict "${transpileDeclarations(node.property)}" ${transpileDeclarations(node.object)}) )
+                                ((isList ${transpileDeclarations(node.object)}) (getFromList ${transpileDeclarations(node.property)} ${transpileDeclarations(node.object)} ) )
+                                (else #f)
                             )`
                     }
 
@@ -984,21 +848,21 @@ function transpileDeclarations(node) {
                 right = node.right
             }
             switch (op) {
-                case "+": operator = "+"; operatorCommand = "+"; return `((get-var p$add) ${transpileDeclarations(left)} ${transpileDeclarations(right)})`
+                case "+": operator = "+"; operatorCommand = "+"; return `((get-var add) ${transpileDeclarations(left)} ${transpileDeclarations(right)})`
                 case "-": operator = "-"; operatorCommand = "-"; break
                 case "*": operator = "*"; operatorCommand = "*"; break
                 case "/": operator = "yail-divide"; operatorCommand = "yail-divide"; break
                 case "**": operator = "expt"; operatorCommand = "expt"; break
                 case "===":     //this is not correct - there should be type checking but not going to bother
-                case "==": operator = "yail-equal?"; operatorCommand = "="; return `((get-var p$eql) ${transpileDeclarations(left)} ${transpileDeclarations(right)} ${operator} ${operatorCommand})`
+                case "==": operator = "yail-equal?"; operatorCommand = "="; return `((get-var eql) ${transpileDeclarations(left)} ${transpileDeclarations(right)} ${operator} ${operatorCommand})`
                 case "!==":     //this is not correct - there should be type checking
-                case "!=": operator = "yail-not-equal?"; operatorCommand = `"not ="`; return `((get-var p$neq) ${transpileDeclarations(left)} ${transpileDeclarations(right)} ${operator} ${operatorCommand})`
-                case "<": return `((get-var p$lt) ${transpileDeclarations(left)} ${transpileDeclarations(right)})`
-                case ">": return `((get-var p$gt) ${transpileDeclarations(left)} ${transpileDeclarations(right)})`
+                case "!=": operator = "yail-not-equal?"; operatorCommand = `"not ="`; return `((get-var neq) ${transpileDeclarations(left)} ${transpileDeclarations(right)} ${operator} ${operatorCommand})`
+                case "<": return `((get-var lt) ${transpileDeclarations(left)} ${transpileDeclarations(right)})`
+                case ">": return `((get-var gt) ${transpileDeclarations(left)} ${transpileDeclarations(right)})`
                 case ">=": operator = "yail-equal?"; operatorCommand = "=";
-                    return `(or ((get-var p$gt) ${transpileDeclarations(left)} ${transpileDeclarations(right)}) ((get-var p$eql) ${transpileDeclarations(left)} ${transpileDeclarations(right)} ${operator} ${operatorCommand}))`
+                    return `(or ((get-var gt) ${transpileDeclarations(left)} ${transpileDeclarations(right)}) ((get-var eql) ${transpileDeclarations(left)} ${transpileDeclarations(right)} ${operator} ${operatorCommand}))`
                 case "<=": operator = "yail-equal?"; operatorCommand = "=";
-                    return `(or ((get-var p$lt) ${transpileDeclarations(left)} ${transpileDeclarations(right)}) ((get-var p$eql) ${transpileDeclarations(left)} ${transpileDeclarations(right)} ${operator} ${operatorCommand}))`
+                    return `(or ((get-var lt) ${transpileDeclarations(left)} ${transpileDeclarations(right)}) ((get-var eql) ${transpileDeclarations(left)} ${transpileDeclarations(right)} ${operator} ${operatorCommand}))`
                 case "&": operator = "bitwise-and"; operatorCommand = "bitwise-and"; break
                 case "|": operator = "bitwise-ior"; operatorCommand = "bitwise-ior"; break
                 case "^": operator = "bitwise-xor"; operatorCommand = "bitwise-xor"; break
