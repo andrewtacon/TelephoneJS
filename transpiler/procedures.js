@@ -232,3 +232,99 @@ exports.indexOf = `
                        (substring t i (+ i len)))
              i)
             (else (loop (+ i 1)))))))`
+
+
+exports.lastIndexOf = `
+(define (lastIndexOf t s)
+    (let* ((len (string-length s))
+        (max (- (string-length t) len)))        
+
+    (let loop ((i 0))
+        (cond ((> i max) 
+                -1)
+            ((string=? s
+                        (substring t 
+                            (- (- (string-length t) len) i)
+                            (- (string-length t) i)
+                        ))
+                (- max i))
+            (else (loop (+ i 1)))))))`
+
+
+exports.padEnd = `
+(define 
+    (padEnd s len sym)
+    (if
+        (<  len (string-length s))
+        s
+        (let loop ((i 0))
+            (cond
+                ( 
+                    (> 
+                        len
+                        (string-length s)
+                    )  
+                    (begin
+                        (set! s (string-append s sym))
+                        (loop 
+                            (+ i 1)
+                        )
+                    )
+                )
+                (else s)
+               
+            )
+        ) 
+    )    
+)`
+
+
+exports.padStart = `
+(define 
+    (padStart s len sym)
+    (if
+        (<  len (string-length s))
+        s
+        (let loop ((i 0))
+            (cond
+                ( 
+                    (> 
+                        len
+                        (string-length s)
+                    )  
+                    (begin
+                        (set! s (string-append sym s))
+                        (loop 
+                            (+ i 1)
+                        )
+                    )
+                )
+                (else s)
+               
+            )
+        ) 
+    )    
+)`
+
+
+exports.repeat = `
+(define 
+    (repeat s len)
+    (let 
+        ((init s))
+        (let loop ((i 1))
+            (cond
+                ( 
+                    (< i len)  
+                    (begin
+                        (set! s (string-append s init))
+                        (loop 
+                            (+ i 1)
+                        )
+                    )
+                )
+                (else s)
+            )
+        )
+    )    
+)`

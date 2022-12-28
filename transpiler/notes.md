@@ -1,6 +1,12 @@
 Things not implemented:
 
-string.codePointAt(0)
+String.codePointAt(0)
 String.fromCodePoint()
+String.prototype.localeCompare()
 
+String.prototype.match()    //regex
+String.prototype.matchAll()    //regex
+String.prototye.normalize()
+
+String.raw
 

@@ -900,6 +900,40 @@ function transpileDeclarations(node) {
                                                     (indexOf ${transpileDeclarations(node.callee.object)} ${transpileDeclarations(args[0])}    ) 
                                                     -1
                                                 )`
+                                    case "lastIndexOf":
+                                        proceduresUsed.add(procedures.lastIndexOf)
+                                        return `(if 
+                                                    (string? ${transpileDeclarations(node.callee.object)})
+                                                    (lastIndexOf ${transpileDeclarations(node.callee.object)} ${transpileDeclarations(args[0])}    ) 
+                                                    -1
+                                                )`
+                                    case "padEnd":
+                                        proceduresUsed.add(procedures.padEnd)
+                                        return `(if
+                                                    (string? ${transpileDeclarations(node.callee.object)})
+                                                    (padEnd ${transpileDeclarations(node.callee.object)} ${transpileDeclarations(args[0])} ${transpileDeclarations(args[1])})
+                                                    ${transpileDeclarations(node.callee.object)}
+                                                )
+
+                                        `
+                                    case "padStart":
+                                        proceduresUsed.add(procedures.padStart)
+                                        return `(if
+                                                    (string? ${transpileDeclarations(node.callee.object)})
+                                                    (padStart ${transpileDeclarations(node.callee.object)} ${transpileDeclarations(args[0])} ${transpileDeclarations(args[1])})
+                                                    ${transpileDeclarations(node.callee.object)}
+                                                )
+
+                                        `
+                                    case "repeat":
+                                        proceduresUsed.add(procedures.repeat)
+                                        return `(if
+                                            (string? ${transpileDeclarations(node.callee.object)})
+                                            (repeat ${transpileDeclarations(node.callee.object)} ${transpileDeclarations(args[0])})
+                                            ${transpileDeclarations(node.callee.object)}
+                                        )
+
+                                `
 
 
                                     default:
