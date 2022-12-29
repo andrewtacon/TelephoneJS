@@ -30,12 +30,6 @@ Hard problems:
     
     
     //string methods
-    done (def g$name (call-yail-primitive string-trim (*list-for-runtime* "a") '(text) "trim"))                                  //.trim() 
-    done .trimStart()
-    done .trimEnd()
-    done (call-yail-primitive string-to-upper-case (*list-for-runtime* "a") '(text) "upcase")                       //.toUpperCase()
-    done (call-yail-primitive string-to-lower-case (*list-for-runtime* "a") '(text) "downcase")                     //.toLowerCase()
-     (call-yail-primitive string-replace-all (*list-for-runtime* "" "" "") '(text text text) "replace all")     //.replaceAll(a,b)
     (call-yail-primitive string-split (*list-for-runtime* "a" "2") '(text text) "split")                       //.split at?
     (call-yail-primitive string-split-at-spaces (*list-for-runtime* "2") '(text) "split at spaces")           //.split(" ")
     (call-yail-primitive string-contains (*list-for-runtime* "a" "2") '(text text) "string contains")          //.includes() 
@@ -840,18 +834,6 @@ function transpileDeclarations(node) {
                                 console.log(methodCalled)
                                 switch (methodCalled) {
                                     //methods for strings
-                                    case "trim":
-                                        return `(if (string? ${transpileDeclarations(node.callee.object)})(string-trim ${transpileDeclarations(node.callee.object)}) #f)`
-                                    case "trimStart":
-                                        proceduresUsed.add(procedures.trim_start)
-                                        return `(if (string? ${transpileDeclarations(node.callee.object)})(trim-start ${transpileDeclarations(node.callee.object)}) #f)`
-                                    case "trimEnd":
-                                        proceduresUsed.add(procedures.trim_end)
-                                        return `(if (string? ${transpileDeclarations(node.callee.object)})(trim-end ${transpileDeclarations(node.callee.object)}) #f)`
-                                    case "toUpperCase":
-                                        return `(if (string? ${transpileDeclarations(node.callee.object)})(string-upcase ${transpileDeclarations(node.callee.object)}) #f)`
-                                    case "toLowerCase":
-                                        return `(if (string? ${transpileDeclarations(node.callee.object)})(string-downcase ${transpileDeclarations(node.callee.object)}) #f)`
                                     case "at":
                                         proceduresUsed.add(procedures.at)
                                         return `(if (string? ${transpileDeclarations(node.callee.object)})(at ${transpileDeclarations(node.callee.object)} ${transpileDeclarations(args[0])}) #f)`
@@ -957,15 +939,44 @@ function transpileDeclarations(node) {
                                                 )`
                                     case "slice":
                                         proceduresUsed.add(procedures.slice)
-                                        if (args.length<2) {
-                                            args.push({type:"Literal", value:"endOfString"})
-                                      }
+                                        if (args.length < 2) {
+                                            args.push({ type: "Literal", value: "endOfString" })
+                                        }
                                         return `(if
                                             (string? ${transpileDeclarations(node.callee.object)})
                                             (slice ${transpileDeclarations(node.callee.object)} ${transpileDeclarations(args[0])} ${transpileDeclarations(args[1])})
                                             ${transpileDeclarations(node.callee.object)}
                                         )`
-
+                                    case "split":
+                                        if (args.length === 0) { return `${transpileDeclarations(node.callee.object)}` }
+                                        return `
+                                        (if
+                                            (string? ${transpileDeclarations(node.callee.object)})
+                                            (call-yail-primitive string-split (*list-for-runtime* ${transpileDeclarations(node.callee.object)} ${transpileDeclarations(args[0])}) '(text text) "split")
+                                            ${transpileDeclarations(node.callee.object)}
+                                        )
+                                        `
+                                    case "startsWith":
+                                        proceduresUsed.add(procedures.startsWith)
+                                        return `(if (string? ${transpileDeclarations(node.callee.object)})(startsWith ${transpileDeclarations(node.callee.object)} ${transpileDeclarations(args[0])}) #f)`
+                                    case "substring":
+                                        if (args.length < 2) {
+                                            args.push({ type: "Literal", value: "endOfString" })
+                                        }
+                                        proceduresUsed.add(procedures.customSubstring)
+                                        return `(if (string? ${transpileDeclarations(node.callee.object)})(customSubstring ${transpileDeclarations(node.callee.object)} ${transpileDeclarations(args[0])} ${transpileDeclarations(args[1])}) #f)`
+                                    case "toLowerCase":
+                                        return `(if (string? ${transpileDeclarations(node.callee.object)})(string-downcase ${transpileDeclarations(node.callee.object)}) #f)`
+                                    case "toUpperCase":
+                                        return `(if (string? ${transpileDeclarations(node.callee.object)})(string-upcase ${transpileDeclarations(node.callee.object)}) #f)`
+                                    case "trim":
+                                        return `(if (string? ${transpileDeclarations(node.callee.object)})(string-trim ${transpileDeclarations(node.callee.object)}) #f)`
+                                    case "trimEnd":
+                                        proceduresUsed.add(procedures.trim_end)
+                                        return `(if (string? ${transpileDeclarations(node.callee.object)})(trim-end ${transpileDeclarations(node.callee.object)}) #f)`
+                                    case "trimStart":
+                                        proceduresUsed.add(procedures.trim_start)
+                                        return `(if (string? ${transpileDeclarations(node.callee.object)})(trim-start ${transpileDeclarations(node.callee.object)}) #f)`
 
                                     default:
                                 }
