@@ -22,11 +22,11 @@ Hard problems:
 
 
 const fs = require('fs')
-const { parse,  walk } = require('abstract-syntax-tree')
+const { parse, walk } = require('abstract-syntax-tree')
 const util = require('util')
 const procedures = require("./procedures.js")
 
-let debug = true
+let debug = false
 
 let generatedCode = ""
 let generatedGlobalsCode = ""
@@ -98,11 +98,11 @@ function main(scripts, elements) {
     let procedures = ""
     proceduresUsed.forEach(
         function (value) {
-            while (value.indexOf("\n")!==-1){
-                value = value.replaceAll("\n"," ")
+            while (value.indexOf("\n") !== -1) {
+                value = value.replaceAll("\n", " ")
             }
-            while (value.indexOf("  ")!==-1){
-                value = value.replaceAll("  "," ")
+            while (value.indexOf("  ") !== -1) {
+                value = value.replaceAll("  ", " ")
             }
 
             procedures += value
@@ -131,7 +131,7 @@ function modifyTree(tree) {
         if (node.type === "VariableDeclaration") {
             if (parent.type === "Program") {
                 //globals
-                node.body = "Global"
+                node.isGlobal = "true"
             }
 
             //if multiple defintions in the one line, this will be a problem
@@ -149,11 +149,29 @@ function modifyTree(tree) {
         }
     })
 
-    let globals = []
+    //2.5 find all variables that declare functions like   `let a = function(){...}`  and turn these into normal function declarations
+    walk(tree, (node, parent) => {
+        if (node.type === "VariableDeclaration") {
+            if (node.declarations[0].init.type ==="FunctionExpression"){
+                node.type = "FunctionDeclaration"
+                node.id = node.declarations[0].id
+                node.params = node.declarations[0].init.params
+                node.async = node.declarations[0].init.async
+                node.generator = node.declarations[0].init.generator
+                node.body = node.declarations[0].init.body
+                delete node.kind
+                delete node.declarations
+                if (node.isGlobal) (delete node.isGlobal)
+            }
+        }
+    })
+
+
+
     //3. find all the globals and add them to the stack
     walk(tree, (node, parent) => {
         if (node.type === "VariableDeclaration") {
-            if (node.body === "Global") {
+            if (node.isGlobal === "true") {
                 globalStack.push(
                     {
                         "scope": "global",
@@ -163,54 +181,113 @@ function modifyTree(tree) {
 
             }
         }
-    })
-
-
-
-    //4. close the local variables
-    walk(tree, (node, parent) => {
-        if (node.type === "VariableDeclaration") {
-            let endPoint = parent.body.length - variableCount
-
-
-            if (node.body !== "Global") {
-                lastIndex = parent.body.indexOf(node)
-                copy = JSON.parse(JSON.stringify(node))
-                copy.body = "Close"
-                variableCount++
-
-                if (parent.body[parent.body.length - 1].type === "VariableDeclaration") {
-                    if (parent.body[parent.body.length - 1].body === "Close") {
-                        parent.body.splice(endPoint, 0, copy)
-                    } else {
-                        //first close
-                        parent.body.push(copy)
+        if (node.type === "FunctionDeclaration") {
+            if (node.isGlobal === "true") {
+                globalStack.push(
+                    {
+                        "scope": "global",
+                        "identifier": node.declarations[0].id.name,
+                        "type": "procedure"
                     }
-                } else {
-                    //first closed variable
-                    parent.body.push(copy)
-                }
+                )
 
             }
         }
 
-        if (parent !== null) {
-            if (node.body !== "Global") {
-                if (Array.isArray(parent.body)) {
-                    if (parent.body.indexOf(node) === parent.body.length - 1 - variableCount) {
-                        if (variableCount > 0) {
-                            //    parent.body.push(copy)
-                            if (parent.body[lastIndex + 1].type === "VariableDeclaration") {
-                                parent.body[lastIndex].body = "LastVariableDeclaration"
+    })
+
+    //3.5 hoist the functions
+    function hoistFunctions(node) {
+        for (let [key, value] of Object.entries(node)) {
+            if (typeof value === 'object') {
+                if (value !== null) {
+                    hoistFunctions(value)
+                }
+            }
+            if (Array.isArray(value)) {
+                for (let i = 0; i < value.length; i++) {
+                    if (value[i].type === "FunctionDeclaration") {
+                        value.unshift(value.splice(i, 1))
+                    }
+                }
+            }
+        }
+    }
+
+    hoistFunctions(tree)
+
+
+    //4 next the local variables
+    function nestVariables(node) {
+        if (node.isGlobal === "true") return  //ignore global variables
+
+        for (let [key, value] of Object.entries(node)) {
+            if (typeof value === 'object') {
+                if (value !== null) {
+                    nestVariables(value)
+                }
+            }
+            if (Array.isArray(value)) {
+                for (let i = 0; i < value.length; i++) {
+                    if (value[i].type === "VariableDeclaration" && value[i].isGlobal !== 'true') {
+                        value[i].body = [].concat(value.splice(i + 1))
+                        nestVariables(value[i])
+                        break;
+                    }
+                }
+
+            }
+        }
+    }
+
+    nestVariables(tree)
+
+
+    /*
+        //4. close the local variables
+        walk(tree, (node, parent) => {
+            if (node.type === "VariableDeclaration") {
+                let endPoint = parent.body.length - variableCount
+    
+    
+                if (node.body !== "Global") {
+                    lastIndex = parent.body.indexOf(node)
+                    copy = JSON.parse(JSON.stringify(node))
+                    copy.body = "Close"
+                    variableCount++
+    
+                    if (parent.body[parent.body.length - 1].type === "VariableDeclaration") {
+                        if (parent.body[parent.body.length - 1].body === "Close") {
+                            parent.body.splice(endPoint, 0, copy)
+                        } else {
+                            //first close
+                            parent.body.push(copy)
+                        }
+                    } else {
+                        //first closed variable
+                        parent.body.push(copy)
+                    }
+    
+                }
+            }
+    
+            if (parent !== null) {
+                if (node.body !== "Global") {
+                    if (Array.isArray(parent.body)) {
+                        if (parent.body.indexOf(node) === parent.body.length - 1 - variableCount) {
+                            if (variableCount > 0) {
+                                //    parent.body.push(copy)
+                                if (parent.body[lastIndex + 1].type === "VariableDeclaration") {
+                                    parent.body[lastIndex].body = "LastVariableDeclaration"
+                                }
                             }
                         }
                     }
                 }
             }
-        }
-
-    })
-
+    
+        })
+    */
 
     return tree
 }
@@ -247,8 +324,14 @@ function camelCase(text) {
     return text.substring(0, 1).toUpperCase() + text.substring(1)
 }
 
-function removeFromVariableStack(declaration) {
-    let name = declaration.id.name
+function removeFromVariableStack(declaration, isActualName = false) {
+
+    let name
+    if (isActualName) {
+        name = declaration
+    } else {
+        declaration.id.name
+    }
 
     let currentStack = variableStack[variableStack.length - 1]
 
@@ -281,6 +364,16 @@ function findVariableInStack(name) {
 
 
 function transpileDeclarations(node) {
+
+    if (Array.isArray(node)) {
+        let output = ""
+        for (let nn = 0; nn < node.length; nn++) {
+            output += transpileDeclarations(node[nn]) + "\n"
+        }
+        return output
+    }
+
+
 
     let type
     let value
@@ -401,112 +494,89 @@ function transpileDeclarations(node) {
 
         case "VariableDeclaration":
 
-            if (node.body === "Close") {
-                removeFromVariableStack(node.declarations[0])
-                return "\n\b)\n"
+            let source;
+            if (node.declarations[0].init) {
+                source = node.declarations[0].init
             } else {
-                let VariableCode = ""
-                if (node.body !== "Global") { VariableCode += (`(let `) }
-                for (let i = 0; i < node.declarations.length; i++) {
+                source = node.declarations
+            }
 
-                    let scope
-                    let identifier
-                    if (node.body !== "Global") {
-                        variableStack[variableStack.length - 1].push(
-                            {
-                                "scope": "local",
-                                "identifier": node.declarations[i].id.name
-                            }
-                        )
-                        scope = "local"
-                        identifier = node.declarations[i].id.name
-                    } else {
-                        scope = "global"
-                        identifier = node.declarations[i].id.name
+            if (node.isGlobal === "true") {
+                return `(def g$${node.declarations[0].id.name} ${transpileDeclarations(source)})`
+            }
+            else {
+                let vBody = ""
+                if (Array.isArray(node.body)) {
+                    for (let vv = 0; vv < node.body.length; vv++) {
+                        vBody += transpileDeclarations(node.body[vv]) + " "
                     }
-
-                    //recusively generate the declaration data for variables (recursive because arrays and objects can nest)
-                    let source;
-                    if (node.declarations[i].init) {
-                        source = node.declarations[i].init
-                    } else {
-                        source = node.declarations[i]
-                    }
-
-                    let dataType
-
-
-                    if (source.type === "ObjectExpression") { dataType = "object" }
-                    else if (source.type === "ArrayExpression") { dataType = "array" }
-                    else if (source.type === "Literal") {
-                        if (typeof source.value === "string") { dataType = "string" }
-                        else if (typeof source.value === "number") { dataType = "number" }
-                        else if (typeof source.value === "boolean") { dataType = "boolean" }
-                        else if (source.value === null) { dataType = null }
-                    }
-                    else if (source.type === "VariableDeclarator") {
-                        if (source.init === null) {
-                            dataType = null
-                        }
-                    }
-                    else if (source.type === "Identifier") {
-                        if (source.name === "undefined") { dataType = undefined }
-                        else {
-                            let currentStack = variableStack[variableStack.length - 1]
-                            for (let i = currentStack.length - 2; i >= 0; i--) {   //-2 because cannot initialise as self
-                                if (currentStack[i].identifier === source.name) {
-                                    dataType = currentStack[i].type
-                                    break;
-                                }
-                            }
-                        }
-                    }
-                    else if (source.type === "MemberExpression") {
-                        //TODO --> variable declared as member expression
-                        dataType = "object or array"
-
-                    }
-
-                    //variable
-                    //nothing
-
-                    let currentStack = variableStack[variableStack.length - 1]
-                    for (let i = currentStack.length - 1; i >= 0; i--) {
-                        if (currentStack[i].scope === scope && currentStack[i].identifier === identifier) {
-                            currentStack[i].type = dataType
-                            break;
-                        }
-                    }
-
-                    let data = transpileDeclarations(source)
-
-                    if (node.body === "Global") { VariableCode += (`(def g$${node.declarations[i].id.name} ${data})`) }
-                    else { VariableCode += (`(($${node.declarations[i].id.name} ${data})`) }
-
-                    if (node.body !== "Global") {
-                        VariableCode += (`)`)
-                        if (node.body === "LastVariableDeclaration") {
-                            VariableCode += (`#f`)
-                        }
-
-                    }
-
                 }
-                // console.log(variableStack)
-                return "\n" + VariableCode + "\n"
+                variableStack[variableStack.length - 1].push(
+                    {
+                        "scope": "local",
+                        "identifier": node.declarations[0].id.name
+                    }
+                )
+                let returnVariable = `(let
+                            (($${node.declarations[0].id.name}  ${transpileDeclarations(source)}))
+                            ${vBody}
+                        )
+                        `
+                removeFromVariableStack(node.declarations[0])
+                return returnVariable
             }
 
 
         case "FunctionExpression":
             return transpileDeclarations(node.body)
 
+        case "FunctionDeclaration":
+
+            //put variables on stack for locals
+            variableStack[variableStack.length - 1].push(
+                {
+                    "scope": "local",
+                    "identifier": node.id.name,
+                    "type": "procedure"
+                }
+            )
+            let parameters = ""
+            for (let i = 0; i < node.params.length; i++) {
+                variableStack[variableStack.length - 1].push(
+                    {
+                        "scope": "local",
+                        "identifier": node.params[i].name,
+                        "type": "procedureVariable"
+                    }
+                )
+                parameters += `$${node.params[i].name} `
+            }
+
+            let returnProcedure = `
+            (def
+                (p$${node.id.name} ${parameters})
+                ${transpileDeclarations(node.body)}
+            )
+            `
+
+            //remove variables from stack
+            for (let i = node.params.length - 1; i >= 0; i--) {
+                removeFromVariableStack(node.params[i].name, true)
+            }
+
+            removeFromVariableStack(node)
+            return returnProcedure
+
+
 
         case "BlockStatement":
-            let BlockStatementCode = ""
-            for (let n of node.body) {
-                BlockStatementCode += transpileDeclarations(n)
-            }
-            return BlockStatementCode
+            return transpileDeclarations(node.body)
+
+        case "ReturnStatement":
+            console.log(node)
+            return transpileDeclarations(node.argument)
+
+
 
         case "MemberExpressionSet":
             let MemberExpressionSetProperty = node.property.name       // .text
@@ -531,7 +601,7 @@ function transpileDeclarations(node) {
             switch (MESisVariableOfScope) {
                 case "component":
                     switch (MemberExpressionSetProperty) {
-                        case "value":
+                        case "text":
 
                             if (MESisVariableOfType === "textbox") {
                                 console.log("found textbox" + findVariableInStack(node.object.name))
@@ -655,6 +725,18 @@ function transpileDeclarations(node) {
             break;
 
         case "CallExpression":
+
+            //this is a call to a function with or with variables
+            if (node.callee.type === "Identifier") {
+                let CEargs = ""
+                for (i = 0; i < node.arguments.length; i++) {
+                    CEargs += transpileDeclarations(node.arguments[i]) + " "
+                }
+                return `((get-var p$${node.callee.name}) ${CEargs})`
+            }
+
+
+
             //whilst a "CallExpression" does contain a "MemberExpression" in the callee, the "MemberExpression" is stepped over because
             //I think (currently) it is easier to deal with things this way
             let elementName = node.callee.object.name
@@ -748,6 +830,8 @@ function transpileDeclarations(node) {
                                 let methodCalled = node.callee.property.name
                                 let args = JSON.parse(JSON.stringify(node.arguments))
 
+                                console.log("component")
+
                                 //check if the method that is called is a legal method for this particular element type (refer to supplied elements list)
                                 switch (methodCalled) {
                                     case "addEventListener":
@@ -801,6 +885,8 @@ function transpileDeclarations(node) {
                                 let args = JSON.parse(JSON.stringify(node.arguments))
 
                                 //check if the method that is called is a legal method for this particular element type (refer to supplied elements list)
+
+
 
                                 console.log(methodCalled)
                                 switch (methodCalled) {
