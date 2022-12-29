@@ -18,51 +18,15 @@ Hard problems:
         ?? (def g$identifier (call-yail-primitive math-convert-bin-dec (*list-for-runtime* 0) '(text) "convert Hex to Dec"))
     */
 
-/*
-    object/dictionary methods
-
-*/
 
 
-
-/*
-    text methods
-    
-    
-    //string methods
-    (call-yail-primitive string-split (*list-for-runtime* "a" "2") '(text text) "split")                       //.split at?
-    (call-yail-primitive string-split-at-spaces (*list-for-runtime* "2") '(text) "split at spaces")           //.split(" ")
-    (call-yail-primitive string-contains (*list-for-runtime* "a" "2") '(text text) "string contains")          //.includes() 
-
-    //bonus string methods
-    (def g$name (call-yail-primitive string-reverse (*list-for-runtime* "a") '(text) "reverse"))                            //.reverse() //bonus method
-
-    //not sure
-    (def g$name (call-yail-primitive string-split-at-first (*list-for-runtime* "a" "2") '(text text) "split at first"))
-    (def g$name (call-yail-primitive string-split-at-any (*list-for-runtime* "a" 1) '(text list) "split at any")) 
-    (def g$name (call-yail-primitive string-split-at-first-of-any (*list-for-runtime* "a" 1) '(text list) "split at first of any"))
-    (def g$name (call-yail-primitive string-contains-any (*list-for-runtime* "a" "") '(text list) "string contains any"))   
-    (def g$name (call-yail-primitive string-contains-all (*list-for-runtime* "a" "") '(text list) "string contains all"))
-    (def g$name (call-yail-primitive string-substring (*list-for-runtime* "" 1 1) '(text number number) "segment"))         //.substring() sort of   (text, start, length)
-    (def g$name (call-yail-primitive text-deobfuscate (*list-for-runtime* "JI" "zzwkbxab") '(text text) "deobfuscate text"))
-    (def g$name (call-yail-primitive string? (*list-for-runtime* "a" ) '(any) "is a string?"))                              //is a string
-    
-
-    (def g$name (call-yail-primitive string-replace-mappings-longest-string (*list-for-runtime* "" "") '(text dictionary) "replace with mappings"))
-    (def g$name (call-yail-primitive string-replace-mappings-dictionary (*list-for-runtime* "" "") '(text dictionary) "replace with mappings"))
-
-
-
-
-
-*/
 
 const fs = require('fs')
-const { parse, traverse, walk } = require('abstract-syntax-tree')
+const { parse,  walk } = require('abstract-syntax-tree')
 const util = require('util')
 const procedures = require("./procedures.js")
 
-let debug = false
+let debug = true
 
 let generatedCode = ""
 let generatedGlobalsCode = ""
@@ -134,6 +98,13 @@ function main(scripts, elements) {
     let procedures = ""
     proceduresUsed.forEach(
         function (value) {
+            while (value.indexOf("\n")!==-1){
+                value = value.replaceAll("\n"," ")
+            }
+            while (value.indexOf("  ")!==-1){
+                value = value.replaceAll("  "," ")
+            }
+
             procedures += value
         }
     )
@@ -1105,74 +1076,9 @@ function transpileDeclarations(node) {
 }
 
 
-
-
-
-
-
-
-
 function asString(args, index) {
     if (args[index] === undefined) { return `""` }
     if (args[index].type === "Literal") {
         return `${args[index].value}`
     }
 }
-
-
-
-
-
-
-
-
-
-
-/*
-
-/*
-function asInstantInTime(args, index) {
-
-}
-
-function asNumber(args, index, min, max) {
-    if (args[index] === undefined) { if (typeof min === "number") { return min } else { return 0 } } //return min or zero
-    if (args[index].type === "Identifier") {
-        return findVariableInStack(args[index].name)
-    }
-    if (typeof args[index].value === "number") {
-        if (min && typeof min === 'number') { if (args[index].value < min) { return min } }
-        if (max && typeof max === 'number') { if (args[index].value > max) { return max } }
-        return args[index].value
-    } else {
-        return 0
-    }
-
-}
-
-function asBoolean(args, index) {
-    if (args[index] === undefined) { return '#t' } //true by default
-    if (args[index].type === "Identifier") {
-        return findVariableInStack(args[index].name)
-    }
-    if (typeof args[index].value === "boolean") {
-        return args[index].value ? "#t" : "#f"
-    } else {
-        return '#t'
-    }
-}
-
-
-
-function asText(args, index) {
-    if (args[index] === undefined) { return `""` }
-
-    if (args[index].type === "Literal") {
-        return `"${args[index].value}"`
-    } else if (args[index].type === "Identifier") {
-        return findVariableInStack(args[index].name)
-    } else {
-
-    }
-}
-*/

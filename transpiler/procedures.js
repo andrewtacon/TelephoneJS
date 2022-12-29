@@ -209,15 +209,18 @@ exports.getFromList = `
 exports.endsWith = `
 (define
     (endsWith fullString endString)
-    (if
-        (string=?
-          (substring fullString (- (string-length fullString) (string-length endString)) (string-length fullString)  )  
-            endString
+    (if 
+        (or(< (string-length endString) (string-length fullString))(= (string-length endString) (string-length fullString)))
+        (if
+            (string=?
+            (substring fullString (- (string-length fullString) (string-length endString)) (string-length fullString)  )  
+                endString
+            )    
+            #t
+            #f
         )    
-        #t
         #f
-    )    
-    
+    )
 )
 `
 
@@ -371,7 +374,65 @@ exports.slice = `
             (set! end (+ (string-length str) end))
             (set! end end)
         )
-        (substring str start end)
+        (if 
+            (< end start)
+            ""
+            (substring str start end)
+        )
+    )    
+)
+
+`
+
+
+
+exports.startsWith = `
+(define
+    (startsWith fullString startString)
+    (if 
+        (or (< (string-length startString) (string-length fullString))(= (string-length startString) (string-length fullString)))
+        (if
+            (string=? (substring fullString 0 (string-length startString)) startString)    
+            #t
+            #f
+        )    
+        #f
+    )
+)
+`
+
+
+
+
+exports.customSubstring = `
+(define 
+    (customSubstring str start end)
+    (begin
+        (if
+            (string=? end "endOfString")
+            (set! end (string-length str))
+            (set! end end)
+        )    
+        (if
+            (< start 0)
+            (set! start 0)
+            (set! start start)
+        )
+        (if
+            (< end 0)
+            (set! start 0)
+            (set! end end)
+        )
+        (if 
+            (< end start)
+            (begin
+                (set! start (+ start end))
+                (set! end (- start end))
+                (set! start (- start end))
+                (substring str start end)
+            )
+            (substring str start end)
+        )
     )    
 )
 
