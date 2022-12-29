@@ -931,9 +931,40 @@ function transpileDeclarations(node) {
                                             (string? ${transpileDeclarations(node.callee.object)})
                                             (repeat ${transpileDeclarations(node.callee.object)} ${transpileDeclarations(args[0])})
                                             ${transpileDeclarations(node.callee.object)}
-                                        )
-
-                                `
+                                        )`
+                                    case "replace":
+                                        if (args.length < 2) {
+                                            console.log(`Error: ".replace()" require two arguments.`)
+                                            return
+                                        }
+                                        proceduresUsed.add(procedures.add)
+                                        proceduresUsed.add(procedures.indexOf)
+                                        proceduresUsed.add(procedures.replace)
+                                        return `(if
+                                            (string? ${transpileDeclarations(node.callee.object)})
+                                            (replace ${transpileDeclarations(node.callee.object)} ${transpileDeclarations(args[0])} ${transpileDeclarations(args[1])})
+                                            ${transpileDeclarations(node.callee.object)}
+                                        )`
+                                    case "replaceAll":
+                                        return `(call-yail-primitive string-replace-all 
+                                                    (*list-for-runtime* 
+                                                        ${transpileDeclarations(node.callee.object)}
+                                                        ${transpileDeclarations(args[0])}
+                                                        ${transpileDeclarations(args[1])}
+                                                    ) 
+                                                    '(text text text) 
+                                                    "replace all"
+                                                )`
+                                    case "slice":
+                                        proceduresUsed.add(procedures.slice)
+                                        if (args.length<2) {
+                                            args.push({type:"Literal", value:"endOfString"})
+                                      }
+                                        return `(if
+                                            (string? ${transpileDeclarations(node.callee.object)})
+                                            (slice ${transpileDeclarations(node.callee.object)} ${transpileDeclarations(args[0])} ${transpileDeclarations(args[1])})
+                                            ${transpileDeclarations(node.callee.object)}
+                                        )`
 
 
                                     default:

@@ -328,3 +328,51 @@ exports.repeat = `
         )
     )    
 )`
+
+
+exports.replace =`
+(define
+    (replace str search replacement)
+    (let 
+        (
+            (index (indexOf str search))
+        )
+        (if
+            (= index -1)
+            (str)
+            (string-append 
+                (substring str 0 index)
+                (substring ((get-var add)replacement "") 0 (string-length ((get-var add) replacement "")))
+                (substring str (+ index (string-length search)) (string-length str))
+            )
+            
+        )
+    )
+)
+`
+
+
+exports.slice = `
+(define 
+    (slice str start end)
+    (begin
+        (if
+            (string=? end "endOfString")
+            (set! end (string-length str))
+            (set! end end)
+        )    
+        (if
+            (< start 0)
+            (set! start (+ (string-length str) start))
+            (set! start start)
+        )
+        (if
+            (< end 0)
+            (set! end (+ (string-length str) end))
+            (set! end end)
+        )
+        (substring str start end)
+    )    
+)
+
+`
