@@ -26,7 +26,7 @@ const { parse, walk } = require('abstract-syntax-tree')
 const util = require('util')
 const procedures = require("./procedures.js")
 
-let debug = false
+let debug = true
 
 let generatedCode = ""
 let generatedGlobalsCode = ""
@@ -361,11 +361,19 @@ function findVariableInStack(name) {
     console.log(`Variable not found or not in scope: "${name}".`)
 }
 
+function* gen(){
+    let count = 0
+    while(true){
+        yield count++
+    }
+}
 
+let g = gen()
 
 function transpileDeclarations(node) {
 
     if (Array.isArray(node)) {
+        console.log("processing array")
         let output = ""
         for (let nn = 0; nn < node.length; nn++) {
             output += transpileDeclarations(node[nn]) + "\n"
@@ -387,7 +395,7 @@ function transpileDeclarations(node) {
 
     if (node.init === null) {
         return "#f"
-    } else if (node.init === undefined) {
+    } else {if (node.init === undefined) {
         type = node.type
         value = node.value
         name = node.name
@@ -519,6 +527,9 @@ function transpileDeclarations(node) {
         case "BlockStatement":
             return transpileDeclarations(node.body)
 
+        case "BreakStatement":
+            return `(*yail-break* #f)`
+        
 
         case "CallExpression":
 
@@ -843,13 +854,18 @@ function transpileDeclarations(node) {
             break;
 
 
+        case "ContinueStatement":
+            console.error("Error: There is no 'continue' statement in this implementation. You need to rewrite your code.\n 'continue' is being skipped in transcompilation.\n")
+            return ``
+
 
         case "ExpressionStatement":
             return transpileDeclarations(node.expression) + "\n"
 
         case "ForStatement":
-
-
+            //init, test, update, body
+            console.log("for statement")
+            return ''
             break;
 
 
@@ -1148,6 +1164,9 @@ function transpileDeclarations(node) {
 
         case "VariableDeclaration":
 
+            console.log("variable declaration")
+            console.log(node.type)
+            console.log(node)
             let source;
             if (node.declarations[0].init) {
                 source = node.declarations[0].init
@@ -1188,6 +1207,7 @@ function transpileDeclarations(node) {
                     ${transpileDeclarations(node.test)}
                     (begin
                         ${transpileDeclarations(node.body)}    
+                        
                     )    
                 )
             `
