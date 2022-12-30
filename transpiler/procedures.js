@@ -2,16 +2,16 @@
 //in the App Inventor REPL
 
 //Overloads addition to handle string concatenation and numberical addition
+//this needs rewrite to cover all possible cases of addition in js
 exports.add = `
 (def (add $a $b) 
     (if    
-        (and-delayed (call-yail-primitive is-number? (*list-for-runtime* (lexical-value $a)) '(text) "is a number?") (call-yail-primitive is-number? (*list-for-runtime* (lexical-value $b)) '(text) "is a number?")) 
-        (call-yail-primitive + (*list-for-runtime* (lexical-value $a) (lexical-value $b) ) '(number number ) "+") 
-        (call-yail-primitive string-append (*list-for-runtime* (lexical-value $a) (lexical-value $b) ) '(text text ) "join")
+        (and (string? $a) (string? $b))
+        (string-append $a $b)
+        (+ $a $b) 
     )
 )
 `
-
 
 //Overloads greaterthan for strings and numbers
 exports.gt = `

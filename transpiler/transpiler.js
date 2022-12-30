@@ -847,6 +847,12 @@ function transpileDeclarations(node) {
         case "ExpressionStatement":
             return transpileDeclarations(node.expression) + "\n"
 
+        case "ForStatement":
+
+
+            break;
+
+
         case "FunctionDeclaration":
 
             //put variables on stack for locals
@@ -1173,6 +1179,18 @@ function transpileDeclarations(node) {
                 removeFromVariableStack(node.declarations[0])
                 return returnVariable
             }
+
+            break;
+
+        case "WhileStatement":
+            return `
+                (while
+                    ${transpileDeclarations(node.test)}
+                    (begin
+                        ${transpileDeclarations(node.body)}    
+                    )    
+                )
+            `
 
 
         default:
