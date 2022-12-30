@@ -152,7 +152,7 @@ function modifyTree(tree) {
     //2.5 find all variables that declare functions like   `let a = function(){...}`  and turn these into normal function declarations
     walk(tree, (node, parent) => {
         if (node.type === "VariableDeclaration") {
-            if (node.declarations[0].init.type ==="FunctionExpression"){
+            if (node.declarations[0].init.type === "FunctionExpression") {
                 node.type = "FunctionDeclaration"
                 node.id = node.declarations[0].id
                 node.params = node.declarations[0].init.params
@@ -404,32 +404,6 @@ function transpileDeclarations(node) {
 
     switch (type) {
 
-        case "Program":
-            let ProgramCode = ""
-            for (let n of node.body) {
-                ProgramCode += transpileDeclarations(n)
-            }
-            return ProgramCode
-
-        case "ExpressionStatement":
-            return transpileDeclarations(node.expression) + "\n"
-
-        case "Literal":
-            if (typeof value === "string") { //need to do this first so that new booleans don't get quote marks
-                value = `"${value}"`
-            }
-            if (typeof value === "boolean") {   //need to adjust true and false in declaration to #t / #f to match YAIL syntax
-                value = value ? '#t' : '#f'
-            }
-            return value
-
-        case "Identifier":
-            if (name === "undefined") {
-                return "#f"
-            }
-            let name2 = findVariableInStack(name)
-            return name2
-
         case "ArrayExpression":
 
             let compile = ``
@@ -440,34 +414,6 @@ function transpileDeclarations(node) {
             }
             let arrayCode = `(call-yail-primitive make-yail-list (*list-for-runtime* ${compile}) '(${anys}) "make a list")`
             return `${arrayCode}`
-
-        case "ObjectExpression":
-
-            let objectCode = `(call-yail-primitive make-yail-dictionary (*list-for-runtime* `
-            let pairs = ""
-
-            for (let i = 0; i < properties.length; i++) {
-                let key = properties[i].key.name ? `"${properties[i].key.name}"` : `"${properties[i].key.value}"`
-                let value = transpileDeclarations(properties[i].value) + " "
-                console.log("value", value, properties)
-
-                let pairCode = `(call-yail-primitive make-dictionary-pair (*list-for-runtime* ${key}  ${transpileDeclarations(properties[i].value)} ) '(key any) "make a pair")`
-                pairs += "pair "
-                objectCode += pairCode
-
-                if (i === properties.length - 1) {
-                    objectCode += ")"
-                }
-            }
-
-            if (properties.length === 0) {
-                return `(call-yail-primitive make-yail-dictionary (*list-for-runtime* ) '() "make a dictionary")`
-            }
-
-            let tail = ` '(${pairs}) "make a dictionary" )`
-            objectCode += tail
-
-            return `${objectCode}`
 
         case "AssignmentExpression":        //this feels pretty clumsy
 
@@ -488,241 +434,91 @@ function transpileDeclarations(node) {
                 return AssignmentExpressionLeft
             }
 
-            break;
 
 
 
-        case "VariableDeclaration":
+        case "BinaryExpression":
 
-            let source;
-            if (node.declarations[0].init) {
-                source = node.declarations[0].init
+
+            let operator = ""
+            let operatorCommand = ""
+
+            let op
+            let left
+            let right
+            if (node.init !== undefined) {
+                op = node.init.operator
+                left = node.init.left
+                right = node.init.right
             } else {
-                source = node.declarations
+                op = node.operator
+                left = node.left
+                right = node.right
+            }
+            switch (op) {
+                case "+":
+                    operator = "+";
+                    operatorCommand = "+";
+                    proceduresUsed.add(procedures.add)
+                    return `((get-var add) ${transpileDeclarations(left)} ${transpileDeclarations(right)})`
+                case "-":
+                    operator = "-";
+                    operatorCommand = "-";
+                    break
+                case "*":
+                    operator = "*";
+                    operatorCommand = "*";
+                    break
+                case "/":
+                    operator = "yail-divide";
+                    operatorCommand = "yail-divide";
+                    break
+                case "**":
+                    operator = "expt";
+                    operatorCommand = "expt";
+                    break
+                case "===":     //this is not correct - there should be type checking but not going to bother
+                case "==":
+                    operator = "yail-equal?";
+                    operatorCommand = "=";
+                    return `(equal? ${transpileDeclarations(left)} ${transpileDeclarations(right)})`
+                case "!==":     //this is not correct - there should be type checking
+                case "!=":
+                    operator = "yail-not-equal?";
+                    operatorCommand = `"not ="`;
+                    return `(not (equal? ${transpileDeclarations(left)} ${transpileDeclarations(right)} ${operator} ${operatorCommand}))`
+                case "<":
+                    proceduresUsed.add(procedures.lt)
+                    return `((get-var lt) ${transpileDeclarations(left)} ${transpileDeclarations(right)})`
+                case ">":
+                    proceduresUsed.add(procedures.gt)
+                    return `((get-var gt) ${transpileDeclarations(left)} ${transpileDeclarations(right)})`
+                case ">=":
+                    operator = "yail-equal?";
+                    operatorCommand = "=";
+                    proceduresUsed.add(procedures.gt)
+                    proceduresUsed.add(procedures.eql)
+                    return `(or ((get-var gt) ${transpileDeclarations(left)} ${transpileDeclarations(right)}) (equal? ${transpileDeclarations(left)} ${transpileDeclarations(right)} ${operator} ${operatorCommand}))`
+                case "<=": operator = "yail-equal?"; operatorCommand = "=";
+                    proceduresUsed.add(procedures.lt)
+                    proceduresUsed.add(procedures.eql)
+                    return `(or ((get-var lt) ${transpileDeclarations(left)} ${transpileDeclarations(right)}) (equal? ${transpileDeclarations(left)} ${transpileDeclarations(right)} ${operator} ${operatorCommand}))`
+                case "&": operator = "bitwise-and"; operatorCommand = "bitwise-and"; break
+                case "|": operator = "bitwise-ior"; operatorCommand = "bitwise-ior"; break
+                case "^": operator = "bitwise-xor"; operatorCommand = "bitwise-xor"; break
+                case "%": operator = "remainder"; operatorCommand = "remainder"; break
+                default:
+                    console.log(`Unknown binary operator "${JSON.stringify(op)}". Panic!`)
             }
 
-            if (node.isGlobal === "true") {
-                return `(def g$${node.declarations[0].id.name} ${transpileDeclarations(source)})`
-            }
-            else {
-                let vBody = ""
-                if (Array.isArray(node.body)) {
-                    for (let vv = 0; vv < node.body.length; vv++) {
-                        vBody += transpileDeclarations(node.body[vv]) + " "
-                    }
-                }
-                variableStack[variableStack.length - 1].push(
-                    {
-                        "scope": "local",
-                        "identifier": node.declarations[0].id.name
-                    }
-                )
-                let returnVariable = `(let
-                            (($${node.declarations[0].id.name}  ${transpileDeclarations(source)}))
-                            ${vBody}
-                        )
-                        `
-                removeFromVariableStack(node.declarations[0])
-                return returnVariable
-            }
+            return `(call-yail-primitive ${operator} (*list-for-runtime* ${transpileDeclarations(left)} ${transpileDeclarations(right)} ) '(number number ) "${operatorCommand}")`
 
 
-        case "FunctionExpression":
-            return transpileDeclarations(node.body)
-
-        case "FunctionDeclaration":
-
-            //put variables on stack for locals
-            variableStack[variableStack.length - 1].push(
-                {
-                    "scope": "local",
-                    "identifier": node.id.name,
-                    "type": "procedure"
-                }
-            )
-            let parameters = ""
-            for (let i = 0; i < node.params.length; i++) {
-                variableStack[variableStack.length - 1].push(
-                    {
-                        "scope": "local",
-                        "identifier": node.params[i].name,
-                        "type": "procedureVariable"
-                    }
-                )
-                parameters += `$${node.params[i].name} `
-            }
-
-            let returnProcedure = `
-            (def
-                (p$${node.id.name} ${parameters})
-                ${transpileDeclarations(node.body)}
-            )
-            `
-
-            //remove variables from stack
-            for (let i = node.params.length - 1; i >= 0; i--) {
-                removeFromVariableStack(node.params[i].name, true)
-            }
-
-            removeFromVariableStack(node)
-            return returnProcedure
-
-
+            break;
 
         case "BlockStatement":
             return transpileDeclarations(node.body)
 
-        case "ReturnStatement":
-            console.log(node)
-            return transpileDeclarations(node.argument)
-
-
-
-        case "MemberExpressionSet":
-            let MemberExpressionSetProperty = node.property.name       // .text
-            let MemberExpressionSetValue = node.property.value         // ["text"] or [2]    //need to work out if the is whole number 
-
-            if (node.type === "MemberExpression") { node.type = "MemberExpressionSet" } //make it come back to here
-
-            let MESelementName = node.object.name
-
-            let MESisVariableOfType = undefined
-            let MESisVariableOfScope = undefined
-            let currentStack = variableStack[variableStack.length - 1]
-            for (let i = currentStack.length - 1; i >= 0; i--) {
-                if (currentStack[i].name === MESelementName) {
-                    MESisVariableOfType = currentStack[i].type
-                    MESisVariableOfScope = currentStack[i].scope
-                    break
-                }
-            }
-
-
-            switch (MESisVariableOfScope) {
-                case "component":
-                    switch (MemberExpressionSetProperty) {
-                        case "text":
-
-                            if (MESisVariableOfType === "textbox") {
-                                console.log("found textbox" + findVariableInStack(node.object.name))
-                                return `(set-and-coerce-property! 'textbox 'Text ${transpileDeclarations(node.assignedRight)} 'text)`
-
-                            }
-                            //(set-and-coerce-property! 'TextBox1 'Text "text value" 'text)
-                            return ""
-
-                    }
-
-                default:
-
-                    switch (MemberExpressionSetProperty) {
-
-                        default:
-                            proceduresUsed.add(procedures.isDictionary)
-                            proceduresUsed.add(procedures.isList)
-                            return `
-                            (cond 
-                                ((isDictionary  ${transpileDeclarations(node.object)} ) (call-yail-primitive yail-dictionary-set-pair (*list-for-runtime* "${transpileDeclarations(node.property)}" ${transpileDeclarations(node.object)} ${transpileDeclarations(node.assignedRight)}) '(key dictionary any) "set value for key in dictionary to value"))
-                                ((isList ${transpileDeclarations(node.object)}) (call-yail-primitive yail-list-set-item! (*list-for-runtime* ${transpileDeclarations(node.object)} (+ ${node.property.value} 1) ${transpileDeclarations(node.assignedRight)}) '(list number any) "replace list item"))
-                                (else #f)
-                            )`
-                    } // END Memeber expression set property
-
-
-
-
-            } // END Member Expression set Scope
-
-
-            break;
-
-
-        case "MemberExpression":
-            //this is for a GET case
-
-            let MemberExpressionProperty = node.property.name       // .text
-            let MemberExpressionValue = node.property.value         // ["text"] or [2]    //need to work out if the is whole number 
-
-
-            let MEelementName = node.object.name
-
-            let MEisVariableOfType = undefined
-            let MEisVariableOfScope = undefined
-            let MEcurrentStack = variableStack[variableStack.length - 1]
-            for (let i = MEcurrentStack.length - 1; i >= 0; i--) {
-                if (MEcurrentStack[i].name === MEelementName) {
-                    MEisVariableOfType = MEcurrentStack[i].type
-                    MEisVariableOfScope = MEcurrentStack[i].scope
-                    break
-                }
-            }
-
-            //  '()   is an empty list - it is equivalent to null
-
-            switch (MEisVariableOfScope) {
-                //Do components first
-                case "component":
-                    switch (MemberExpressionProperty) {
-                        case "value":
-
-                            if (MEisVariableOfType === "textbox") {
-                                return `(get-property 'textbox 'Text)`
-
-                            }
-                            //(set-and-coerce-property! 'TextBox1 'Text "text value" 'text)
-                            return ""
-
-                    }
-                    break;
-
-                //then deal with everything else
-                default:
-                    if (!MemberExpressionProperty) {
-                        proceduresUsed.add(procedures.isDictionary)
-                        proceduresUsed.add(procedures.getFromDict)
-                        proceduresUsed.add(procedures.isList)
-                        proceduresUsed.add(procedures.getFromList)
-
-                        return `
-                    (cond 
-                        ((isDictionary  ${transpileDeclarations(node.object)}) (getFromDict "${transpileDeclarations(node.property)}" ${transpileDeclarations(node.object)}) )
-                        ((isList ${transpileDeclarations(node.object)}) (getFromList ${transpileDeclarations(node.property)} ${transpileDeclarations(node.object)} ))
-                        (else #f)
-                    )`
-                    }
-
-                    switch (MemberExpressionProperty) {
-
-                        case "length":
-                            proceduresUsed.add(procedures.isDictionary)
-                            proceduresUsed.add(procedures.getFromDict)
-                            proceduresUsed.add(procedures.isList)
-
-                            return `
-                        (cond
-                            ((isDictionary  ${transpileDeclarations(node.object)} ) (getFromDict "${transpileDeclarations(node.property)}" ${transpileDeclarations(node.object)}) )
-                            ((isList ${transpileDeclarations(node.object)}) (call-yail-primitive yail-list-length (*list-for-runtime* ${transpileDeclarations(node.object)} ) '(list) "length of list") )
-                            ((isString? ${transpileDeclarations(node.object)}) (call-yail-primitive string-length (*list-for-runtime* ${transpileDeclarations(node.object)} ) '(text) "length") )
-                            (else #f)
-                        )`
-
-                        default:
-                            proceduresUsed.add(procedures.isDictionary)
-                            proceduresUsed.add(procedures.getFromDict)
-                            proceduresUsed.add(procedures.isList)
-                            proceduresUsed.add(procedures.getFromList)
-                            return `
-                            (cond 
-                                ((isDictionary  ${transpileDeclarations(node.object)} ) (getFromDict "${transpileDeclarations(node.property)}" ${transpileDeclarations(node.object)}) )
-                                ((isList ${transpileDeclarations(node.object)}) (getFromList ${transpileDeclarations(node.property)} ${transpileDeclarations(node.object)} ) )
-                                (else #f)
-                            )`
-                    }
-
-
-            }
-
-            break;
 
         case "CallExpression":
 
@@ -1046,86 +842,276 @@ function transpileDeclarations(node) {
             }
             break;
 
-        case "BinaryExpression":
 
 
-            let operator = ""
-            let operatorCommand = ""
+        case "ExpressionStatement":
+            return transpileDeclarations(node.expression) + "\n"
 
-            let op
-            let left
-            let right
-            if (node.init !== undefined) {
-                op = node.init.operator
-                left = node.init.left
-                right = node.init.right
-            } else {
-                op = node.operator
-                left = node.left
-                right = node.right
+        case "FunctionDeclaration":
+
+            //put variables on stack for locals
+            variableStack[variableStack.length - 1].push(
+                {
+                    "scope": "local",
+                    "identifier": node.id.name,
+                    "type": "procedure"
+                }
+            )
+            let parameters = ""
+            for (let i = 0; i < node.params.length; i++) {
+                variableStack[variableStack.length - 1].push(
+                    {
+                        "scope": "local",
+                        "identifier": node.params[i].name,
+                        "type": "procedureVariable"
+                    }
+                )
+                parameters += `$${node.params[i].name} `
             }
-            switch (op) {
-                case "+":
-                    operator = "+";
-                    operatorCommand = "+";
-                    proceduresUsed.add(procedures.add)
-                    return `((get-var add) ${transpileDeclarations(left)} ${transpileDeclarations(right)})`
-                case "-":
-                    operator = "-";
-                    operatorCommand = "-";
+
+            let returnProcedure = `
+            (def
+                (p$${node.id.name} ${parameters})
+                ${transpileDeclarations(node.body)}
+            )
+            `
+
+            //remove variables from stack
+            for (let i = node.params.length - 1; i >= 0; i--) {
+                removeFromVariableStack(node.params[i].name, true)
+            }
+
+            removeFromVariableStack(node)
+            return returnProcedure
+
+        case "FunctionExpression":
+            return transpileDeclarations(node.body)
+
+
+
+
+
+        case "Identifier":
+            if (name === "undefined") {
+                return "#f"
+            }
+            let name2 = findVariableInStack(name)
+            return name2
+
+
+        case "IfStatement":
+            return `
+            (if
+                ${transpileDeclarations(node.test)}
+                (begin
+                    ${transpileDeclarations(node.consequent)}
+                )
+                (begin
+                    ${transpileDeclarations(node.alternate)}
+                )
+            )
+            `
+            break;
+
+
+
+        case "Literal":
+            if (typeof value === "string") { //need to do this first so that new booleans don't get quote marks
+                value = `"${value}"`
+            }
+            if (typeof value === "boolean") {   //need to adjust true and false in declaration to #t / #f to match YAIL syntax
+                value = value ? '#t' : '#f'
+            }
+            return value
+
+
+
+        case "MemberExpression":
+            //this is for a GET case
+
+            let MemberExpressionProperty = node.property.name       // .text
+            let MemberExpressionValue = node.property.value         // ["text"] or [2]    //need to work out if the is whole number 
+
+
+            let MEelementName = node.object.name
+
+            let MEisVariableOfType = undefined
+            let MEisVariableOfScope = undefined
+            let MEcurrentStack = variableStack[variableStack.length - 1]
+            for (let i = MEcurrentStack.length - 1; i >= 0; i--) {
+                if (MEcurrentStack[i].name === MEelementName) {
+                    MEisVariableOfType = MEcurrentStack[i].type
+                    MEisVariableOfScope = MEcurrentStack[i].scope
                     break
-                case "*":
-                    operator = "*";
-                    operatorCommand = "*";
-                    break
-                case "/":
-                    operator = "yail-divide";
-                    operatorCommand = "yail-divide";
-                    break
-                case "**":
-                    operator = "expt";
-                    operatorCommand = "expt";
-                    break
-                case "===":     //this is not correct - there should be type checking but not going to bother
-                case "==":
-                    operator = "yail-equal?";
-                    operatorCommand = "=";
-                    proceduresUsed.add(procedures.eql)
-                    return `((get-var eql) ${transpileDeclarations(left)} ${transpileDeclarations(right)} ${operator} ${operatorCommand})`
-                case "!==":     //this is not correct - there should be type checking
-                case "!=":
-                    operator = "yail-not-equal?";
-                    operatorCommand = `"not ="`;
-                    proceduresUsed.add(procedures.neq)
-                    return `((get-var neq) ${transpileDeclarations(left)} ${transpileDeclarations(right)} ${operator} ${operatorCommand})`
-                case "<":
-                    proceduresUsed.add(procedures.lt)
-                    return `((get-var lt) ${transpileDeclarations(left)} ${transpileDeclarations(right)})`
-                case ">":
-                    proceduresUsed.add(procedures.gt)
-                    return `((get-var gt) ${transpileDeclarations(left)} ${transpileDeclarations(right)})`
-                case ">=":
-                    operator = "yail-equal?";
-                    operatorCommand = "=";
-                    proceduresUsed.add(procedures.gt)
-                    proceduresUsed.add(procedures.eql)
-                    return `(or ((get-var gt) ${transpileDeclarations(left)} ${transpileDeclarations(right)}) ((get-var eql) ${transpileDeclarations(left)} ${transpileDeclarations(right)} ${operator} ${operatorCommand}))`
-                case "<=": operator = "yail-equal?"; operatorCommand = "=";
-                    proceduresUsed.add(procedures.lt)
-                    proceduresUsed.add(procedures.eql)
-                    return `(or ((get-var lt) ${transpileDeclarations(left)} ${transpileDeclarations(right)}) ((get-var eql) ${transpileDeclarations(left)} ${transpileDeclarations(right)} ${operator} ${operatorCommand}))`
-                case "&": operator = "bitwise-and"; operatorCommand = "bitwise-and"; break
-                case "|": operator = "bitwise-ior"; operatorCommand = "bitwise-ior"; break
-                case "^": operator = "bitwise-xor"; operatorCommand = "bitwise-xor"; break
-                case "%": operator = "remainder"; operatorCommand = "remainder"; break
+                }
+            }
+
+            //  '()   is an empty list - it is equivalent to null
+
+            switch (MEisVariableOfScope) {
+                //Do components first
+                case "component":
+                    switch (MemberExpressionProperty) {
+                        case "text":
+
+                            if (MEisVariableOfType === "textbox") {
+                                return `(get-property 'textbox 'Text)`
+
+                            }
+                            //(set-and-coerce-property! 'TextBox1 'Text "text value" 'text)
+                            return ""
+
+                    }
+                    break;
+
+                //then deal with everything else
                 default:
-                    console.log(`Unknown binary operator "${JSON.stringify(op)}". Panic!`)
+                    if (!MemberExpressionProperty) {
+                        proceduresUsed.add(procedures.isDictionary)
+                        proceduresUsed.add(procedures.getFromDict)
+                        proceduresUsed.add(procedures.isList)
+                        proceduresUsed.add(procedures.getFromList)
+
+                        return `
+                        (cond 
+                            ((isDictionary  ${transpileDeclarations(node.object)}) (getFromDict "${transpileDeclarations(node.property)}" ${transpileDeclarations(node.object)}) )
+                            ((isList ${transpileDeclarations(node.object)}) (getFromList ${transpileDeclarations(node.property)} ${transpileDeclarations(node.object)} ))
+                            (else #f)
+                        )`
+                    }
+
+                    switch (MemberExpressionProperty) {
+
+                        case "length":
+                            proceduresUsed.add(procedures.isDictionary)
+                            proceduresUsed.add(procedures.getFromDict)
+                            proceduresUsed.add(procedures.isList)
+
+                            return `
+                            (cond
+                                ((isDictionary  ${transpileDeclarations(node.object)} ) (getFromDict "${transpileDeclarations(node.property)}" ${transpileDeclarations(node.object)}) )
+                                ((isList ${transpileDeclarations(node.object)}) (call-yail-primitive yail-list-length (*list-for-runtime* ${transpileDeclarations(node.object)} ) '(list) "length of list") )
+                                ((isString? ${transpileDeclarations(node.object)}) (call-yail-primitive string-length (*list-for-runtime* ${transpileDeclarations(node.object)} ) '(text) "length") )
+                                (else #f)
+                            )`
+
+                        default:
+                            proceduresUsed.add(procedures.isDictionary)
+                            proceduresUsed.add(procedures.getFromDict)
+                            proceduresUsed.add(procedures.isList)
+                            proceduresUsed.add(procedures.getFromList)
+                            return `
+                                (cond 
+                                    ((isDictionary  ${transpileDeclarations(node.object)} ) (getFromDict "${transpileDeclarations(node.property)}" ${transpileDeclarations(node.object)}) )
+                                    ((isList ${transpileDeclarations(node.object)}) (getFromList ${transpileDeclarations(node.property)} ${transpileDeclarations(node.object)} ) )
+                                    (else #f)
+                                )`
+                    }
+
+
             }
 
-            return `(call-yail-primitive ${operator} (*list-for-runtime* ${transpileDeclarations(left)} ${transpileDeclarations(right)} ) '(number number ) "${operatorCommand}")`
+            break;
+
+        case "MemberExpressionSet":
+            let MemberExpressionSetProperty = node.property.name       // .text
+            let MemberExpressionSetValue = node.property.value         // ["text"] or [2]    //need to work out if the is whole number 
+
+            if (node.type === "MemberExpression") { node.type = "MemberExpressionSet" } //make it come back to here
+
+            let MESelementName = node.object.name
+
+            let MESisVariableOfType = undefined
+            let MESisVariableOfScope = undefined
+            let currentStack = variableStack[variableStack.length - 1]
+            for (let i = currentStack.length - 1; i >= 0; i--) {
+                if (currentStack[i].name === MESelementName) {
+                    MESisVariableOfType = currentStack[i].type
+                    MESisVariableOfScope = currentStack[i].scope
+                    break
+                }
+            }
+
+
+            switch (MESisVariableOfScope) {
+                case "component":
+                    switch (MemberExpressionSetProperty) {
+                        case "text":
+
+                            if (MESisVariableOfType === "textbox") {
+                                console.log("found textbox" + findVariableInStack(node.object.name))
+                                return `(set-and-coerce-property! 'textbox 'Text ${transpileDeclarations(node.assignedRight)} 'text)`
+
+                            }
+                            //(set-and-coerce-property! 'TextBox1 'Text "text value" 'text)
+                            return ""
+
+                    }
+
+                default:
+
+                    switch (MemberExpressionSetProperty) {
+
+                        default:
+                            proceduresUsed.add(procedures.isDictionary)
+                            proceduresUsed.add(procedures.isList)
+                            return `
+                                    (cond 
+                                        ((isDictionary  ${transpileDeclarations(node.object)} ) (call-yail-primitive yail-dictionary-set-pair (*list-for-runtime* "${transpileDeclarations(node.property)}" ${transpileDeclarations(node.object)} ${transpileDeclarations(node.assignedRight)}) '(key dictionary any) "set value for key in dictionary to value"))
+                                        ((isList ${transpileDeclarations(node.object)}) (call-yail-primitive yail-list-set-item! (*list-for-runtime* ${transpileDeclarations(node.object)} (+ ${node.property.value} 1) ${transpileDeclarations(node.assignedRight)}) '(list number any) "replace list item"))
+                                        (else #f)
+                                    )`
+                    } // END Memeber expression set property
+
+
+
+
+            } // END Member Expression set Scope
 
 
             break;
+
+
+        case "ObjectExpression":
+
+            let objectCode = `(call-yail-primitive make-yail-dictionary (*list-for-runtime* `
+            let pairs = ""
+
+            for (let i = 0; i < properties.length; i++) {
+                let key = properties[i].key.name ? `"${properties[i].key.name}"` : `"${properties[i].key.value}"`
+                let value = transpileDeclarations(properties[i].value) + " "
+                console.log("value", value, properties)
+
+                let pairCode = `(call-yail-primitive make-dictionary-pair (*list-for-runtime* ${key}  ${transpileDeclarations(properties[i].value)} ) '(key any) "make a pair")`
+                pairs += "pair "
+                objectCode += pairCode
+
+                if (i === properties.length - 1) {
+                    objectCode += ")"
+                }
+            }
+
+            if (properties.length === 0) {
+                return `(call-yail-primitive make-yail-dictionary (*list-for-runtime* ) '() "make a dictionary")`
+            }
+
+            let tail = ` '(${pairs}) "make a dictionary" )`
+            objectCode += tail
+
+            return `${objectCode}`
+
+        case "Program":
+            let ProgramCode = ""
+            for (let n of node.body) {
+                ProgramCode += transpileDeclarations(n)
+            }
+            return ProgramCode
+
+
+        case "ReturnStatement":
+            console.log(node)
+            return transpileDeclarations(node.argument)
+
         case "UnaryExpression":
 
             let UnaryOperator = ""
@@ -1152,9 +1138,43 @@ function transpileDeclarations(node) {
                 default:
                     console.log(`Unknown unary operator "${JSON.stringify(op)}". Panic!`)
             }
-
-
             break;
+
+        case "VariableDeclaration":
+
+            let source;
+            if (node.declarations[0].init) {
+                source = node.declarations[0].init
+            } else {
+                source = node.declarations
+            }
+
+            if (node.isGlobal === "true") {
+                return `(def g$${node.declarations[0].id.name} ${transpileDeclarations(source)})`
+            }
+            else {
+                let vBody = ""
+                if (Array.isArray(node.body)) {
+                    for (let vv = 0; vv < node.body.length; vv++) {
+                        vBody += transpileDeclarations(node.body[vv]) + " "
+                    }
+                }
+                variableStack[variableStack.length - 1].push(
+                    {
+                        "scope": "local",
+                        "identifier": node.declarations[0].id.name
+                    }
+                )
+                let returnVariable = `(let
+                            (($${node.declarations[0].id.name}  ${transpileDeclarations(source)}))
+                            ${vBody}
+                        )
+                        `
+                removeFromVariableStack(node.declarations[0])
+                return returnVariable
+            }
+
+
         default:
 
     }

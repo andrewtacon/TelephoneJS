@@ -12,35 +12,14 @@ exports.add = `
 )
 `
 
-//Overload equality for stings and numbers
-exports.eql = `
-(def (eql $a $b $operator $operatorCommand ) 
-    (if 
-        (and (call-yail-primitive string? (*list-for-runtime* $a) '(any) "is a string?")  (call-yail-primitive string? (*list-for-runtime* $b) '(any) "is a string?")  )
-        (call-yail-primitive string=? (*list-for-runtime* $a $b) '(text text) "text=")
-        (call-yail-primitive $operator (*list-for-runtime* $a $b) '(number number ) "$operatorCommand")
-    )
-)
-`
-
-//Overloads not equals for strings and numbers
-exports.neq = `
-(def (neq $a $b $operator $operatorCommand ) 
-    (if 
-        (and (call-yail-primitive string? (*list-for-runtime* $a) '(any) "is a string?")  (call-yail-primitive string? (*list-for-runtime* $b) '(any) "is a string?")  )
-        (not (call-yail-primitive string=? (*list-for-runtime* $a $b) '(text text) "not ="))
-        (call-yail-primitive $operator (*list-for-runtime* $a $b) '(number number ) "$operatorCommand")
-    )
-)
-`
 
 //Overloads greaterthan for strings and numbers
 exports.gt = `
 (def (gt $a $b ) 
     (if 
-        (and (call-yail-primitive string? (*list-for-runtime* $a) '(any) "is a string?")  (call-yail-primitive string? (*list-for-runtime* $b) '(any) "is a string?")  )
-        (call-yail-primitive string>? (*list-for-runtime* $a $b) '(text text) "text>")
-        (call-yail-primitive > (*list-for-runtime* $a $b ) '(number number ) ">")
+        (and (string? $a) (string? $b))
+        (string>? $a $b)
+        (> $a $b)
     )
 )
 `
@@ -49,9 +28,9 @@ exports.gt = `
 exports.lt = `
 (def (lt $a $b ) 
     (if 
-        (and (call-yail-primitive string? (*list-for-runtime* $a) '(any) "is a string?")  (call-yail-primitive string? (*list-for-runtime* $b) '(any) "is a string?")  )
-        (call-yail-primitive string<? (*list-for-runtime* $a $b) '(text text) "text>")
-        (call-yail-primitive < (*list-for-runtime* $a $b ) '(number number ) "<")
+        (and (string? $a) (string? $b))
+        (string<? $a $b)
+        (< $a $b ) 
     )
 )
 `
