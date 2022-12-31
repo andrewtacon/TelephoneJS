@@ -26,7 +26,8 @@ const { parse, walk } = require('abstract-syntax-tree')
 const util = require('util')
 const procedures = require("./procedures.js")
 
-let debug = true
+
+let debug = false
 
 let generatedCode = ""
 let generatedGlobalsCode = ""
@@ -124,6 +125,31 @@ function modifyTree(tree) {
     let copy;
     let lastIndex = 0
 
+    //refactor for loops as a block with a while loop in it
+    walk(tree, (node, parent) => {
+
+        if (node.type === "ForStatement") {
+            node.type = "BlockStatement"
+            node.newbody = []
+            node.newbody.push(node.init)
+            let newWhileStatement = {
+                type: 'WhileStatement',
+                test: { type: 'Literal', value: true },
+                body: { type: 'BlockStatement', body: [] }
+            }
+            newWhileStatement.test = node.test
+            newWhileStatement.body.body.push(...node.body.body)
+            newWhileStatement.body.body.push(node.update)
+            node.newbody.push(newWhileStatement)
+            node.body = node.newbody
+            delete node.newbody
+            delete node.init
+            delete node.test
+            delete node.update
+        }
+    })
+
+
     //this step
     // 1. labels the globals
     // 2. splits multiline variables into single lines
@@ -136,7 +162,8 @@ function modifyTree(tree) {
 
             //if multiple defintions in the one line, this will be a problem
             //these need to be split into separate records
-            if (node.declarations.length > 1) {
+
+            if (node.declarations.length > 1 && Array.isArray(parent.body)) {
                 let nodeIndex = parent.body.indexOf(node)
                 for (let i = node.declarations.length - 1; i >= 1; i--) {
                     let copy = JSON.parse(JSON.stringify(node))
@@ -361,15 +388,6 @@ function findVariableInStack(name) {
     console.log(`Variable not found or not in scope: "${name}".`)
 }
 
-function* gen(){
-    let count = 0
-    while(true){
-        yield count++
-    }
-}
-
-let g = gen()
-
 function transpileDeclarations(node) {
 
     if (Array.isArray(node)) {
@@ -381,8 +399,6 @@ function transpileDeclarations(node) {
         return output
     }
 
-
-
     let type
     let value
     let name
@@ -393,22 +409,13 @@ function transpileDeclarations(node) {
         return
     }
 
-    if (node.init === null) {
-        return "#f"
-    } else {if (node.init === undefined) {
-        type = node.type
-        value = node.value
-        name = node.name
-        elements = node.elements
-        properties = node.properties
-    } else {
-        type = node.init.type
-        value = node.init.value
-        name = node.init.name
-        elements = node.init.elements
-        properties = node.init.properties
-    }
+    type = node.type
+    value = node.value
+    name = node.name
+    elements = node.elements
+    properties = node.properties
 
+    //   console.log(type)
 
     switch (type) {
 
@@ -425,6 +432,7 @@ function transpileDeclarations(node) {
 
         case "AssignmentExpression":        //this feels pretty clumsy
 
+
             isAssigning = true
             let AssignmentExpressionLeft = node.left
             let AssignmentExpressionRight = node.right
@@ -438,15 +446,15 @@ function transpileDeclarations(node) {
             if (AssignmentExpressionLeft.startsWith("(get-var ")) {  //this is string, numbers and bools (simple cases)
                 AssignmentExpressionLeft = AssignmentExpressionLeft.substring(8, AssignmentExpressionLeft.length - 1)
                 return `(set-var! ${AssignmentExpressionLeft} ${transpileDeclarations(AssignmentExpressionRight)}  )`
+            } else if (AssignmentExpressionLeft.startsWith("(lexical-value ")) {
+                AssignmentExpressionLeft = AssignmentExpressionLeft.substring(15, AssignmentExpressionLeft.length - 1)
+                return `(set! ${AssignmentExpressionLeft} ${transpileDeclarations(AssignmentExpressionRight)}  )`
             } else {
                 return AssignmentExpressionLeft
             }
 
 
-
-
         case "BinaryExpression":
-
 
             let operator = ""
             let operatorCommand = ""
@@ -494,7 +502,7 @@ function transpileDeclarations(node) {
                 case "!=":
                     operator = "yail-not-equal?";
                     operatorCommand = `"not ="`;
-                    return `(not (equal? ${transpileDeclarations(left)} ${transpileDeclarations(right)} ${operator} ${operatorCommand}))`
+                    return `(not (equal? ${transpileDeclarations(left)} ${transpileDeclarations(right)} ))`
                 case "<":
                     proceduresUsed.add(procedures.lt)
                     return `((get-var lt) ${transpileDeclarations(left)} ${transpileDeclarations(right)})`
@@ -505,12 +513,12 @@ function transpileDeclarations(node) {
                     operator = "yail-equal?";
                     operatorCommand = "=";
                     proceduresUsed.add(procedures.gt)
-                    proceduresUsed.add(procedures.eql)
-                    return `(or ((get-var gt) ${transpileDeclarations(left)} ${transpileDeclarations(right)}) (equal? ${transpileDeclarations(left)} ${transpileDeclarations(right)} ${operator} ${operatorCommand}))`
-                case "<=": operator = "yail-equal?"; operatorCommand = "=";
+                    return `(or ((get-var gt) ${transpileDeclarations(left)} ${transpileDeclarations(right)}) (equal? ${transpileDeclarations(left)} ${transpileDeclarations(right)} ))`
+                case "<=":
+                    operator = "yail-equal?";
+                    operatorCommand = "=";
                     proceduresUsed.add(procedures.lt)
-                    proceduresUsed.add(procedures.eql)
-                    return `(or ((get-var lt) ${transpileDeclarations(left)} ${transpileDeclarations(right)}) (equal? ${transpileDeclarations(left)} ${transpileDeclarations(right)} ${operator} ${operatorCommand}))`
+                    return `(or ((get-var lt) ${transpileDeclarations(left)} ${transpileDeclarations(right)}) (equal? ${transpileDeclarations(left)} ${transpileDeclarations(right)} ))`
                 case "&": operator = "bitwise-and"; operatorCommand = "bitwise-and"; break
                 case "|": operator = "bitwise-ior"; operatorCommand = "bitwise-ior"; break
                 case "^": operator = "bitwise-xor"; operatorCommand = "bitwise-xor"; break
@@ -529,7 +537,7 @@ function transpileDeclarations(node) {
 
         case "BreakStatement":
             return `(*yail-break* #f)`
-        
+
 
         case "CallExpression":
 
@@ -548,7 +556,7 @@ function transpileDeclarations(node) {
             //I think (currently) it is easier to deal with things this way
             let elementName = node.callee.object.name
 
-            console.log("Call expression on element: " + elementName)
+            //console.log("Call expression on element: " + elementName)
 
             switch (elementName) {
                 case "Math":
@@ -628,7 +636,6 @@ function transpileDeclarations(node) {
                         }
                     }
 
-                    console.log("Variable scope " + isVariableOfScope)
                     switch (isVariableOfScope) {
                         case "component":
 
@@ -637,7 +644,6 @@ function transpileDeclarations(node) {
                                 let methodCalled = node.callee.property.name
                                 let args = JSON.parse(JSON.stringify(node.arguments))
 
-                                console.log("component")
 
                                 //check if the method that is called is a legal method for this particular element type (refer to supplied elements list)
                                 switch (methodCalled) {
@@ -693,9 +699,6 @@ function transpileDeclarations(node) {
 
                                 //check if the method that is called is a legal method for this particular element type (refer to supplied elements list)
 
-
-
-                                console.log(methodCalled)
                                 switch (methodCalled) {
                                     //methods for strings
                                     case "at":
@@ -864,7 +867,7 @@ function transpileDeclarations(node) {
 
         case "ForStatement":
             //init, test, update, body
-            console.log("for statement")
+
             return ''
             break;
 
@@ -946,6 +949,14 @@ function transpileDeclarations(node) {
             }
             return value
 
+        case "LogicalExpression":
+            switch (node.operator) {
+                case "&&": return `(and ${transpileDeclarations(node.left)} ${transpileDeclarations(node.right)})`
+                case "||": return `(or ${transpileDeclarations(node.left)} ${transpileDeclarations(node.right)})`
+            }
+
+
+
 
 
         case "MemberExpression":
@@ -993,10 +1004,9 @@ function transpileDeclarations(node) {
                         proceduresUsed.add(procedures.getFromDict)
                         proceduresUsed.add(procedures.isList)
                         proceduresUsed.add(procedures.getFromList)
-
                         return `
                         (cond 
-                            ((isDictionary  ${transpileDeclarations(node.object)}) (getFromDict "${transpileDeclarations(node.property)}" ${transpileDeclarations(node.object)}) )
+                            ((isDictionary  ${transpileDeclarations(node.object)}) (getFromDict ${isNaN(transpileDeclarations(node.property)) ? transpileDeclarations(node.property) : `"${transpileDeclarations(node.property)}"`} ${transpileDeclarations(node.object)}) )
                             ((isList ${transpileDeclarations(node.object)}) (getFromList ${transpileDeclarations(node.property)} ${transpileDeclarations(node.object)} ))
                             (else #f)
                         )`
@@ -1022,9 +1032,12 @@ function transpileDeclarations(node) {
                             proceduresUsed.add(procedures.getFromDict)
                             proceduresUsed.add(procedures.isList)
                             proceduresUsed.add(procedures.getFromList)
+                            /*
+                                cannot transpile declarations on the object property in case it is also the name of a variable
+                            */
                             return `
                                 (cond 
-                                    ((isDictionary  ${transpileDeclarations(node.object)} ) (getFromDict "${transpileDeclarations(node.property)}" ${transpileDeclarations(node.object)}) )
+                                    ((isDictionary  ${transpileDeclarations(node.object)} ) (getFromDict ${node.property.name ? `"${node.property.name}"` : transpileDeclarations(node.property)} ${transpileDeclarations(node.object)}) )
                                     ((isList ${transpileDeclarations(node.object)}) (getFromList ${transpileDeclarations(node.property)} ${transpileDeclarations(node.object)} ) )
                                     (else #f)
                                 )`
@@ -1061,7 +1074,6 @@ function transpileDeclarations(node) {
                         case "text":
 
                             if (MESisVariableOfType === "textbox") {
-                                console.log("found textbox" + findVariableInStack(node.object.name))
                                 return `(set-and-coerce-property! 'textbox 'Text ${transpileDeclarations(node.assignedRight)} 'text)`
 
                             }
@@ -1077,9 +1089,16 @@ function transpileDeclarations(node) {
                         default:
                             proceduresUsed.add(procedures.isDictionary)
                             proceduresUsed.add(procedures.isList)
+                            let lookupValue;
+                            if (node.property.name) {
+                                lookupValue = node.property.name
+                            } else {
+                                lookupValue = node.property.value
+                            }
+
                             return `
                                     (cond 
-                                        ((isDictionary  ${transpileDeclarations(node.object)} ) (call-yail-primitive yail-dictionary-set-pair (*list-for-runtime* "${transpileDeclarations(node.property)}" ${transpileDeclarations(node.object)} ${transpileDeclarations(node.assignedRight)}) '(key dictionary any) "set value for key in dictionary to value"))
+                                        ((isDictionary  ${transpileDeclarations(node.object)} ) (call-yail-primitive yail-dictionary-set-pair (*list-for-runtime* "${lookupValue}" ${transpileDeclarations(node.object)} ${transpileDeclarations(node.assignedRight)}) '(key dictionary any) "set value for key in dictionary to value"))
                                         ((isList ${transpileDeclarations(node.object)}) (call-yail-primitive yail-list-set-item! (*list-for-runtime* ${transpileDeclarations(node.object)} (+ ${node.property.value} 1) ${transpileDeclarations(node.assignedRight)}) '(list number any) "replace list item"))
                                         (else #f)
                                     )`
@@ -1102,7 +1121,6 @@ function transpileDeclarations(node) {
             for (let i = 0; i < properties.length; i++) {
                 let key = properties[i].key.name ? `"${properties[i].key.name}"` : `"${properties[i].key.value}"`
                 let value = transpileDeclarations(properties[i].value) + " "
-                console.log("value", value, properties)
 
                 let pairCode = `(call-yail-primitive make-dictionary-pair (*list-for-runtime* ${key}  ${transpileDeclarations(properties[i].value)} ) '(key any) "make a pair")`
                 pairs += "pair "
@@ -1131,8 +1149,12 @@ function transpileDeclarations(node) {
 
 
         case "ReturnStatement":
-            console.log(node)
+            //console.log(node)
             return transpileDeclarations(node.argument)
+
+        case "SequenceExpression":
+            return transpileDeclarations(node.expressions)
+
 
         case "UnaryExpression":
 
@@ -1164,9 +1186,7 @@ function transpileDeclarations(node) {
 
         case "VariableDeclaration":
 
-            console.log("variable declaration")
-            console.log(node.type)
-            console.log(node)
+
             let source;
             if (node.declarations[0].init) {
                 source = node.declarations[0].init
@@ -1178,18 +1198,15 @@ function transpileDeclarations(node) {
                 return `(def g$${node.declarations[0].id.name} ${transpileDeclarations(source)})`
             }
             else {
-                let vBody = ""
-                if (Array.isArray(node.body)) {
-                    for (let vv = 0; vv < node.body.length; vv++) {
-                        vBody += transpileDeclarations(node.body[vv]) + " "
-                    }
-                }
+                //add variable to stack before processing
                 variableStack[variableStack.length - 1].push(
                     {
                         "scope": "local",
                         "identifier": node.declarations[0].id.name
                     }
                 )
+                let vBody = transpileDeclarations(node.body)
+
                 let returnVariable = `(let
                             (($${node.declarations[0].id.name}  ${transpileDeclarations(source)}))
                             ${vBody}

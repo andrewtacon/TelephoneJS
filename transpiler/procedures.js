@@ -4,11 +4,11 @@
 //Overloads addition to handle string concatenation and numberical addition
 //this needs rewrite to cover all possible cases of addition in js
 exports.add = `
-(def (add $a $b) 
+(def (add a b) 
     (if    
-        (and (string? $a) (string? $b))
-        (string-append $a $b)
-        (+ $a $b) 
+        (and (string? a) (string? b))
+        (string-append a b)
+        (+ a b) 
     )
 )
 `

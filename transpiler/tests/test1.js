@@ -56,6 +56,6 @@ let test = {
 button1.addEventListener(
     "click",
     function () {
-        toast.showAlert(test)
+        textbox.text = test
     }
 )
