@@ -25,6 +25,7 @@ const fs = require('fs')
 const { parse, walk } = require('abstract-syntax-tree')
 const util = require('util')
 const procedures = require("./procedures.js")
+const { notEqual } = require('assert')
 
 
 let debug = false
@@ -1183,6 +1184,53 @@ function transpileDeclarations(node) {
                     console.log(`Unknown unary operator "${JSON.stringify(op)}". Panic!`)
             }
             break;
+
+        case "UpdateExpression":
+            let assignee = transpileDeclarations(node.argument)
+            if (assignee.startsWith("(get-var ")) {  //this is string, numbers and bools (simple cases)
+                assignee = assignee.substring(8, assignee.length - 1)
+            } else if (assignee.startsWith("(lexical-value ")) {
+                assignee = assignee.substring(15, assignee.length - 1)
+            } 
+
+            if (node.prefix) {
+                switch (node.operator) {
+                    case "++":
+                        proceduresUsed.add(procedures.add)
+                        return `
+                            (begin
+                                (set-var! ${assignee} (+ ${transpileDeclarations(node.argument)} 1))
+                                ${transpileDeclarations(node.argument)}
+                            )
+                        `
+                    case "--":
+                        return `
+                        (begin
+                            (set-var! ${assignee} (- ${transpileDeclarations(node.argument)} 1))
+                            ${transpileDeclarations(node.argument)}
+                        )
+                        `
+                }
+            } else {
+                switch (node.operator) {
+                    case "++":
+                        proceduresUsed.add(procedures.add)
+                        return `
+                            (let ((temp ${transpileDeclarations(node.argument)}))
+                                    (set-var! ${assignee} (+ ${transpileDeclarations(node.argument)} 1))
+                                    temp
+                            )
+                        `
+                    case "--":
+                        return `
+                        (let ((temp ${transpileDeclarations(node.argument)}))
+                            (set-var! ${assignee} (- ${transpileDeclarations(node.argument)} 1))
+                            temp
+                    )`
+                }
+
+            }
+
 
         case "VariableDeclaration":
 
