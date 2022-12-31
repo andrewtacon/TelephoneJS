@@ -6,9 +6,9 @@
 exports.add = `
 (def (add a b) 
     (if    
-        (and (string? a) (string? b))
-        (string-append a b)
+        (and (number? a) (number? b))
         (+ a b) 
+        (string-append (coerce-arg a 'text) (coerce-arg b 'text))
     )
 )
 `

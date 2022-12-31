@@ -25,7 +25,7 @@ const fs = require('fs')
 const { parse, walk } = require('abstract-syntax-tree')
 const util = require('util')
 const procedures = require("./procedures.js")
-const { notEqual } = require('assert')
+
 
 
 let debug = false
@@ -1155,6 +1155,18 @@ function transpileDeclarations(node) {
 
         case "SequenceExpression":
             return transpileDeclarations(node.expressions)
+
+        case "TemplateElement":
+            //console.log(node.value.cooked)
+            //console.log(node.value.cooked.replaceAll('"',"\\\""))
+            return `"${node.value.cooked.replaceAll('"',"\\\"")}"`
+
+        case "TemplateLiteral":
+            let templateOutput = transpileDeclarations(node.quasis[0])
+            for (let i=0; i<node.expressions.length;i++){
+                templateOutput+= `(coerce-arg ${transpileDeclarations(node.expressions[i])} 'text)${transpileDeclarations(node.quasis[i+1])}`
+            }
+            return `(string-append ${templateOutput})`
 
 
         case "UnaryExpression":
