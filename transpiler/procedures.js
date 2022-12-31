@@ -4,7 +4,7 @@
 //Overloads addition to handle string concatenation and numberical addition
 //this needs rewrite to cover all possible cases of addition in js
 exports.add = `
-(def (add a b) 
+(define (add a b) 
     (if    
         (and (number? a) (number? b))
         (+ a b) 
@@ -110,18 +110,48 @@ exports.trim_end = `
 exports.at = `
 (define
     (at object property)
-    (begin
-        (if 
-            (< property 0)
-            (set! property (+ (string-length object) property))
-            #f
+    (cond 
+        (
+            (string? object) 
+            (begin
+                (if 
+                    (< property 0)
+                    (set! property (+ (string-length object) property))
+                    #f
+                )
+                (if
+                    (and (>= property 0) (< property (string-length object))   )
+                    (substring object property (+ property 1))
+                    '()    
+                )
+            )
         )
-        (if
-            (and (>= property 0) (< property (string-length object))   )
-            (substring object property (+ property 1))
-            '()    
+        (
+            (isList object)
+            (begin
+                (set! property (+ property 1))
+                (let
+                    ((
+                        len (call-yail-primitive yail-list-length (*list-for-runtime* object ) '(list) "length of list")
+                    ))
+                    (if 
+                        (<= property 0)
+                        (set! property (+ len property))
+                        #f
+                    )
+                    (if
+                        (and (> property 0) (<= property len)   )
+                        (call-yail-primitive yail-list-get-item (*list-for-runtime* object property) '(list number) "select list item")
+                        #f    
+                    )
+
+                )
+            )
         )
+        (else #f)
+
     )
+
 )
 `
 
@@ -413,6 +443,34 @@ exports.customSubstring = `
             (substring str start end)
         )
     )    
+)
+
+`
+
+
+exports.length =`
+(define
+    (length object property)
+    (begin
+        (cond
+            ((isDictionary  object ) (getFromDict "property" object) )
+            (
+                (isList object) 
+                (call-yail-primitive yail-list-length 
+                    (*list-for-runtime* object ) 
+                    '(list) 
+                    "length of list"
+                )
+            )
+            (
+                (string? object)
+                (begin 
+                    (string-length object )
+                )
+            )
+            (else #f)
+        )
+    )
 )
 
 `

@@ -57,6 +57,7 @@ function main(scripts, elements) {
 
     console.log("*** Transpiling complete ***")
 
+    /*
     let gcode = generatedCode.split("\n")
     for (let i = gcode.length - 1; i >= 0; i--) {
         if (gcode[i].length === 0) {
@@ -66,11 +67,12 @@ function main(scripts, elements) {
         }
     }
 
-    generatedCode = gcode.join("\n")
+    generatedCode = gcode.join("")
 
     //  generatedCode = generatedCode.replaceAll("\n\n", "\n")
     //  generatedCode = generatedCode.replaceAll("\t", "")
 
+    /*
     let opens = 0
     let closes = 0
     let backsOn = false
@@ -85,11 +87,12 @@ function main(scripts, elements) {
 
         if (generatedCode[i] === "\n") {
             for (let j = 0; j < opens - closes; j++) {
-                generatedCode = generatedCode.substring(0, i + 1) + "\t" + generatedCode.substring(i + 1)
+                generatedCode = generatedCode.substring(0, i + 1) + "" + generatedCode.substring(i + 1)
             }
         }
     }
     generatedCode = generatedCode.replaceAll("\b", "")
+*/
 
     if (debug) {
         console.log(generatedCode)
@@ -107,7 +110,7 @@ function main(scripts, elements) {
                 value = value.replaceAll("  ", " ")
             }
 
-            procedures += value
+            procedures += value +"\n"
         }
     )
     generatedCode = ";;Procedures\n" + procedures + "\n\n;;Transpiled Code\n" + generatedCode
@@ -477,7 +480,7 @@ function transpileDeclarations(node) {
                     operator = "+";
                     operatorCommand = "+";
                     proceduresUsed.add(procedures.add)
-                    return `((get-var add) ${transpileDeclarations(left)} ${transpileDeclarations(right)})`
+                    return `(add ${transpileDeclarations(left)} ${transpileDeclarations(right)})`
                 case "-":
                     operator = "-";
                     operatorCommand = "-";
@@ -700,11 +703,21 @@ function transpileDeclarations(node) {
 
                                 //check if the method that is called is a legal method for this particular element type (refer to supplied elements list)
 
+                                console.log(node)
                                 switch (methodCalled) {
                                     //methods for strings
                                     case "at":
                                         proceduresUsed.add(procedures.at)
-                                        return `(if (string? ${transpileDeclarations(node.callee.object)})(at ${transpileDeclarations(node.callee.object)} ${transpileDeclarations(args[0])}) #f)`
+                                        proceduresUsed.add(procedures.isList)
+                                        let atassign = transpileDeclarations(node.callee.object)
+                                        //if (atassign.startsWith("(get-var ")){atassign = atassign.substring(8, atassign.length-1)}
+                                        return `(at ${transpileDeclarations(node.callee.object)} ${transpileDeclarations(args[0])})` 
+                                        return `
+                                             (cond
+                                                ((string? ${transpileDeclarations(node.callee.object)})(at ${transpileDeclarations(node.callee.object)} ${transpileDeclarations(args[0])})) 
+                                                ((isList ${transpileDeclarations(node.callee.object)}) (call-yail-primitive yail-list-get-item (*list-for-runtime* ${transpileDeclarations(node.callee.object)} ${transpileDeclarations(args[0])}) '(list number) "select list item"))                                                    
+                                                (else #f)
+                                             )`
                                     case "charAt":
                                         proceduresUsed.add(procedures.char_at)
                                         return `(if (string? ${transpileDeclarations(node.callee.object)})(char-at ${transpileDeclarations(node.callee.object)} ${transpileDeclarations(args[0])}) #f)`
@@ -1019,15 +1032,9 @@ function transpileDeclarations(node) {
                             proceduresUsed.add(procedures.isDictionary)
                             proceduresUsed.add(procedures.getFromDict)
                             proceduresUsed.add(procedures.isList)
-
-                            return `
-                            (cond
-                                ((isDictionary  ${transpileDeclarations(node.object)} ) (getFromDict "${transpileDeclarations(node.property)}" ${transpileDeclarations(node.object)}) )
-                                ((isList ${transpileDeclarations(node.object)}) (call-yail-primitive yail-list-length (*list-for-runtime* ${transpileDeclarations(node.object)} ) '(list) "length of list") )
-                                ((isString? ${transpileDeclarations(node.object)}) (call-yail-primitive string-length (*list-for-runtime* ${transpileDeclarations(node.object)} ) '(text) "length") )
-                                (else #f)
-                            )`
-
+                            proceduresUsed.add(procedures.length)
+                            return `(length ${transpileDeclarations(node.object)} ${transpileDeclarations(node.property)})`
+                           
                         default:
                             proceduresUsed.add(procedures.isDictionary)
                             proceduresUsed.add(procedures.getFromDict)
