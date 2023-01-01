@@ -474,3 +474,18 @@ exports.length =`
 )
 
 `
+
+
+exports.listAppend =
+`
+(define (listAppend a b)
+    (call-yail-primitive yail-list-append! 
+        (*list-for-runtime* 
+            a 
+            b
+        ) 
+        '(list list) 
+        "append to list"
+    ) 
+)
+`

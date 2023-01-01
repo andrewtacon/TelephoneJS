@@ -726,6 +726,9 @@ function transpileDeclarations(node) {
                                         proceduresUsed.add(procedures.char_code_at)
                                         return `(if (string? ${transpileDeclarations(node.callee.object)})(char-code-at ${transpileDeclarations(node.callee.object)} ${transpileDeclarations(args[0])}) #f)`
                                     case "concat":
+                                        proceduresUsed.add(procedures.isList)
+                                        proceduresUsed.add(procedures.listAppend)
+                                        
                                         let concatArgs = ""
                                         for (let concatArgCount = 0; concatArgCount < args.length; concatArgCount++) {
                                             concatArgs += transpileDeclarations(args[concatArgCount])
@@ -733,7 +736,30 @@ function transpileDeclarations(node) {
                                                 concatArgs += " "
                                             }
                                         }
-                                        return `(if (string? ${transpileDeclarations(node.callee.object)})(string-append ${transpileDeclarations(node.callee.object)} ${concatArgs}) #f)`
+
+                                        let concatList = ""
+                                        for (let concatArgCount = 0; concatArgCount < args.length; concatArgCount++) {
+                                            concatList += `(listAppend (lexical-value tempList) ${transpileDeclarations(args[concatArgCount])})`  
+                                        }
+                                        concatList = `(listAppend (lexical-value tempList) ${transpileDeclarations(node.callee.object)})`+concatList
+
+                                        return `(if 
+                                                    (string? ${transpileDeclarations(node.callee.object)})
+                                                    (string-append ${transpileDeclarations(node.callee.object)} ${concatArgs}) 
+                                                    (if
+                                                        (isList ${transpileDeclarations(node.callee.object)})
+                                                        (begin
+                                                            (let
+                                                                ((tempList (call-yail-primitive make-yail-list (*list-for-runtime* ) '() "make a list") ))  
+                                                                (begin
+                                                                    ${concatList} 
+                                                                    tempList
+                                                                )
+                                                            )
+                                                        )
+                                                        #f    
+                                                    )
+                                                )`
                                     case "endsWith":
                                         proceduresUsed.add(procedures.endsWith)
                                         return `(if (string? ${transpileDeclarations(node.callee.object)})(endsWith ${transpileDeclarations(node.callee.object)} ${transpileDeclarations(args[0])}) #f)`
