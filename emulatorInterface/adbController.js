@@ -21,39 +21,50 @@ async function getFiles(devices) {
   return foundFiles
 }
 
+const excludeErrors = ["Form.clear()", "Form.setChildWidth()"]
+
+
 async function startMonitorLog(device) {
-  let logcat = await client.openLogcat(device.id, { clear: true } )
+  let logcat = await client.openLogcat(device.id, { clear: true })
 
   logcat.on('entry', entry => {
-    
-    if (entry.tag ==="System.err") {
-      console.error("System Error: "+entry.message)
+
+    if (entry.tag === "System.err") {
+      let printError = true
+      for (let i = 0; i < excludeErrors.length; i++) {
+        if (entry.message.startsWith(excludeErrors[i])) {
+          printError = false
+        }
+      }
+      if (printError) {
+        console.error("System Error: " + entry.message)
+      }
     }
 
     if (entry.message.indexOf("Incoming seq") !== -1 || entry.message.indexOf("Computed seq") !== -1) {
       let incoming = entry.message.indexOf("Incoming seq")
       let computed = entry.message.indexOf("Computed seq")
 
-      if (incoming !==-1) {        
-        let raw = entry.message.substring(incoming+15, incoming+25)
+      if (incoming !== -1) {
+        let raw = entry.message.substring(incoming + 15, incoming + 25)
         adbSequence.incoming = parseInt(raw)
-        adbLogOutput(entry.message.substring(incoming, incoming+25))
-      } 
-      if (computed !==-1) {        
-        let raw = entry.message.substring(computed+15, computed+25)
+        adbLogOutput(entry.message.substring(incoming, incoming + 25))
+      }
+      if (computed !== -1) {
+        let raw = entry.message.substring(computed + 15, computed + 25)
         adbSequence.computed = parseInt(raw)
-        adbLogOutput(entry.message.substring(computed, computed+25))
+        adbLogOutput(entry.message.substring(computed, computed + 25))
       }
 
     } else {
       debug("------------------------------")
       debug(entry.message)
       debug("------------------------------")
-      
+
     }
   })
   logcat.on('error', err => {
-    debug("logcat error "+ err)
+    debug("logcat error " + err)
   })
 
 }

@@ -319,7 +319,11 @@ const ATTRIBUTES = {
 //// This section adds the actual lines of code for the various parameters ////
 ///////////////////////////////////////////////////////////////////////////////
 
-function setAttribute(key, value, name, descriptor) {
+let useQuotesForText = false    //this switch allows the text methods to print with quotes for XML or be processing commands for the transpilation
+
+function setAttribute(key, value, name, descriptor, useQuotes = true) {
+
+    useQuotesForText = useQuotes
 
     switch (descriptor) {
         case "AppName":
@@ -625,13 +629,23 @@ function setText(key, value, name, descriptor) {
         }
     }
 
+    if (useQuotesForText) {
+        return `\n\t(set-and-coerce-property! '${name} '${descriptor} "${value}" 'text)`
+    } else {
+        return `\n\t(set-and-coerce-property! '${name} '${descriptor} ${value} 'text)`
+    }
 
-
-    return `\n\t(set-and-coerce-property! '${name} '${descriptor} "${value}" 'text)`
 }
 
 
 function setTrueFalse(key, value, name, descriptor) {
+    //this is to handle data coming from the transpiler
+    if (typeof value === "string") {
+        if (value.startsWith('"') && value.endsWith('"')) {
+            value = value.substring(1, value.length - 1)
+        }
+    }
+    
     value = value.toLowerCase().trim()
     if (value === "false" || value === "f") {
         return `\n\t(set-and-coerce-property! '${name} '${descriptor} #f 'boolean)`
@@ -647,6 +661,13 @@ function setTrueFalse(key, value, name, descriptor) {
 
 
 function setFloat(key, value, name, descriptor) {
+    //this is to handle data coming from the transpiler
+    if (typeof value === "string") {
+        if (value.startsWith('"') && value.endsWith('"')) {
+            value = value.substring(1, value.length - 1)
+        }
+    }
+    
     value = parseFloat(value)
     if (!isNaN(value)) {
         if (descriptor === "StokeOpacity") {
@@ -667,6 +688,13 @@ function setFloat(key, value, name, descriptor) {
 }
 
 function setInteger(key, value, name, descriptor) {
+    //this is to handle data coming from the transpiler
+    if (typeof value === "string") {
+        if (value.startsWith('"') && value.endsWith('"')) {
+            value = value.substring(1, value.length - 1)
+        }
+    }
+    
     value = parseInt(value)
     if (!isNaN(value)) {
         return `\n\t(set-and-coerce-property! '${name} '${descriptor} ${value} 'number)`
@@ -679,11 +707,25 @@ function setInteger(key, value, name, descriptor) {
 
 
 function setComponent(key, value, name, descriptor) {
+    //this is to handle data coming from the transpiler
+    if (typeof value === "string") {
+        if (value.startsWith('"') && value.endsWith('"')) {
+            value = value.substring(1, value.length - 1)
+        }
+    }
+    
     //somehow need to validate that the component actually exists.....
     return `\n\t(set-and-coerce-property! '${name} '${descriptor} (get-component ${value}) 'component)`
 }
 
 function fromList(key, value, name, options, descriptor) {
+    //this is to handle data coming from the transpiler
+    if (typeof value === "string") {
+        if (value.startsWith('"') && value.endsWith('"')) {
+            value = value.substring(1, value.length - 1)
+        }
+    }
+    
     if (options.includes(value.toLowerCase())) {
         let index = options.indexOf(value) + 1
 
@@ -703,6 +745,14 @@ function fromList(key, value, name, options, descriptor) {
 }
 
 function setColor(key, value, name, descriptor) {
+    //this is to handle data coming from the transpiler
+    if (typeof value === "string") {
+        if (value.startsWith('"') && value.endsWith('"')) {
+            value = value.substring(1, value.length - 1)
+        }
+    }
+    
+
     if (value.length !== 8) {
         console.log(`Invalid colour for ${descriptor}. Must be 8 digit hexadecimal string. Found value does not have 8 characters - "${value}" ***`)
         return ""
@@ -721,6 +771,14 @@ function setColor(key, value, name, descriptor) {
 }
 
 function setDimensions(key, value, name, descriptor) {
+    //this is to handle data coming from the transpiler
+    if (typeof value === "string") {
+        if (value.startsWith('"') && value.endsWith('"')) {
+            value = value.substring(1, value.length - 1)
+        }
+    }
+    
+
     if (value === 'parent') {
         return `\n\t(set-and-coerce-property! '${name} '${descriptor} -2 'number)`
     }
@@ -750,6 +808,14 @@ function setDimensions(key, value, name, descriptor) {
 
 
 function loadListViewData(key, value, name, descriptor) {
+    //this is to handle data coming from the transpiler
+    if (typeof value === "string") {
+        if (value.startsWith('"') && value.endsWith('"')) {
+            value = value.substring(1, value.length - 1)
+        }
+    }
+    
+
     //load the data from a CSV file 
     let file = fs.readFileSync(value, 'utf-8')
     let data = file.split("\n")
@@ -773,6 +839,13 @@ function loadListViewData(key, value, name, descriptor) {
 }
 
 function fromTextList(key, value, name, options, descriptor) {
+    //this is to handle data coming from the transpiler
+    if (typeof value === "string") {
+        if (value.startsWith('"') && value.endsWith('"')) {
+            value = value.substring(1, value.length - 1)
+        }
+    }
+    
     value = value.toLowerCase()
     if (descriptor === "TransportationMethod") {
         if (value === "driving") { value = "driving-car" }
@@ -814,6 +887,13 @@ function fromTextList(key, value, name, options, descriptor) {
 }
 
 function setScope(key, value, name, options, descriptor) {
+    //this is to handle data coming from the transpiler
+    if (typeof value === "string") {
+        if (value.startsWith('"') && value.endsWith('"')) {
+            value = value.substring(1, value.length - 1)
+        }
+    }
+    
     value = value.toLowerCase()
     let options2 = ["asset", "cache", "legacy", "private", "shared"]
     if (options2.indexOf(value) === -1) {
@@ -825,6 +905,13 @@ function setScope(key, value, name, options, descriptor) {
 }
 
 function setGeoJSONData(key, value, name, descriptor) {
+//this is to handle data coming from the transpiler
+    if (typeof value === "string") {
+        if (value.startsWith('"') && value.endsWith('"')) {
+            value = value.substring(1, value.length - 1)
+        }
+    }
+    
     //TODO - load the data from the GeoJSON file, somehow apply 
 
 }

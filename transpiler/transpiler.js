@@ -26,7 +26,8 @@ const { parse, walk } = require('abstract-syntax-tree')
 const util = require('util')
 const procedures = require("./procedures.js")
 
-
+const {ELEMENTS} = require("../yailMaker/elements")
+const ATTRIBUTES = require("../yailMaker/attributes")
 
 let debug = false
 
@@ -110,7 +111,7 @@ function main(scripts, elements) {
                 value = value.replaceAll("  ", " ")
             }
 
-            procedures += value +"\n"
+            procedures += value + "\n"
         }
     )
     generatedCode = ";;Procedures\n" + procedures + "\n\n;;Transpiled Code\n" + generatedCode
@@ -622,6 +623,14 @@ function transpileDeclarations(node) {
 
                 //END OF MATH
 
+                case "Array":
+                    let ArrayMethod = node.callee.property.name
+                    switch (ArrayMethod) {
+                        case "isArray":
+                            return `(isList ${transpileDeclarations(node.arguments[0])})`
+
+                    }
+                    break;
 
                 default:
 
@@ -703,7 +712,6 @@ function transpileDeclarations(node) {
 
                                 //check if the method that is called is a legal method for this particular element type (refer to supplied elements list)
 
-                                console.log(node)
                                 switch (methodCalled) {
                                     //methods for strings
                                     case "at":
@@ -711,7 +719,7 @@ function transpileDeclarations(node) {
                                         proceduresUsed.add(procedures.isList)
                                         let atassign = transpileDeclarations(node.callee.object)
                                         //if (atassign.startsWith("(get-var ")){atassign = atassign.substring(8, atassign.length-1)}
-                                        return `(at ${transpileDeclarations(node.callee.object)} ${transpileDeclarations(args[0])})` 
+                                        return `(at ${transpileDeclarations(node.callee.object)} ${transpileDeclarations(args[0])})`
                                         return `
                                              (cond
                                                 ((string? ${transpileDeclarations(node.callee.object)})(at ${transpileDeclarations(node.callee.object)} ${transpileDeclarations(args[0])})) 
@@ -728,7 +736,7 @@ function transpileDeclarations(node) {
                                     case "concat":
                                         proceduresUsed.add(procedures.isList)
                                         proceduresUsed.add(procedures.listAppend)
-                                        
+
                                         let concatArgs = ""
                                         for (let concatArgCount = 0; concatArgCount < args.length; concatArgCount++) {
                                             concatArgs += transpileDeclarations(args[concatArgCount])
@@ -739,9 +747,9 @@ function transpileDeclarations(node) {
 
                                         let concatList = ""
                                         for (let concatArgCount = 0; concatArgCount < args.length; concatArgCount++) {
-                                            concatList += `(listAppend (lexical-value tempList) ${transpileDeclarations(args[concatArgCount])})`  
+                                            concatList += `(listAppend (lexical-value tempList) ${transpileDeclarations(args[concatArgCount])})`
                                         }
-                                        concatList = `(listAppend (lexical-value tempList) ${transpileDeclarations(node.callee.object)})`+concatList
+                                        concatList = `(listAppend (lexical-value tempList) ${transpileDeclarations(node.callee.object)})` + concatList
 
                                         return `(if 
                                                     (string? ${transpileDeclarations(node.callee.object)})
@@ -760,6 +768,11 @@ function transpileDeclarations(node) {
                                                         #f    
                                                     )
                                                 )`
+
+                                    case "copyWithin":
+                                        //https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/copyWithin        
+
+                                        break;
                                     case "endsWith":
                                         proceduresUsed.add(procedures.endsWith)
                                         return `(if (string? ${transpileDeclarations(node.callee.object)})(endsWith ${transpileDeclarations(node.callee.object)} ${transpileDeclarations(args[0])}) #f)`
@@ -777,18 +790,47 @@ function transpileDeclarations(node) {
                                                     "not the string"
                                                 )`
                                     case "includes":
+                                        proceduresUsed.add(procedures.isList)
                                         return `(if 
                                                     (string? ${transpileDeclarations(node.callee.object)})
                                                     (string-contains ${transpileDeclarations(node.callee.object)} ${transpileDeclarations(args[0])}) 
-                                                    #f
+                                                    (if
+                                                        (isList ${transpileDeclarations(node.callee.object)})
+                                                        (if  
+                                                            (> (call-yail-primitive yail-list-index (*list-for-runtime* ${transpileDeclarations(args[0])} ${transpileDeclarations(node.callee.object)}) '(any list) "index in list") 0)
+                                                            #t
+                                                            #f
+                                                        )
+                                                        #f
+                                                    )
                                                 )`
                                     case "indexOf":
                                         proceduresUsed.add(procedures.indexOf)
+                                        proceduresUsed.add(procedures.isList)
                                         return `(if 
                                                     (string? ${transpileDeclarations(node.callee.object)})
                                                     (indexOf ${transpileDeclarations(node.callee.object)} ${transpileDeclarations(args[0])}    ) 
-                                                    -1
+                                                    (if
+                                                        (isList ${transpileDeclarations(node.callee.object)})
+                                                        (- (call-yail-primitive yail-list-index (*list-for-runtime* ${transpileDeclarations(args[0])} ${transpileDeclarations(node.callee.object)}) '(any list) "index in list") 1)
+                                                        -1
+                                                    )
                                                 )`
+                                    case "join":
+                                        proceduresUsed.add(procedures.isList)
+                                        let joiner = `","`
+                                        if (args.length > 0) {
+                                            joiner = transpileDeclarations(args[0])
+                                        }
+                                        return `
+                                        (if 
+                                            (isList ${transpileDeclarations(node.callee.object)})
+                                            (call-yail-primitive yail-list-join-with-separator (*list-for-runtime* ${transpileDeclarations(node.callee.object)} ${joiner}) '(list text) "join with separator")
+                                            #f
+                                        )
+                                        `
+
+
                                     case "lastIndexOf":
                                         proceduresUsed.add(procedures.lastIndexOf)
                                         return `(if 
@@ -814,6 +856,29 @@ function transpileDeclarations(node) {
                                                 )
 
                                         `
+
+                                    case "pop":
+                                        return `
+                                                (let
+                                                    ((temp (call-yail-primitive yail-list-get-item (*list-for-runtime* ${transpileDeclarations(node.callee.object)} (length ${transpileDeclarations(node.callee.object)} "")) '(list number) "select list item")))
+                                                    (call-yail-primitive yail-list-remove-item! (*list-for-runtime* ${transpileDeclarations(node.callee.object)} (length ${transpileDeclarations(node.callee.object)} "")) '(list number) "remove list item")
+                                                    temp
+                                                )
+                                                `
+
+                                    case "push":
+                                        let pushes = ""
+                                        for (let push = 0; push < args.length; push++) {
+                                            pushes += `(call-yail-primitive yail-list-add-to-list! (*list-for-runtime* ${transpileDeclarations(node.callee.object)} ${transpileDeclarations(args[push])} ) '(list any ) "add items to list") `
+                                        }
+                                        return `
+                                            (begin                    
+                                                ${pushes}        
+                                                (length ${transpileDeclarations(node.callee.object)} "")
+                                            )
+                                            `
+
+
                                     case "repeat":
                                         proceduresUsed.add(procedures.repeat)
                                         return `(if
@@ -844,6 +909,38 @@ function transpileDeclarations(node) {
                                                     '(text text text) 
                                                     "replace all"
                                                 )`
+
+                                    case "reverse":
+                                        let reversee = `${transpileDeclarations(node.callee.object)}`
+                                        if (reversee.startsWith("(get-var ")) {  //this is string, numbers and bools (simple cases)
+                                            reversee = reversee.substring(8, reversee.length - 1)
+                                            return `
+                                            (set-var!
+                                                ${reversee}
+                                                (call-yail-primitive yail-list-reverse (*list-for-runtime* ${transpileDeclarations(node.callee.object)} ) '(list) "reverse list")
+                                            )
+                                            `
+    
+                                        } else if (reversee.startsWith("(lexical-value ")) {
+                                            reversee = reversee.substring(15, reversee.length - 1)
+                                            return `
+                                            (set!
+                                                ${reversee}
+                                                (call-yail-primitive yail-list-reverse (*list-for-runtime* ${transpileDeclarations(node.callee.object)} ) '(list) "reverse list")
+                                            )
+                                            `
+                                        }
+                                        break;
+
+                                    case "shift":
+                                        return `
+                                        (let
+                                            ((temp (call-yail-primitive yail-list-get-item (*list-for-runtime* ${transpileDeclarations(node.callee.object)} 1) '(list number) "select list item")))
+                                            (call-yail-primitive yail-list-remove-item! (*list-for-runtime* ${transpileDeclarations(node.callee.object)} 1) '(list number) "remove list item")
+                                            temp
+                                        )
+                                        `
+
                                     case "slice":
                                         proceduresUsed.add(procedures.slice)
                                         if (args.length < 2) {
@@ -884,6 +981,18 @@ function transpileDeclarations(node) {
                                     case "trimStart":
                                         proceduresUsed.add(procedures.trim_start)
                                         return `(if (string? ${transpileDeclarations(node.callee.object)})(trim-start ${transpileDeclarations(node.callee.object)}) #f)`
+
+                                    case "unshift":
+                                        let unshifts = ""
+                                        for (let us = 0; us < args.length; us++) {
+                                            unshifts += `(call-yail-primitive yail-list-insert-item! (*list-for-runtime* ${transpileDeclarations(node.callee.object)} ${us + 1} ${transpileDeclarations(args[us])}) '(list number any) "insert list item")`
+                                        }
+                                        return `
+                                        (begin                    
+                                            ${unshifts}
+                                            (length ${transpileDeclarations(node.callee.object)} "")
+                                        )
+                                        `
 
                                     default:
                                 }
@@ -1060,7 +1169,7 @@ function transpileDeclarations(node) {
                             proceduresUsed.add(procedures.isList)
                             proceduresUsed.add(procedures.length)
                             return `(length ${transpileDeclarations(node.object)} ${transpileDeclarations(node.property)})`
-                           
+
                         default:
                             proceduresUsed.add(procedures.isDictionary)
                             proceduresUsed.add(procedures.getFromDict)
@@ -1103,18 +1212,38 @@ function transpileDeclarations(node) {
 
 
             switch (MESisVariableOfScope) {
+
                 case "component":
-                    switch (MemberExpressionSetProperty) {
+                    //MESisVariableOfType  -> what type of component is it -> get the alllowable attributes for it
+                    let elemInfo = ELEMENTS[MESisVariableOfType+""]
+
+                    //get the attributes that can be set (for now)
+                    let allowableAttributes = [].concat(elemInfo.attributes, elemInfo.blocksAttributes, elemInfo.blocksReadOnly)
+                    if (!allowableAttributes.includes(MemberExpressionSetProperty)){
+                        console.log(`Cannot set the "${MemberExpressionSetProperty}" of a ${MESisVariableOfType}`)
+                        console.log('Ignoring this instruction.')
+                        return ""
+                    }
+
+                    let descriptor = MemberExpressionSetProperty[0].toUpperCase() + MemberExpressionSetProperty.substring(1)
+
+                    //setAttribute(key, value, name, descriptor, useQuotes = true)
+                    return ATTRIBUTES.setAttribute("", transpileDeclarations(node.assignedRight), MESelementName, descriptor, false)
+
+                    /*switch (MemberExpressionSetProperty) {
                         case "text":
 
                             if (MESisVariableOfType === "textbox") {
-                                return `(set-and-coerce-property! 'textbox 'Text ${transpileDeclarations(node.assignedRight)} 'text)`
+                                return `(set-and-coerce-property! '${MESelementName} 'Text ${transpileDeclarations(node.assignedRight)} 'text)`
 
                             }
                             //(set-and-coerce-property! 'TextBox1 'Text "text value" 'text)
                             return ""
 
-                    }
+                    }*/
+                    
+
+                    break;
 
                 default:
 
@@ -1192,12 +1321,12 @@ function transpileDeclarations(node) {
         case "TemplateElement":
             //console.log(node.value.cooked)
             //console.log(node.value.cooked.replaceAll('"',"\\\""))
-            return `"${node.value.cooked.replaceAll('"',"\\\"")}"`
+            return `"${node.value.cooked.replaceAll('"', "\\\"")}"`
 
         case "TemplateLiteral":
             let templateOutput = transpileDeclarations(node.quasis[0])
-            for (let i=0; i<node.expressions.length;i++){
-                templateOutput+= `(coerce-arg ${transpileDeclarations(node.expressions[i])} 'text)${transpileDeclarations(node.quasis[i+1])}`
+            for (let i = 0; i < node.expressions.length; i++) {
+                templateOutput += `(coerce-arg ${transpileDeclarations(node.expressions[i])} 'text)${transpileDeclarations(node.quasis[i + 1])}`
             }
             return `(string-append ${templateOutput})`
 
@@ -1236,7 +1365,7 @@ function transpileDeclarations(node) {
                 assignee = assignee.substring(8, assignee.length - 1)
             } else if (assignee.startsWith("(lexical-value ")) {
                 assignee = assignee.substring(15, assignee.length - 1)
-            } 
+            }
 
             if (node.prefix) {
                 switch (node.operator) {
