@@ -79,7 +79,7 @@ function main(filename = "temp.xml") {
     console.log(`*** End compiler messages ***`)
     console.log()
 
-    console.log(yail.length)
+    //console.log(yail.length)
 
     return { yail: yail, assetsList: assetsList }
 }
@@ -418,7 +418,7 @@ function createElement(element, attributes, parent, elements) {
             //find correct name for the attribute for the SCHEME code
             //need to do this because converted to lowercase for the XML file 
             for (let [attrkey, attrvalue] of Object.entries(ATTRIBUTES)) {
-                if (attrkey.toLowerCase() === key || attrvalue.indexOf(key) !== -1) {
+                if (attrkey.toLowerCase() === key){             //}) || attrvalue.indexOf(key) !== -1) {
                     //process the attribute
                     output(setAttribute(key, value, attributes.name, attrkey))
                 }

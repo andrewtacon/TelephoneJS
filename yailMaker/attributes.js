@@ -1,8 +1,7 @@
 
 //Attributes and their synonyms
 //the key is the value that the YAIL code requires (it is not case sensitive for the XML designs)
-//the values is the value the transpiler uses for javascript (it is case sensitive in the javascript)
-//if there is no value then it cannot be changed programmatically in the code (well, you probably could, but the app inventor online version doesn't allow it)
+//the values are acceptable values for this particular element - they are used for the help file
 
 const ATTRIBUTES = {
     "AboutScreen": [],
@@ -24,7 +23,7 @@ const ATTRIBUTES = {
     "Angle": [],
     "Animation": [],
     "ApiKey": [],
-    "AppName": [],
+    "AppName": ["Any text value."],
     "ApplicatioName": [],
     "Available": [],
     "AvailableCountries": [],
@@ -115,7 +114,7 @@ const ATTRIBUTES = {
     "Height": [],
     "HighByteFirst": [],
     "HighContrast": [],
-    "Hint": [],
+    "Hint": ["Any text value."],
     "HolePoints": [],
     "HolePointsFromString": [],
     "HomeUrl": [],
@@ -186,7 +185,7 @@ const ATTRIBUTES = {
     "PrimaryColor": [],
     "PrimaryColorDark": [],
     "ProjectID": [],
-    "Prompt": [],
+    "Prompt": ["Any text value."],
     "PromptForPermission": [],
     "ProviderLocked": [],
     "ProviderName": [],
@@ -273,7 +272,7 @@ const ATTRIBUTES = {
     "TimerAlwaysFires": [],
     "TimerEnabled": [],
     "TimerInterval": [],
-    "Title": [],
+    "Title": ["Any text value."],
     "TitleVisible": [],
     "Token": [],
     "TrackColorActive": [],
@@ -326,194 +325,194 @@ function setAttribute(key, value, name, descriptor, useQuotes = true) {
     useQuotesForText = useQuotes
 
     switch (descriptor) {
-        case "AppName":
-        case "Title":
-        case "Hint":
-        case "Prompt":
-        case "ElementsFromString":
-        case "AlternateText":
-        case "HomeUrl":
-        case "Text":
-        case "Selection":
-        case "Image":
-        case "Picture":
-        case "Source":
-        case "SavedRecording":
-        case "Country":
-        case "Language":
-        case "ApiKey":
-        case "BackgroundImage":
-        case "CenterFromString":
-        case "Description":
-        case "ImageAsset":
-        case "PhoneNumber":
-        case "Message":
-        case "ConsumerKey":
-        case "ConsumerSecret":
-        case "ProjectID":
-        case "RedisServer":
-        case "Token":
-        case "SourceFile":
-        case "ApplicationName":
-        case "CredentialsJSON":
-        case "SpreadsheetID":
-        case "Namespace":
-        case "ServiceURL":
+        case "AboutScreen":
         case "Action":
         case "ActivityClass":
         case "ActivityPackage":
+        case "AlternateText":
+        case "ApiKey":
+        case "ApplicationName":
+        case "AppName":
+        case "BackgroundImage":
+        case "CenterFromString":
+        case "CharacterEncoding":
+        case "ConsumerKey":
+        case "ConsumerSecret":
+        case "Country":
+        case "CredentialsJSON":
         case "DataType":
         case "DataUri":
+        case "Description":
+        case "ElementsFromString":
         case "ExtraKey":
         case "ExtraValue":
-        case "ResultName":
-        case "CharacterEncoding":
-        case "ResponseFileName":
-        case "Url":
-        case "Icon":
-        case "AboutScreen":
-        case "VersionName":
+        case "Hint":
         case "HolePointsFromString":
-        case "PointsFromString": //this is array of arrays of x,y - should be a convience method to load these better
-            //e.g. [[68.02222323204114,-127.02117919921876],[68.01142776369724,-126.99234008789064]]
+        case "HomeUrl":
+        case "Icon":
+        case "Image":
+        case "ImageAsset":
+        case "Language":
+        case "Message":
+        case "Namespace":
+        case "PhoneNumber":
+        case "Picture":
+        case "PointsFromString": //this is array of arrays of x,y - should be a convience method to load these better//e.g. [[68.02222323204114,-127.02117919921876],[68.01142776369724,-126.99234008789064]]
+        case "ProjectID":
+        case "Prompt":
+        case "RedisServer":
+        case "ResponseFileName":
+        case "ResultName":
+        case "SavedRecording":
+        case "Selection":
+        case "ServiceURL":
+        case "Source":
+        case "SourceFile":
+        case "SpreadsheetID":
+        case "Text":
+        case "Title":
+        case "Token":
+        case "Url":
+        case "VersionName":
             return setText(key, value, name, descriptor)
             break;
         //start of default false cases for true/false
-        case "TitleVisible":
         case "Enabled":
-        case "ShowFeedback":
-        case "ShowStatusBar":
-        case "ThumbEnabled":
-        case "FollowLinks":
-        case "PromptForPermission":
-        case "HasMargins":
-        case "Visible":
-        case "UseLegacy":
-        case "Rotates":
         case "EnablePan":
         case "EnableZoom":
-        case "UseExternalScanner":
+        case "FollowLinks":
+        case "HasMargins":
+        case "PromptForPermission":
+        case "ReadMode":
+        case "Rotates":
+        case "Secure":
+        case "ShowFeedback":
+        case "ShowListsAsJSON":
+        case "ShowStatusBar":
+        case "ThumbEnabled":
         case "TimerAlwaysFires":
         case "TimerEnabled":
-        case "ReadMode":
+        case "UseExternalScanner":
+        case "UseLegacy":
         case "UseSSL":
-        case "Secure":
-        case "ShowListsAsJSON":
+        case "Visible":
+        case "TitleVisible":
         //start of deafulat true cases
+        case "AllowCookies":
+        case "BigDefaultText":
         case "Checked":
         case "Clickable":
+        case "DisconnectOnError":
+        case "Draggable":
+        case "EnableInfoBox":
+        case "EnableRotation":
+        case "ExtendMovesOutsideCanvas":
         case "FontBold":
         case "FontItalic":
-        case "ScalePictureToFit":
-        case "On":
-        case "IgnoreSslErrors":
-        case "UsesLocation":
-        case "ShowFilterBar":
-        case "NumbersOnly":
+        case "GoogleVoiceEnabled":
+        case "HighByteFirst":
+        case "HighContrast":
         case "HTMLFormat":
-        case "MultiLine":
-        case "ReadOnly":
-        case "PlayOnlyInForeground":
+        case "IgnoreSslErrors":
+        case "KeepRunningWhenOnPause":
+        case "LegacyMode":
         case "Loop":
-        case "ExtendMovesOutsideCanvas":
+        case "MultiLine":
+        case "NumbersOnly":
+        case "On":
         case "OriginAtCenter":
-        case "EnableRotation":
+        case "PlayOnlyInForeground":
+        case "ReadOnly":
+        case "ReadPermission":
+        case "SaveResponse":
+        case "ScalePictureToFit":
+        case "Scrollable":
         case "ShowCompass":
+        case "ShowFilterBar":
         case "ShowScale":
         case "ShowUser":
         case "ShowZoom":
-        case "Draggable":
-        case "EnableInfoBox":
-        case "LegacyMode":
-        case "KeepRunningWhenOnPause":
-        case "GoogleVoiceEnabled":
-        case "ReadPermission":
+        case "UsesLocation":
         case "WritePermission":
-        case "HighByteFirst":
-        case "DisconnectOnError":
-        case "AllowCookies":
-        case "SaveResponse":
-        case "BigDefaultText":
-        case "HighContrast":
-        case "Scrollable":
             return setTrueFalse(key, value, name, descriptor)
             break;
+        case "EastLongitude":
+        case "EndLatitude":
+        case "EndLongitude":
+        case "FillOpacity":
         case "FontSize":
-        case "TextSize":
         case "FontSizeDetail":
-        case "RotationAngle":
+        case "Heading":
+        case "Latitude": //should be a special method to test for latitude and longitude correctness
+        case "LineWidth":
+        case "Longitude":
         case "MaxValue":
         case "MinValue":
+        case "NorthLatitude":
+        case "Pitch":
+        case "PollingRate":
+        case "Radius": //there are cases where this should be an integer - hope this doesn't break anything
+        case "Rotation":
+        case "RotationAngle":
+        case "SouthLatitude":
+        case "SpeechRate":
+        case "Speed":
+        case "StartLatitude":
+        case "StartLongitude":
+        case "StrideLength":
+        case "StrokeOpacity":
+        case "TextSize":
         case "ThumbPosition":
         case "Volume":
-        case "Pitch":
-        case "SpeechRate":
-        case "LineWidth":
-        case "Heading":
-        case "Speed":
+        case "WestLongitude":
         case "X":
         case "Y":
         case "Z":
-        case "Rotation":
-        case "FillOpacity":
-        case "Radius": //there are cases where this should be an integer - hope this doesn't break anything
-        case "StrokeOpacity":
-        case "StrideLength":
-        case "Latitude":    //should be a special method to test for latitude and longitude correctness
-        case "Longitude":
-        case "StartLatitude":
-        case "StartLongitude":
-        case "EndLatitude":
-        case "EndLongitude":
-        case "NorthLatitude":
-        case "SouthLatitude":
-        case "EastLongitude":
-        case "WestLongitude":
-        case "PollingRate":
+
             return setFloat(key, value, name, descriptor)
             break;
+        case "AccentColor":
         case "BackgroundColor":
-        case "TextColor":
-        case "SelectionColor":
-        case "ItemTextColor":
-        case "TextColorDetail":
-        case "ItemBackgroundColor":
         case "ColorLeft":
         case "ColorRight":
+        case "FillColor":
+        case "ItemBackgroundColor":
+        case "ItemTextColor":
+        case "PaintColor":
+        case "PrimaryColor":
+        case "PrimaryColorDark":
+        case "SelectionColor":
+        case "StrokeColor":
+        case "TextColor":
+        case "TextColorDetail":
         case "ThumbColorActive":
         case "ThumbColorInactive":
         case "TrackColorActive":
         case "TrackColorInactive":
-        case "PaintColor":
-        case "FillColor":
-        case "StrokeColor":
-        case "AccentColor":
-        case "PrimaryColor":
-        case "PrimaryColorDark":
             return setColor(key, value, name, descriptor)
             break;
-        case "Columns":
-        case "Rows":
-        case "Column":
-        case "Row":
-        case "ImageHeight":
-        case "ImageWidth":
-        case "MinimumInterval":
-        case "TapThreshold":
-        case "Interval":
-        case "ZoomLevel":
-        case "StrokeWidth":
-        case "RefreshTime":
-        case "RedisPort":
-        case "TimerInterval":
-        case "TimeInterval":        //limit to 0, 1000, 10000, 60000, 300000 //should have this as timerinterval so not confuse users
-        case "DistanceInterval":    ///limit to 0, 1, 10, 100
-        case "StopDetectionTimeout":
-        case "DelimiterByte":
         case "BaudRate":
         case "BufferSize":
+        case "Column":
+        case "Columns":
+        case "DelimiterByte":
+        case "DistanceInterval": ///limit to 0, 1, 10, 100
+        case "ImageHeight":
+        case "ImageWidth":
+        case "Interval":
+        case "MinimumInterval":
+        case "RedisPort":
+        case "RefreshTime":
+        case "Row":
+        case "Rows":
+        case "StopDetectionTimeout":
+        case "StrokeWidth":
+        case "TapThreshold":
+        case "TimeInterval": //limit to 0, 1000, 10000, 60000, 300000 //should have this as timerinterval so not confuse users
         case "Timeout":
+        case "TimerInterval":
         case "VersionCode":
+        case "ZoomLevel":
             return setInteger(key, value, name, descriptor);
             break;
         case "Width":
@@ -589,9 +588,9 @@ function setAttribute(key, value, name, descriptor, useQuotes = true) {
         case "ListData":
             return loadListViewData(key, value, name, "ListData")
             break;
-        case "Name":
-        case "Id":      //for CSS styling
         case "Class":   //for CSS styling
+        case "Id":      //for CSS styling
+        case "Name":
         case "Script":
         case "Style":
             return ""
@@ -645,7 +644,7 @@ function setTrueFalse(key, value, name, descriptor) {
             value = value.substring(1, value.length - 1)
         }
     }
-    
+
     value = value.toLowerCase().trim()
     if (value === "false" || value === "f") {
         return `\n\t(set-and-coerce-property! '${name} '${descriptor} #f 'boolean)`
@@ -667,7 +666,7 @@ function setFloat(key, value, name, descriptor) {
             value = value.substring(1, value.length - 1)
         }
     }
-    
+
     value = parseFloat(value)
     if (!isNaN(value)) {
         if (descriptor === "StokeOpacity") {
@@ -694,7 +693,7 @@ function setInteger(key, value, name, descriptor) {
             value = value.substring(1, value.length - 1)
         }
     }
-    
+
     value = parseInt(value)
     if (!isNaN(value)) {
         return `\n\t(set-and-coerce-property! '${name} '${descriptor} ${value} 'number)`
@@ -713,7 +712,7 @@ function setComponent(key, value, name, descriptor) {
             value = value.substring(1, value.length - 1)
         }
     }
-    
+
     //somehow need to validate that the component actually exists.....
     return `\n\t(set-and-coerce-property! '${name} '${descriptor} (get-component ${value}) 'component)`
 }
@@ -725,7 +724,7 @@ function fromList(key, value, name, options, descriptor) {
             value = value.substring(1, value.length - 1)
         }
     }
-    
+
     if (options.includes(value.toLowerCase())) {
         let index = options.indexOf(value) + 1
 
@@ -751,7 +750,7 @@ function setColor(key, value, name, descriptor) {
             value = value.substring(1, value.length - 1)
         }
     }
-    
+
 
     if (value.length !== 8) {
         console.log(`Invalid colour for ${descriptor}. Must be 8 digit hexadecimal string. Found value does not have 8 characters - "${value}" ***`)
@@ -777,7 +776,7 @@ function setDimensions(key, value, name, descriptor) {
             value = value.substring(1, value.length - 1)
         }
     }
-    
+
 
     if (value === 'parent') {
         return `\n\t(set-and-coerce-property! '${name} '${descriptor} -2 'number)`
@@ -814,7 +813,7 @@ function loadListViewData(key, value, name, descriptor) {
             value = value.substring(1, value.length - 1)
         }
     }
-    
+
 
     //load the data from a CSV file 
     let file = fs.readFileSync(value, 'utf-8')
@@ -845,7 +844,7 @@ function fromTextList(key, value, name, options, descriptor) {
             value = value.substring(1, value.length - 1)
         }
     }
-    
+
     value = value.toLowerCase()
     if (descriptor === "TransportationMethod") {
         if (value === "driving") { value = "driving-car" }
@@ -893,7 +892,7 @@ function setScope(key, value, name, options, descriptor) {
             value = value.substring(1, value.length - 1)
         }
     }
-    
+
     value = value.toLowerCase()
     let options2 = ["asset", "cache", "legacy", "private", "shared"]
     if (options2.indexOf(value) === -1) {
@@ -905,13 +904,13 @@ function setScope(key, value, name, options, descriptor) {
 }
 
 function setGeoJSONData(key, value, name, descriptor) {
-//this is to handle data coming from the transpiler
+    //this is to handle data coming from the transpiler
     if (typeof value === "string") {
         if (value.startsWith('"') && value.endsWith('"')) {
             value = value.substring(1, value.length - 1)
         }
     }
-    
+
     //TODO - load the data from the GeoJSON file, somehow apply 
 
 }

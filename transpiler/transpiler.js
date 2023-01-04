@@ -29,7 +29,7 @@ const procedures = require("./procedures.js")
 const {ELEMENTS} = require("../yailMaker/elements")
 const ATTRIBUTES = require("../yailMaker/attributes")
 
-let debug = false
+let debug = true
 
 let generatedCode = ""
 let generatedGlobalsCode = ""
@@ -1355,7 +1355,7 @@ function transpileDeclarations(node) {
                     return `(not ${transpileDeclarations(uarg)})`  //this returns false for anything that is not #t
                     return `(call-yail-primitive yail-not (*list-for-runtime* ${transpileDeclarations(uarg)} )  '(boolean ) "not")`  //only works for boolean
                 default:
-                    console.log(`Unknown unary operator "${JSON.stringify(op)}". Panic!`)
+                    console.log(`Unknown unary operator "${JSON.stringify(uop)}". Panic!`)
             }
             break;
 

@@ -45,7 +45,11 @@ fs.watch(__dirname, 'utf8', function (eventType, filename) {
     }
     if (filename.toLowerCase().endsWith(".js")) {
         filename = filename.replaceAll(".js", ".xml")
-        changedFiles.push(filename)
+        if (fs.existsSync(filename)) {
+            if (!changedFiles.includes(filename)) {
+                changedFiles.push(filename)
+            }
+            }
     }
 })
 

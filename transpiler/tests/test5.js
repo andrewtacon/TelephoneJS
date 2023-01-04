@@ -1,0 +1,46 @@
+//This is the array methods
+textbox.text = "GLOBAL SCOPE TESTS\n\n"
+
+let array = [1, 2, 3, 4, 5]
+let array2 = [6, 7, 8]
+let string = "hello"
+
+textbox.textColor = "FF0000FF"
+textbox.fontSize = 16
+button1.width = "parent"
+textbox.backgroundColor = "010000FF"
+
+textbox.text = textbox.text + "Show entire Array (with set element): " + array + "\n"
+textbox.text = textbox.text + "Individual Element: " + array[0] + "\n"
+textbox.text = textbox.text + "Array.prototype.length: " + array.length + "\n"
+textbox.text = textbox.text + "Array.prototype.at 0: " + array.at(0) + "\n"
+textbox.text = textbox.text + "Array.prototype.at 6: " + array.at(6) + "\n"
+textbox.text = textbox.text + "Array.prototype.at -1: " + array.at(-1) + "\n"
+textbox.text = textbox.text + "Array.prototype.at -5: " + array.at(-5) + "\n"
+textbox.text = textbox.text + "Array.prototype.concat: " + array.concat(array2, array) + "\n"
+textbox.text = textbox.text + "Array.prototype.concat: " + array + "\n"
+textbox.text = textbox.text + "Array.prototype.concat: " + array2 + "\n"
+textbox.text = textbox.text + "Array.prototype.includes (success): " + array.includes(1) + "\n"
+textbox.text = textbox.text + "Array.prototype.includes (fail): " + array.includes(6) + "\n"
+textbox.text = textbox.text + "Array.prototype.indexOf (success): " + array.indexOf(1) + "\n"
+textbox.text = textbox.text + "Array.prototype.indexOf (fail): " + array.indexOf(6) + "\n"
+textbox.text = textbox.text + "Array.isArray (success): " + Array.isArray(array) + "\n"
+textbox.text = textbox.text + "Array.isArray (fail): " + Array.isArray(string) + "\n"
+textbox.text = textbox.text + "Array.prototype.join (nothing): " + array.join() + "\n"
+textbox.text = textbox.text + "Array.prototype.join (''): " + array.join("") + "\n"
+textbox.text = textbox.text + "Array.prototype.join ('_'): " + array.join("_") + "\n"
+textbox.text = textbox.text + "Array.prototype.join ('___') " + array.join("___") + "\n"
+textbox.text = textbox.text + "Array.prototype.shift (return) " + array.shift() + "\n"
+textbox.text = textbox.text + "Array.prototype.shift (array after) " + array + "\n"
+textbox.text = textbox.text + "Array.prototype.pop (return) " + array.pop() + "\n"
+textbox.text = textbox.text + "Array.prototype.pop (array after) " + array + "\n"
+textbox.text = textbox.text + "Array.prototype.unshift () " + array.unshift() + "\n"
+textbox.text = textbox.text + "Array.prototype.unshift ('a') " + array.unshift('a') + "\n"
+textbox.text = textbox.text + "Array.prototype.unshift ('b',100) " + array.unshift('b', 100) + "\n"
+textbox.text = textbox.text + "Array.prototype.unshift (array after) " + array + "\n"
+textbox.text = textbox.text + "Array.prototype.push () " + array.push() + "\n"
+textbox.text = textbox.text + "Array.prototype.push ('a') " + array.push('a') + "\n"
+textbox.text = textbox.text + "Array.prototype.push ('b',100) " + array.push('b', 100) + "\n"
+textbox.text = textbox.text + "Array.prototype.push (array after) " + array + "\n"
+array.reverse()
+textbox.text = textbox.text + "Array.prototype.reverse " + array + "\n"
