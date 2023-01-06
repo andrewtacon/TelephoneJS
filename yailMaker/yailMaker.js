@@ -1,6 +1,8 @@
 const fs = require("fs")
 const convert = require("xml-js")
 const transpiler = require("../transpiler/transpiler")
+const helperMaker = require("../helpMaker/help")
+
 const { ATTRIBUTES, setAttribute } = require("./attributes")
 const { ELEMENTS } = require("./elements")
 
@@ -61,6 +63,10 @@ function main(filename = "temp.xml") {
 
     traverse(structure.elements[0])
 
+
+    let helperFile = helperMaker.run(filename,extractedData)
+
+    //this runs the transpiler on the attached scripts
     let generatedCode = transpiler.run(scripts, extractedData)
         
     //add lines to execute build

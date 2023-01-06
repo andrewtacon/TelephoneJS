@@ -26,7 +26,7 @@ const { parse, walk } = require('abstract-syntax-tree')
 const util = require('util')
 const procedures = require("./procedures.js")
 
-const {ELEMENTS} = require("../yailMaker/elements")
+const { ELEMENTS } = require("../yailMaker/elements")
 const ATTRIBUTES = require("../yailMaker/attributes")
 
 let debug = true
@@ -546,13 +546,20 @@ function transpileDeclarations(node) {
 
         case "CallExpression":
 
+
+
+
             //this is a call to a function with or with variables
             if (node.callee.type === "Identifier") {
-                let CEargs = ""
-                for (i = 0; i < node.arguments.length; i++) {
-                    CEargs += transpileDeclarations(node.arguments[i]) + " "
+                if (node.callee.name === "require") {
+                    return ""   //ignore require for now - this is so can use the helper file
+                } else {
+                    let CEargs = ""
+                    for (i = 0; i < node.arguments.length; i++) {
+                        CEargs += transpileDeclarations(node.arguments[i]) + " "
+                    }
+                    return `((get-var p$${node.callee.name}) ${CEargs})`
                 }
-                return `((get-var p$${node.callee.name}) ${CEargs})`
             }
 
 
@@ -920,7 +927,7 @@ function transpileDeclarations(node) {
                                                 (call-yail-primitive yail-list-reverse (*list-for-runtime* ${transpileDeclarations(node.callee.object)} ) '(list) "reverse list")
                                             )
                                             `
-    
+
                                         } else if (reversee.startsWith("(lexical-value ")) {
                                             reversee = reversee.substring(15, reversee.length - 1)
                                             return `
@@ -1215,11 +1222,11 @@ function transpileDeclarations(node) {
 
                 case "component":
                     //MESisVariableOfType  -> what type of component is it -> get the alllowable attributes for it
-                    let elemInfo = ELEMENTS[MESisVariableOfType+""]
+                    let elemInfo = ELEMENTS[MESisVariableOfType + ""]
 
                     //get the attributes that can be set (for now)
                     let allowableAttributes = [].concat(elemInfo.attributes, elemInfo.blocksAttributes, elemInfo.blocksReadOnly)
-                    if (!allowableAttributes.includes(MemberExpressionSetProperty)){
+                    if (!allowableAttributes.includes(MemberExpressionSetProperty)) {
                         console.log(`Cannot set the "${MemberExpressionSetProperty}" of a ${MESisVariableOfType}`)
                         console.log('Ignoring this instruction.')
                         return ""
@@ -1241,7 +1248,7 @@ function transpileDeclarations(node) {
                             return ""
 
                     }*/
-                    
+
 
                     break;
 
