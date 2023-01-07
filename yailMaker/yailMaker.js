@@ -22,7 +22,9 @@ function* getNumber() {
 let generator = getNumber();
 
 function output(text) {
-    if (logFile) { fs.appendFileSync("code.scm", text) }
+    if (logFile) { 
+        fs.appendFileSync("code.scm", text) 
+    }
     yail += text
 }
 
@@ -34,9 +36,9 @@ let componentList = ''
 let logFile = true
 let extractedData = []
 let scripts = []
+let screenName =""
 
-
-
+fs.writeFileSync("code.scm", "")
 function main(filename = "temp.xml") {
 
 
@@ -47,7 +49,9 @@ function main(filename = "temp.xml") {
     yail = ""
 
     //delete base file
-    if (logFile) { fs.writeFileSync("code.scm", "") }
+    if (logFile) { 
+        fs.appendFileSync("code.scm", "") 
+    }
 
     //get input
     let contents = fs.readFileSync(filename, "utf-8")
@@ -87,7 +91,7 @@ function main(filename = "temp.xml") {
 
     //console.log(yail.length)
 
-    return { yail: yail, assetsList: assetsList }
+    return { yail: yail, assetsList: assetsList, screenName: screenName }
 }
 
 exports.for = main
@@ -408,6 +412,8 @@ function createElement(element, attributes, parent, elements) {
         )
         (rename-component "Screen1" "${attributes.name}")
         \n(do-after-form-creation`
+
+        screenName = attributes.name
     }
 
     output(template)

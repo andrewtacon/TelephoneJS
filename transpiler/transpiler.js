@@ -562,7 +562,7 @@ function transpileDeclarations(node) {
                     case "openScreen":
                         if (node.arguments.length === 1) {
                             return `(call-yail-primitive open-another-screen (*list-for-runtime* ${transpileDeclarations(node.arguments[0])}) '(text) "open another screen")`
-                        } else if (node.arguments.lenth === 2) {
+                        } else if (node.arguments.length === 2) {
                             return `(call-yail-primitive open-another-screen-with-start-value (*list-for-runtime* ${transpileDeclarations(node.arguments[0])} ${transpileDeclarations(node.arguments[1])}) '(text any) "open another screen with start value")`
                         } else {
                             console.log("No destination screen given from call to openScreen")

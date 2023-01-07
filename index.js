@@ -22,7 +22,7 @@ files = files.filter(file => file.toLowerCase().endsWith(".xml"))
 
 for (let i = 0; i < files.length; i++) {
     let data = generateYail.for(files[i])
-    yail[files[i]] = data.yail
+    yail[data.screenName] = data.yail
     for (let i = 0; i < data.assetsList.length; i++) {
         if (!assetList.includes(data.assetsList[i])) {
             assetList.push(data.assetsList[i])
@@ -57,7 +57,7 @@ fs.watch(__dirname, 'utf8', function (eventType, filename) {
 
 function update(filename) {
     let data = generateYail.for(filename)
-    yail[filename] = data.yail
+    yail[data.screenName] = data.yail
     for (let i = 0; i < data.assetsList.length; i++) {
         if (!assetList.includes(data.assetsList[i])) {
             assetList.push(data.assetsList[i])

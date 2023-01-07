@@ -410,7 +410,7 @@ async function loadScreen(screen, firstLoad = true) {
 let ableToSend = true
 let awaitingValues = false
 let lastMessageSent //need to keep this incase it fails due to the sequence numbers being out of sync in code and on device
-let screenStack = ["screen1.xml"]
+let screenStack = ["Screen1"]
 async function listener() {
 
     try {
