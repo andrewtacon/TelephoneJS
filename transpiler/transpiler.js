@@ -29,7 +29,7 @@ const procedures = require("./procedures.js")
 const { ELEMENTS } = require("../yailMaker/elements")
 const ATTRIBUTES = require("../yailMaker/attributes")
 
-let debug = true
+let debug = false
 
 let generatedCode = ""
 let generatedGlobalsCode = ""
@@ -561,9 +561,9 @@ function transpileDeclarations(node) {
                         return `(call-yail-primitive get-plain-start-text (*list-for-runtime* ) '() "get plain start text")`
                     case "openScreen":
                         if (node.arguments.length === 1) {
-                            return `(call-yail-primitive open-another-screen (*list-for-runtime* "${transpileDeclarations(node.arguments[0])}") '(text) "open another screen")`
+                            return `(call-yail-primitive open-another-screen (*list-for-runtime* ${transpileDeclarations(node.arguments[0])}) '(text) "open another screen")`
                         } else if (node.arguments.lenth === 2) {
-                            return `(call-yail-primitive open-another-screen-with-start-value (*list-for-runtime* "${transpileDeclarations(node.arguments[0])}" ${transpileDeclarations(node.arguments[1])}) '(text any) "open another screen with start value")`
+                            return `(call-yail-primitive open-another-screen-with-start-value (*list-for-runtime* ${transpileDeclarations(node.arguments[0])} ${transpileDeclarations(node.arguments[1])}) '(text any) "open another screen with start value")`
                         } else {
                             console.log("No destination screen given from call to openScreen")
                             return ""

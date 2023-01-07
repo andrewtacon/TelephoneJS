@@ -319,7 +319,7 @@ async function main(isEmulator = "emulator") {
 
 
 
-    await loadScreen(currentScreen, true)
+    await loadScreen(screenStack[screenStack.length-1], true)
     setInterval(listener, 1000)
 
     await adb.run()
@@ -329,14 +329,13 @@ async function main(isEmulator = "emulator") {
 
 
 let yail = []
-let currentScreen = "screen1.xml"
+//let currentScreen = "screen1.xml"
 let firstLoad = true
 function pushNewData(data) {
-    log("New data incoming.")
     yail = data
     //if (triggerRefresh) {
     //  console.log('Refresh triggered for '+currentScreen)
-    loadScreen(currentScreen, firstLoad)
+    loadScreen(screenStack[screenStack.length-1], firstLoad)
     //}
 }
 
@@ -400,7 +399,7 @@ async function loadScreen(screen, firstLoad = true) {
 
     firstLoad = false
     log("Message sent to emulator")
-
+   // console.log(system2)
     //need to load the assets associated with the item
     await loadAssets()
 
@@ -411,6 +410,7 @@ async function loadScreen(screen, firstLoad = true) {
 let ableToSend = true
 let awaitingValues = false
 let lastMessageSent //need to keep this incase it fails due to the sequence numbers being out of sync in code and on device
+let screenStack = ["screen1.xml"]
 async function listener() {
 
     try {
@@ -452,7 +452,13 @@ async function listener() {
                         if (res.values[i].type === 'pushScreen') {
                             log(`Loading "${res.values[i].screen}"`)
                             await loadScreen(res.values[i].screen, false)
+                            screenStack.push(res.values[i].screen)
                             break //take that QCAA
+                        } else if (res.values[i].type === 'popScreen'){ 
+                            screenStack.pop()
+                            last= screenStack[screenStack.length-1]
+                            await loadScreen(last, false)
+                            break;
                         }
 
                         //reset ability to send messages if get an OK on the return

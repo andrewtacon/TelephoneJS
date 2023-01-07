@@ -392,6 +392,7 @@ function traverse(object, parent = '') {
 function createElement(element, attributes, parent, elements) {
     let template = `\n(add-component ${parent} com.google.appinventor.components.runtime.${ELEMENTS[element].runTimeName} ${attributes.name}`
 
+    let rename = ""
     if (element === "screen") { //screen creation is a special case
         template = `\n(try-catch 
             (let 
@@ -405,6 +406,7 @@ function createElement(element, attributes, parent, elements) {
             ) 
             (exception java.lang.Throwable 'notfound)
         )
+        (rename-component "Screen1" "${attributes.name}")
         \n(do-after-form-creation`
     }
 
