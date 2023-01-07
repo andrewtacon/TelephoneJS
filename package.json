@@ -1,10 +1,7 @@
 {
   "dependencies": {
-    "@mapbox/node-pre-gyp": "^1.0.10",
     "abstract-syntax-tree": "^2.20.6",
     "adbkit": "^2.11.1",
-    "adbkit-logcat": "^1.1.0",
-    "appium-adb": "^9.10.18",
     "google-closure-library": "^20221102.0.0",
     "node-fetch": "^2.6.7",
     "wrtc": "^0.4.7",
