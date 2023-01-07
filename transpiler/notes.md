@@ -52,6 +52,35 @@ Array.isArray()|.filter()
 .shift()|... and all the other ones
 .reverse()|-
 
+
+## OBJECTS
+
+Object Methods Implemented | Object Methods Not Implemented
+-|-
+.assign(target, source)|.defineProperties()
+.create(source)|.defineProperty()
+.entrie()|.freeze(0)
+.fromEntries()|.getOwnPropertyDescriptor()
+.hasOwn()|.getOwnPropertyDescriptors()
+.keys()|.getOwnPropertyNames()
+.values()|.getOwnPropertySymbols()
+-|.getPrototypeOf()
+-|.hasOwnProperty()
+-|.is()
+-|.isExtensible()
+-|.isFrozen()
+-|.isPrototypeOf()
+-|.isSealed()
+-|.preventExtensions()
+-|.propertyIsEnumerable()
+-|.seal()
+-|.setPropertyOf()
+-|.toLocaleString()
+-|.toString()
+-|.valueOf(0)
+
+
+
 ## KEYWORDS 
 
 Keywords Implemented | Keywords Not Implemented

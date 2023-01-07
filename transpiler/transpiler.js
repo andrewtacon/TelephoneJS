@@ -29,7 +29,7 @@ const procedures = require("./procedures.js")
 const { ELEMENTS } = require("../yailMaker/elements")
 const ATTRIBUTES = require("../yailMaker/attributes")
 
-let debug = true
+let debug = false
 
 let generatedCode = ""
 let generatedGlobalsCode = ""
@@ -638,6 +638,34 @@ function transpileDeclarations(node) {
 
                     }
                     break;
+
+                case "Object":
+                    let ObjectMethod = node.callee.property.name
+
+                    switch (ObjectMethod) {
+                        case "assign":
+                            return `(call-yail-primitive yail-dictionary-combine-dicts (*list-for-runtime* ${transpileDeclarations(node.arguments[0])} ${transpileDeclarations(node.arguments[1])} ) '(dictionary dictionary)  "combine 2 dictionaries")`    
+                        case "create":
+                            return `
+                            (let 
+                                ( (temp (call-yail-primitive make-yail-dictionary (*list-for-runtime* ) '() "make a dictionary")  ))   
+                                (call-yail-primitive yail-dictionary-combine-dicts (*list-for-runtime* (lexical-value temp) ${transpileDeclarations(node.arguments[0])} ) '(dictionary dictionary)  "combine 2 dictionaries") 
+                                temp
+                            )
+                            `                            
+                        case "entries":
+                            return `(call-yail-primitive yail-dictionary-dict-to-alist (*list-for-runtime* ${transpileDeclarations(node.arguments[0])} ) '(dictionary)  "convert a dictionary to an alist")`
+                        case "fromEntries":
+                            return `(call-yail-primitive yail-dictionary-alist-to-dict (*list-for-runtime* ${transpileDeclarations(node.arguments[0])} ) '(list)  "convert an alist to a dictionary")`
+                        case "hasOwn":
+                            return `(call-yail-primitive yail-dictionary-is-key-in (*list-for-runtime* ${transpileDeclarations(node.arguments[1])} ${transpileDeclarations(node.arguments[0])} ) '(key dictionary)  "is key in dict?")`
+                        case "keys":
+                            return `(call-yail-primitive yail-dictionary-get-keys (*list-for-runtime* ${transpileDeclarations(node.arguments[0])}) '(dictionary) "get a dictionary's keys")`
+                        case "values":
+                            return `(call-yail-primitive yail-dictionary-get-values (*list-for-runtime* ${transpileDeclarations(node.arguments[0])}) '(dictionary) "get a dictionary's values")`
+                    }
+                    break;
+
 
                 default:
 
@@ -1360,7 +1388,14 @@ function transpileDeclarations(node) {
                     return `(call-yail-primitive - (*list-for-runtime*  ${transpileDeclarations(uarg)} ) '(number ) "negate")`
                 case "!":
                     return `(not ${transpileDeclarations(uarg)})`  //this returns false for anything that is not #t
-                    return `(call-yail-primitive yail-not (*list-for-runtime* ${transpileDeclarations(uarg)} )  '(boolean ) "not")`  //only works for boolean
+                case "delete":
+                    return `
+                    (call-yail-primitive yail-dictionary-delete-pair 
+                        (*list-for-runtime* ${transpileDeclarations(uarg.object)} "${transpileDeclarations(uarg.property)}") 
+                        '(dictionary key)  
+                        "delete dictionary pair"
+                    )`
+                    break;
                 default:
                     console.log(`Unknown unary operator "${JSON.stringify(uop)}". Panic!`)
             }
