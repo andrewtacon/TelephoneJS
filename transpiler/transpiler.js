@@ -29,7 +29,7 @@ const procedures = require("./procedures.js")
 const { ELEMENTS } = require("../yailMaker/elements")
 const ATTRIBUTES = require("../yailMaker/attributes")
 
-let debug = false
+let debug = true
 
 let generatedCode = ""
 let generatedGlobalsCode = ""
@@ -414,6 +414,7 @@ function transpileDeclarations(node) {
         return
     }
 
+
     type = node.type
     value = node.value
     name = node.name
@@ -546,19 +547,43 @@ function transpileDeclarations(node) {
 
         case "CallExpression":
 
-
-
-
             //this is a call to a function with or with variables
             if (node.callee.type === "Identifier") {
-                if (node.callee.name === "require") {
-                    return ""   //ignore require for now - this is so can use the helper file
-                } else {
-                    let CEargs = ""
-                    for (i = 0; i < node.arguments.length; i++) {
-                        CEargs += transpileDeclarations(node.arguments[i]) + " "
-                    }
-                    return `((get-var p$${node.callee.name}) ${CEargs})`
+
+                //these are the system functions
+
+                switch (node.callee.name) {
+                    case "require":
+                        return ""   //ignore require for now - this is so can use the helper file
+                    case "getStartValue":
+                        return `(call-yail-primitive get-start-value (*list-for-runtime* ) '() "get start value")`
+                    case "getInitMessage":
+                        return `(call-yail-primitive get-plain-start-text (*list-for-runtime* ) '() "get plain start text")`
+                    case "openScreen":
+                        if (node.arguments.length === 1) {
+                            return `(call-yail-primitive open-another-screen (*list-for-runtime* "${transpileDeclarations(node.arguments[0])}") '(text) "open another screen")`
+                        } else if (node.arguments.lenth === 2) {
+                            return `(call-yail-primitive open-another-screen-with-start-value (*list-for-runtime* "${transpileDeclarations(node.arguments[0])}" ${transpileDeclarations(node.arguments[1])}) '(text any) "open another screen with start value")`
+                        } else {
+                            console.log("No destination screen given from call to openScreen")
+                            return ""
+                        }
+                    case "closeScreen":
+                        if (node.arguments.length === 0) {
+                            return `(call-yail-primitive close-screen (*list-for-runtime* ) '() "close screen")`
+                        } else {
+                            return `(call-yail-primitive close-screen-with-value (*list-for-runtime* ${transpileDeclarations(node.arguments[0])}) '(any) "close screen with value")`
+                        }
+                    case "closeApplication":
+                        return `(call-yail-primitive close-application (*list-for-runtime* ) '() "close application")`
+                    case "closeApplicationWithMessage":
+                        return `(call-yail-primitive close-screen-with-plain-text (*list-for-runtime* ${transpileDeclarations(node.arguments[0])}) '(text) "close screen with plain text")`
+                    default:
+                        let CEargs = ""
+                        for (i = 0; i < node.arguments.length; i++) {
+                            CEargs += transpileDeclarations(node.arguments[i]) + " "
+                        }
+                        return `((get-var p$${node.callee.name}) ${CEargs})`
                 }
             }
 
@@ -644,7 +669,7 @@ function transpileDeclarations(node) {
 
                     switch (ObjectMethod) {
                         case "assign":
-                            return `(call-yail-primitive yail-dictionary-combine-dicts (*list-for-runtime* ${transpileDeclarations(node.arguments[0])} ${transpileDeclarations(node.arguments[1])} ) '(dictionary dictionary)  "combine 2 dictionaries")`    
+                            return `(call-yail-primitive yail-dictionary-combine-dicts (*list-for-runtime* ${transpileDeclarations(node.arguments[0])} ${transpileDeclarations(node.arguments[1])} ) '(dictionary dictionary)  "combine 2 dictionaries")`
                         case "create":
                             return `
                             (let 
@@ -652,7 +677,7 @@ function transpileDeclarations(node) {
                                 (call-yail-primitive yail-dictionary-combine-dicts (*list-for-runtime* (lexical-value temp) ${transpileDeclarations(node.arguments[0])} ) '(dictionary dictionary)  "combine 2 dictionaries") 
                                 temp
                             )
-                            `                            
+                            `
                         case "entries":
                             return `(call-yail-primitive yail-dictionary-dict-to-alist (*list-for-runtime* ${transpileDeclarations(node.arguments[0])} ) '(dictionary)  "convert a dictionary to an alist")`
                         case "fromEntries":
@@ -698,7 +723,12 @@ function transpileDeclarations(node) {
                                     case "addEventListener":
                                         //TODO check element and type to make sure that the eventType is a legal event for that type of element/component
                                         //args[0] here is the event type
-                                        return (`(define-event ${transpileDeclarations(node.callee.object)} ${camelCase(asString(args, 0))}() (set-this-form) ${transpileDeclarations(args[1])})`)
+                                        
+                                        let params = ""
+                                        for (let i=0; i< args[1].params.length;i++){
+                                            params +=args[1].params[i].name+" "
+                                        }
+                                        return (`(define-event ${transpileDeclarations(node.callee.object)} ${camelCase(asString(args, 0))}(${params.trim()}) (set-this-form) ${transpileDeclarations(args[1])})`)
 
                                     //methods with no inputs - no return value
                                     case "dismissProgressDialog":
@@ -1109,15 +1139,17 @@ function transpileDeclarations(node) {
 
 
         case "IfStatement":
+            let alternate = ""
+            if (node.alternate!==null) {
+                alternate=`(begin ${transpileDeclarations(node.alternate)} )`
+            }
             return `
             (if
                 ${transpileDeclarations(node.test)}
                 (begin
                     ${transpileDeclarations(node.consequent)}
                 )
-                (begin
-                    ${transpileDeclarations(node.alternate)}
-                )
+                ${alternate}
             )
             `
             break;
