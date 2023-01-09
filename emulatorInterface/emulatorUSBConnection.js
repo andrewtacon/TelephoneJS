@@ -235,7 +235,7 @@ async function loadAssets() {
             continue
         }
 
-        log(`Loading "${asset} onto device.`)
+      //  log(`Loading "${asset} onto device.`)
 
 
         //run an OPTIONS request
@@ -398,7 +398,7 @@ async function loadScreen(screen, firstLoad = true) {
     debug(`Message Number: ${seq}`)
 
     firstLoad = false
-    log("Message sent to emulator")
+    log("Screen information sent to device.")
    // console.log(system2)
     //need to load the assets associated with the item
     await loadAssets()
@@ -450,7 +450,7 @@ async function listener() {
                     for (let i = 0; i < res.values.length; i++) {
                         //code to change screen based on event sent from emulator
                         if (res.values[i].type === 'pushScreen') {
-                            log(`Loading "${res.values[i].screen}"`)
+                          //  log(`Loading "${res.values[i].screen}"`)
                             await loadScreen(res.values[i].screen, false)
                             screenStack.push(res.values[i].screen)
                             break //take that QCAA

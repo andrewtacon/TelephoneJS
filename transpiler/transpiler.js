@@ -1,26 +1,3 @@
-/*
-
-Hard problems:
-1. Logical operators like NOT to evaluate correctly
-2. Format as decimal (.toFixed)
-                (def g$identifier (call-yail-primitive format-as-decimal (*list-for-runtime* 0 2) '(number number) "format as decimal"))   //2 is number of places     number.toFixed(places) 
-                (def g$identifier (call-yail-primitive is-number? (*list-for-runtime* 0) '(text) "is a number?"))           !isNaN(value)
-
-    /*
-        REPL features skipped
-        //extra features
-        ?? (def g$identifier (call-yail-primitive is-base10? (*list-for-runtime* 0) '(text) "is base10?")) 
-        ?? (def g$identifier (call-yail-primitive is-hexadecimal? (*list-for-runtime* 0) '(text) "is hexadecimal?"))
-        ?? (def g$identifier (call-yail-primitive is-binary? (*list-for-runtime* 0) '(text) "is binary?"))
-        ?? (def g$identifier (call-yail-primitive math-convert-dec-hex (*list-for-runtime* 0) '(text) "convert Dec to Hex"))
-        ?? (def g$identifier (call-yail-primitive math-convert-hex-dec (*list-for-runtime* 0) '(text) "convert Hex to Dec"))
-        ?? (def g$identifier (call-yail-primitive math-convert-dec-bin (*list-for-runtime* 0) '(text) "convert Dec to Hex"))
-        ?? (def g$identifier (call-yail-primitive math-convert-bin-dec (*list-for-runtime* 0) '(text) "convert Hex to Dec"))
-    */
-
-
-
-
 const fs = require('fs')
 const { parse, walk } = require('abstract-syntax-tree')
 const util = require('util')
@@ -28,6 +5,7 @@ const procedures = require("./procedures.js")
 
 const { ELEMENTS } = require("../yailMaker/elements")
 const ATTRIBUTES = require("../yailMaker/attributes")
+const {METHODS} = require("../yailMaker/methods")
 
 let debug = false
 
@@ -47,7 +25,7 @@ function main(scripts, elements) {
     globalStack.push(...elements)
 
 
-    console.log("*** Transpiling scripts ***")
+    // console.log("*** Transpiling scripts ***")
     generatedCode = ""
     generatedGlobalsCode = ""
 
@@ -56,51 +34,11 @@ function main(scripts, elements) {
         generatedCode += transpile(input, elements)
     }
 
-    console.log("*** Transpiling complete ***")
-
-    /*
-    let gcode = generatedCode.split("\n")
-    for (let i = gcode.length - 1; i >= 0; i--) {
-        if (gcode[i].length === 0) {
-            gcode.splice(i, 1)
-        } else {
-            gcode[i] = gcode[i].trim()
-        }
-    }
-
-    generatedCode = gcode.join("")
-
-    //  generatedCode = generatedCode.replaceAll("\n\n", "\n")
-    //  generatedCode = generatedCode.replaceAll("\t", "")
-
-    /*
-    let opens = 0
-    let closes = 0
-    let backsOn = false
-    for (let i = 0; i < generatedCode.length; i++) {
-        if (generatedCode[i] === "(") { opens++; backsOn = false }
-        if (generatedCode[i] === ")") { closes++ }
-        if (generatedCode[i] === "\b" && !backsOn) {
-            generatedCode = generatedCode.substring(0, i - 1) + generatedCode.substring(i)
-            backsOn = true;
-            closes += 2
-        }
-
-        if (generatedCode[i] === "\n") {
-            for (let j = 0; j < opens - closes; j++) {
-                generatedCode = generatedCode.substring(0, i + 1) + "" + generatedCode.substring(i + 1)
-            }
-        }
-    }
-    generatedCode = generatedCode.replaceAll("\b", "")
-*/
-
     if (debug) {
         console.log(generatedCode)
         process.exit(0)
     }
 
-    //let procedures = fs.readFileSync("transpiler/procedures.scm", "utf-8")
     let procedures = ""
     proceduresUsed.forEach(
         function (value) {
@@ -125,10 +63,6 @@ exports.run = main
 //need to modify the structure of the AST because variable declarations in YAIL are block type statements
 //don't need to float globals to the top - yay!
 function modifyTree(tree) {
-
-    let variableCount = 0
-    let copy;
-    let lastIndex = 0
 
     //refactor for loops as a block with a while loop in it
     walk(tree, (node, parent) => {
@@ -274,53 +208,6 @@ function modifyTree(tree) {
 
     nestVariables(tree)
 
-
-    /*
-        //4. close the local variables
-        walk(tree, (node, parent) => {
-            if (node.type === "VariableDeclaration") {
-                let endPoint = parent.body.length - variableCount
-    
-    
-                if (node.body !== "Global") {
-                    lastIndex = parent.body.indexOf(node)
-                    copy = JSON.parse(JSON.stringify(node))
-                    copy.body = "Close"
-                    variableCount++
-    
-                    if (parent.body[parent.body.length - 1].type === "VariableDeclaration") {
-                        if (parent.body[parent.body.length - 1].body === "Close") {
-                            parent.body.splice(endPoint, 0, copy)
-                        } else {
-                            //first close
-                            parent.body.push(copy)
-                        }
-                    } else {
-                        //first closed variable
-                        parent.body.push(copy)
-                    }
-    
-                }
-            }
-    
-            if (parent !== null) {
-                if (node.body !== "Global") {
-                    if (Array.isArray(parent.body)) {
-                        if (parent.body.indexOf(node) === parent.body.length - 1 - variableCount) {
-                            if (variableCount > 0) {
-                                //    parent.body.push(copy)
-                                if (parent.body[lastIndex + 1].type === "VariableDeclaration") {
-                                    parent.body[lastIndex].body = "LastVariableDeclaration"
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-    
-        })
-    */
-
     return tree
 }
 
@@ -340,17 +227,6 @@ function transpile(input, elements) {
 
     return transpilation
 }
-
-
-
-function outputCode(text) {
-    generatedCode += text
-}
-
-function outputGlobalsCode(text) {
-    generatedGlobalsCode += text
-}
-
 
 function camelCase(text) {
     return text.substring(0, 1).toUpperCase() + text.substring(1)
@@ -393,10 +269,12 @@ function findVariableInStack(name) {
     console.log(`Variable not found or not in scope: "${name}".`)
 }
 
+
+
+//this is the recursive function that does the work
 function transpileDeclarations(node) {
 
     if (Array.isArray(node)) {
-        console.log("processing array")
         let output = ""
         for (let nn = 0; nn < node.length; nn++) {
             output += transpileDeclarations(node[nn]) + "\n"
@@ -421,7 +299,6 @@ function transpileDeclarations(node) {
     elements = node.elements
     properties = node.properties
 
-    //   console.log(type)
 
     switch (type) {
 
@@ -553,6 +430,25 @@ function transpileDeclarations(node) {
                 //these are the system functions
 
                 switch (node.callee.name) {
+                    /*    case "getServerAddress":
+                            return `(get-server-address)`
+                            ;; Use the following if we ever decide that we want to be able to get the phone's IP address
+                            ;; even if if it's on the cell data network //this always crashes
+                            ;;
+                            ;; (define (get-server-address)
+                            ;;   (let ((ext-socket (java.net.Socket "www.google.com" 80)))
+                            ;;     (try-finally
+                            ;;      (let ((ip-address (ext-socket:getLocalAddress)))
+                            ;;        (if (not (eq? ip-address #!null))
+                            ;;            (ip-address:getHostAddress)
+                            ;;            "no ip address found"))
+                            ;;      (try-catch
+                            ;;       (ext-socket:close)
+                            ;;       (exception java.io.IOException 'ignore)))))
+                        case "getIpAddress":
+                            return `(get-server-address-from-wifi)`*/
+                    case "inject":
+                        return node.arguments[0].quasis[0].value.raw
                     case "require":
                         return ""   //ignore require for now - this is so can use the helper file
                     case "getStartValue":
@@ -698,6 +594,10 @@ function transpileDeclarations(node) {
                     //components have built in fixed methods
                     //other variable types have different methods
 
+                    //do a check for method is possible on componet
+                    //aslo check that the correct number of parameters are supplied for the method,
+                    //otherwise throw error and print out documentation for the method
+
                     let isVariableOfType = undefined
                     let isVariableOfScope = undefined
                     let currentStack = variableStack[variableStack.length - 1]
@@ -723,12 +623,14 @@ function transpileDeclarations(node) {
                                     case "addEventListener":
                                         //TODO check element and type to make sure that the eventType is a legal event for that type of element/component
                                         //args[0] here is the event type
-                                        
+
                                         let params = ""
-                                        for (let i=0; i< args[1].params.length;i++){
-                                            params +=args[1].params[i].name+" "
+                                        for (let i = 0; i < args[1].params.length; i++) {
+                                            params += args[1].params[i].name + " "
                                         }
                                         return (`(define-event ${transpileDeclarations(node.callee.object)} ${camelCase(asString(args, 0))}(${params.trim()}) (set-this-form) ${transpileDeclarations(args[1])})`)
+                                    case "askForPermission":
+                                        return ""
 
                                     //methods with no inputs - no return value
                                     case "dismissProgressDialog":
@@ -1140,8 +1042,8 @@ function transpileDeclarations(node) {
 
         case "IfStatement":
             let alternate = ""
-            if (node.alternate!==null) {
-                alternate=`(begin ${transpileDeclarations(node.alternate)} )`
+            if (node.alternate !== null) {
+                alternate = `(begin ${transpileDeclarations(node.alternate)} )`
             }
             return `
             (if
@@ -1285,7 +1187,7 @@ function transpileDeclarations(node) {
                     let elemInfo = ELEMENTS[MESisVariableOfType + ""]
 
                     //get the attributes that can be set (for now)
-                    let allowableAttributes = [].concat(elemInfo.attributes, elemInfo.blocksAttributes, elemInfo.blocksReadOnly)
+                    let allowableAttributes = [].concat(elemInfo.attributes, elemInfo.blocksAttributes, elemInfo.blocksReadOnly, elemInfo.blocksWriteOnly)
                     if (!allowableAttributes.includes(MemberExpressionSetProperty)) {
                         console.log(`Cannot set the "${MemberExpressionSetProperty}" of a ${MESisVariableOfType}`)
                         console.log('Ignoring this instruction.')

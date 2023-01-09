@@ -334,6 +334,7 @@ function setAttribute(key, value, name, descriptor, useQuotes = true) {
         case "ApplicationName":
         case "AppName":
         case "BackgroundImage":
+        case "BackgroundImageinBase64":
         case "CenterFromString":
         case "CharacterEncoding":
         case "ConsumerKey":
@@ -775,6 +776,8 @@ function setDimensions(key, value, name, descriptor) {
         if (value.startsWith('"') && value.endsWith('"')) {
             value = value.substring(1, value.length - 1)
         }
+    } else if (typeof value === "number") {
+        value = value+""
     }
 
 

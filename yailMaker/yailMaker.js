@@ -42,6 +42,8 @@ fs.writeFileSync("code.scm", "")
 function main(filename = "temp.xml") {
 
 
+
+
     console.log()
     console.log(`Compiling "${filename}"...`)
     console.log(`*** Compiler messages ***`)
@@ -70,11 +72,15 @@ function main(filename = "temp.xml") {
 
     let helperFile = helperMaker.run(filename,extractedData)
 
+
     //this runs the transpiler on the attached scripts
     let generatedCode = transpiler.run(scripts, extractedData)
         
     //add lines to execute build
     output(`\n(init-runtime)\n`)
+
+
+
     componentList = ''
     elementList.shift()  //kill first element - it is the root element of the JSON the CML is parsed
     for (let i = 0; i < elementList.length; i++) {
@@ -90,6 +96,11 @@ function main(filename = "temp.xml") {
     console.log()
 
     //console.log(yail.length)
+
+  
+
+    
+
 
     return { yail: yail, assetsList: assetsList, screenName: screenName }
 }
@@ -333,7 +344,7 @@ function traverse(object, parent = '') {
     //generate the assetList
     if (object.attributes) {
         for (const [key, value] of Object.entries(object.attributes)) {
-            if (key !== "backgroundimage" && key !== "image") { continue; }
+            if (key !== "backgroundimage" && key !== "image" && key!=="picture") { continue; }
             assetsList.push(value)
         }
     }

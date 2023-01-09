@@ -1,5 +1,6 @@
 const { ELEMENTS } = require("../yailMaker/elements")
 const { ATTRIBUTES } = require("../yailMaker/attributes")
+const {METHODS} = require("../yailMaker/methods")
 const fs = require("fs")
 
 function main(filename, elementList) {
@@ -7,8 +8,8 @@ function main(filename, elementList) {
     let helperClasses = ""
     let helperVariables = ""
     let elementTypesUsed = []
-    console.log("Building Helper File.")
-    console.log(elementList)
+  //  console.log("Building Helper File.")
+  //  console.log(elementList)
 
 
     for (let i = 0; i < elementList.length; i++) {
@@ -48,7 +49,25 @@ function main(filename, elementList) {
                 attributes += `${att};`
             }
 
-            let newHelperClass = `class ${elementInstance.type.toUpperCase()} {${attributes}constructor(){};};`
+            let methods = ""
+            for (let a = 0; a < element.methods.length; a++) {
+                let method = element.methods[a]
+                let methodDocs = METHODS[method]
+                let methodDoc = ""
+                methodDoc += `\n/**\n`
+                let paramList = ""
+                for (let k=0; k<methodDocs.params.length; k++){
+                    methodDoc += `* @param ${methodDocs.params[k].type} ${methodDocs.params[k].name} ${methodDocs.params[k].info}\n`
+                    paramList += ` ${methodDocs.params[k].name},`
+                }
+                methodDoc +=`* @description ${methodDocs.description}\n`
+                methodDoc += `*/\n`
+                paramList=paramList.substring(1).trim()
+                methods += `${methodDoc}${method}(${paramList}){};\n`
+
+            }
+
+            let newHelperClass = `class ${elementInstance.type.toUpperCase()} {${attributes}constructor(){};${methods}};`
             helperClasses += newHelperClass
 
         }

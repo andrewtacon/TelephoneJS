@@ -1,4 +1,0 @@
-<screen script="screen2.js" name="bananaBread" AppName="yail" Title="Great Title!" TitleVisible="false" ShowStatusBar="false" Scrollable="true">
-    <button name="button2" text="return to screen 1"/>
-    <textbox name="textbox" width="parent" height="parent" multiLine="true" text="This is screen 2"/>
-</screen>
