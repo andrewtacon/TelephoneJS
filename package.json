@@ -3,6 +3,7 @@
     "abstract-syntax-tree": "^2.20.6",
     "adbkit": "^2.11.1",
     "google-closure-library": "^20221102.0.0",
+    "mime-types": "^2.1.35",
     "node-fetch": "^2.6.7",
     "wrtc": "^0.4.7",
     "xml-js": "^1.6.11"

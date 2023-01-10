@@ -1,0 +1,154 @@
+<html>
+
+<head></head>
+
+<body>
+
+    <script>
+
+        let filename = "onedotred.png";
+        let dataURI = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAgAAAAICAIAAABLbSncAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAAWSURBVBhXY/zPwYAVMEFpDDAYJRgYANNxARctcOwfAAAAAElFTkSuQmCC";
+        let size = 129;
+
+        var byteString;
+
+        if (dataURI.split(',')[0].indexOf('base64') >= 0) {
+            byteString = atob(dataURI.split(',')[1]);
+        } else {
+            byteString = unescape(dataURI.split(',')[1]);
+        }
+
+        var mimeString = dataURI.split(',')[0].split(':')[1].split(';')[0];
+
+        var ia = new Uint8Array(byteString.length);
+
+        for (var i = 0; i < byteString.length; i++) {
+            ia[i] = byteString.charCodeAt(i);
+        }
+
+        let blob = new Blob([ia], { type: mimeString });
+        document.write(JSON.stringify(blob));
+
+
+        let url = `http://127.0.0.1:8001/?filename=` + filename;
+
+        let result = fetch(url, {
+            method: 'OPTIONS'
+        })
+            .then((response) => {
+                response.json();
+                document.write("opt response");
+            })
+            .then((data) => {
+                document.write("opt complete");
+
+                fetch(url, {
+                    method: 'PUT',
+                    headers: {
+                        "Content-length": size
+                    },
+                    body: ia
+                }).then((response) => {
+                    response.json();
+                    document.write("put response");
+                })
+                    .then((data) => {
+                        document.write("put complete");
+                    }
+                    );
+            })
+
+
+
+
+        /*
+
+        let url = `http://127.0.0.1:8001/?filename=`+filename
+
+        let result = fetch(url, {
+            method: 'OPTIONS'
+        })
+        .then((response) => response.json())
+        .then((data) => document.write(JSON.stringify(data)));
+
+
+        fetch(url, {
+            method: 'PUT',
+            headers: {
+                "Content-length": size
+            },
+            body: ia
+        });
+        */
+    </script>
+
+</body>
+
+</html>
+
+
+
+<!--html>
+
+<head></head>
+
+<body>
+
+    <script>
+
+
+        let asset = "testred.png";
+        let dataURI = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAgAAAAICAIAAABLbSncAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAAWSURBVBhXY/zPwYAVMEFpDDAYJRgYANNxARctcOwfAAAAAElFTkSuQmCC";
+        let fileSizeInBytes = 129;
+
+        document.write(fileSizeInBytes);
+
+        var byteString;
+
+        if (dataURI.split(',')[0].indexOf('base64') >= 0) {
+            byteString = atob(dataURI.split(',')[1]);
+        } else {
+            byteString = unescape(dataURI.split(',')[1]);
+        }
+
+        var mimeString = dataURI.split(',')[0].split(':')[1].split(';')[0];
+
+        var ia = new Uint8Array(byteString.length);
+
+        for (var i = 0; i < byteString.length; i++) {
+            ia[i] = byteString.charCodeAt(i);
+        }
+
+        let blob = new Blob([ia], { type: mimeString });
+        document.write(JSON.stringify(blob));
+
+        //this needs to do the OPTIONS request for a file and then the PUT request for the actual data
+
+        let url = `http://127.0.0.1:8001/?filename=${asset}`
+
+        let options =  fetch(url, {
+            method: 'OPTIONS'
+        })
+        
+        
+        
+        .then((response) => response.json())
+            .then((data) => {
+                let put = fetch(url, {
+                    method: 'PUT',
+                    headers: {
+                        "Content-length": fileSizeInBytes
+                    },
+                    body: ia
+                });
+            });
+
+   
+
+
+
+    </script>
+
+</body>
+
+</html-->

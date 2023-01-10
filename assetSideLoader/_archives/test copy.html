@@ -1,0 +1,76 @@
+<html>
+
+<head></head>
+
+<body>
+
+    <script>
+
+
+        let dataURI = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAgAAAAICAIAAABLbSncAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAAWSURBVBhXY/zPwYAVMEFpDDAYJRgYANNxARctcOwfAAAAAElFTkSuQmCC";
+
+        var byteString;
+
+        if (dataURI.split(',')[0].indexOf('base64') >= 0) {
+            byteString = atob(dataURI.split(',')[1]);
+        } else {
+            byteString = unescape(dataURI.split(',')[1]);
+        }
+
+        var mimeString = dataURI.split(',')[0].split(':')[1].split(';')[0];
+
+        var ia = new Uint8Array(byteString.length);
+
+        for (var i = 0; i < byteString.length; i++) {
+            ia[i] = byteString.charCodeAt(i);
+        }
+
+        let blob = new Blob([ia], { type: mimeString });
+        document.write(JSON.stringify(blob));
+
+        let objectURL = window.URL.createObjectURL(blob);
+
+        let anchor = document.createElement('a');
+
+        anchor.innerText = "Text";
+        anchor.href = objectURL;
+        anchor.download = name;
+        document.body.append(anchor);
+
+        window.AppInventor.setWebViewString(objectURL);
+
+        //this needs to do the OPTIONS request for a file and then the PUT request for the actual data
+
+        let result = fetch("http://127.0.0.1:8001/_getversion")
+            .then((response) => response.json())
+            .then((data) => document.write(JSON.stringify(data)));
+
+        let url = `http://127.0.0.1:8001/?filename=${asset}`
+
+        const options = await fetch(url, {
+            method: 'OPTIONS'
+        });
+        let optionReturn = await options
+
+        const stats = fs.statSync(asset);
+        const fileSizeInBytes = stats.size;
+
+        let readStream = fs.createReadStream(asset);
+
+        const put = await fetch(url, {
+            method: 'PUT',
+            headers: {
+                "Content-length": fileSizeInBytes
+            },
+            body: readStream // Here, stringContent or bufferContent would also work
+        });
+        let putReturn = await put
+
+
+
+
+    </script>
+
+</body>
+
+</html>

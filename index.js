@@ -101,6 +101,7 @@ async function main(arg) {
         //log("Network mode")
         mode = IS_NET
         networkInterface = require("./emulatorInterface/networkConnection")
+        networkInterface.loadAssets(assetList)
         networkInterface.run()
         networkInterface.load(yail)
 

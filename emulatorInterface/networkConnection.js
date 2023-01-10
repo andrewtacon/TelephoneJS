@@ -44,6 +44,13 @@ const debug = logger.debug
 
 const fs = require('fs')
 
+////////////////////////////////////////////
+//// TO LOAD FILES OVER webrtc /////////////
+////////////////////////////////////////////
+
+const assetSideLoader = require("../assetSideLoader/assetSideLoader")
+const EventEmitter = require("events")
+const dataReceived = new EventEmitter()
 
 //////////////////////////////////////////////////////////////
 //// FROM MIT replmngr.js ////////////////////////////////////
@@ -110,8 +117,6 @@ const regexExp = /^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]
 ///run a poll to get get data from the rendezvous server
 let poll = async function () {
 
-
-
     fetch(rs.rendezvous2 + rs.key + '-r')
         .then((data) => data.json())
         .then((data) => {
@@ -162,33 +167,13 @@ let poll = async function () {
 
             })
 
-            //This is an attempt to get the IP endpoitn address so can upload - it doesn't work (yet or maybe ever)
-            // console.log(webrtcCandidates)
-            /*            targetPort = 8001
-                        if (webrtcCandidates.length > 0) {
-                            console.log(webrtcCandidates)
-            
-                            let selectedCandidate = webrtcCandidates[0].candidate
-                            let sc = selectedCandidate.split(' ')
-                            console.log(sc)
-                            targetIP = sc[4]            //raddr
-                  //          targetPort = sc[11]
-                        }*/
-
-
-
         })
-
-
-
 };
 
 webrtcpeer = new RTCPeerConnection(rs.iceservers);
 
 webrtcpeer.oniceconnectionstatechange = function (evt) {
     let isFirefox = typeof InstallTrigger !== 'undefined';
-    //    log("oniceconnectionstatechange: evt.type = " + evt.type + " ice connection state = " +
-    //      this.iceConnectionState);
     log("Network connection status: " + this.iceConnectionState)
     connectionstate = this.iceConnectionState;
     if ((connectionstate == "disconnected" && !isFirefox) ||
@@ -225,14 +210,24 @@ webrtcdata = webrtcpeer.createDataChannel('data');
 webrtcdata.onopen = async function () {
     webrtcisopen = true;
     log('Network data connection open!');
+
+    //This is a crucial piece of machinery. It waits for messages from the device coming back in and
+    //things happen as a response to those items.
     webrtcdata.onmessage = async function (ev) {
+
         let json = JSON.parse(ev.data);
         if (json.status == 'OK') {
-            let values = json.values[0]
+            let values = json.values[0]          
             if (values.type === "pushScreen") {
-                log(`Loading "${values.screen}"`)
-                senddata(yail[values.screen]);//, false)
-                screenStack.push(values.screen)
+                if (!loadingAssets) {log(`Loading "${values.screen}"`)}
+                if (values.screen === "AssetLoader") {
+                    dataReceived.emit("ok")
+                } else {
+                    senddata(yail[values.screen]);//, false)
+                    screenStack.push(values.screen)
+    
+                }
+
             } else if (values.type === 'popScreen') {
                 screenStack.pop()
                 last = screenStack[screenStack.length - 1]
@@ -240,7 +235,7 @@ webrtcdata.onopen = async function () {
                 //this is to fake out the listener so it doesn't send the item on the stack before this and stuff things up
                 lastMessageSent = yail[screenStack[screenStack.length - 1]]
             }
-            log(`Device returned OK for data.`)
+            if (!loadingAssets) {log(`Device returned OK for data.`)}
 
         } else {
             log("webrtc(onmessage): " + ev.data);
@@ -258,14 +253,14 @@ webrtcdata.onopen = async function () {
     if (d.ipaddr.indexOf("Error") === -1 && targetIP === undefined) {
         targetIP = d.ipaddr
     }
-    //can only upload assets on the same LAN
-    if (targetIP !== undefined) {
-        await loadAssets()
-    }
+
+    await loadAssets()
 
     setInterval(listener, 1000)
 
 };
+
+
 
 webrtcdata.onclose = function () {
     log("Network data connection closed.");
@@ -299,10 +294,11 @@ webrtcpeer.createOffer().then(function (desc) {
     webrtcpeer.setLocalDescription(desc);
 });
 
-//poll();
 
 
 
+
+//This sends the data when a new screen needs to be loaded into the device
 let sentMacros = false
 function senddata(yailPayload) {
     log("Sending network data.")
@@ -334,8 +330,9 @@ function senddata(yailPayload) {
 }
 
 
+//This holds the data for the different screens. It accepts a data insertion from the main index.js file. Index.js
+//sends through new data when it detects that one of the screens or files has been changed.
 let yail = []
-//let currentScreen = "screen1.xml"
 let screenStack = ["Screen1"]
 function loadData(data) {
     yail = data
@@ -347,18 +344,51 @@ function update(data) {
     log("New data incoming")
     yail = data
     senddata(yail[screenStack[screenStack.length - 1]])
-
 }
 
 
+//This checks for changes to the data for the current screen. If changes are detected after an update has occured,
+//it sends the new data and triggers an update on the device.
 let lastMessageSent = ""
 async function listener() {
-
     if (yail[screenStack[screenStack.length - 1]] !== lastMessageSent && yail[screenStack[screenStack.length - 1]] !== undefined) {
         lastMessageSent = yail[screenStack[screenStack.length - 1]]
         senddata(lastMessageSent)
     }
+}
 
+//this is a bit of indirection. The listener is called to start after all the assets are
+//confirmed as being loaded.
+function startListener() {
+    setInterval(listener, 1000)
+}
+
+
+
+
+
+////This is where the assets are sent over webrtc
+let assetList = []
+function loadAssetList(sentAssets) {
+    assetList = sentAssets
+    console.log(`${assetList.length} assets required.`)
+}
+
+let loadingAssets = false;
+async function loadAssets() {
+    loadingAssets = true
+    console.log("Attempting to load assets.")
+    for (let i = 0; i < assetList.length; i++) {
+        console.log("Asset: " + assetList[i])
+        let schemeFragments = assetSideLoader.run(assetList[i])
+        for (let j = 0; j < schemeFragments.length; j++) {
+            webrtcdata.send(schemeFragments[j]);
+        }
+
+        await new Promise(resolve => dataReceived.once("ok", resolve))
+    }
+    loadAssets = false
+    return true
 }
 
 
@@ -368,51 +398,4 @@ async function listener() {
 exports.load = loadData
 exports.update = senddata
 exports.run = poll
-
-
-//this does work - uploads the assets over normal httpd - doesn't use the webrtc channel for data upload
-//must have an IP address to do this
-//for MIT is downloads assets from their server and this is baked into the companion app so I don't know if there is a workaround here
-//i think this is the only way to do this.
-async function loadAssets() {
-
-    let assetList = []
-
-    for (let i = 0; i < assetList.length; i++) {
-        let asset = assetList[i]
-
-
-        //let url = `http://192.168.0.13:8001/?filename=${asset}`
-        let url = `http://${targetIP}:${targetPort}/?filename=${asset}`
-
-
-        log(`Loading "${asset} onto device.`)
-
-
-        //run an OPTIONS request
-        const options = await fetch(url, {
-            method: 'OPTIONS'
-        });
-        let optionReturn = await options
-
-
-        //run a PUT request and send the file
-        const stats = fs.statSync(asset);
-        const fileSizeInBytes = stats.size;
-
-        // You can pass any of the 3 objects below as body
-        let readStream = fs.createReadStream(asset);
-
-        const put = await fetch(url, {
-            method: 'PUT',
-            headers: {
-                "Content-length": fileSizeInBytes
-            },
-            body: readStream // Here, stringContent or bufferContent would also work
-        });
-        let putReturn = await put
-
-
-    }
-
-}
+exports.loadAssets = loadAssetList
