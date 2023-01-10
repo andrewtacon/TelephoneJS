@@ -60,8 +60,12 @@
                             body: ia                 
                         })
                         .then((response) => {response.json();})                     
-                        .then((data) => {document.write(\"put complete\");});             
+                        .then((data) => {
+                            document.write(\"put complete\");
+                            window.AppInventor.setWebViewString( 'done' );    
+                        });             
                     })
+
                 "
             ) 
             '(text)
