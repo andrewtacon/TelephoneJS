@@ -216,26 +216,35 @@ webrtcdata.onopen = async function () {
     webrtcdata.onmessage = async function (ev) {
 
         let json = JSON.parse(ev.data);
+        let values = json.values[0]  
         if (json.status == 'OK') {
-            let values = json.values[0]          
-            if (values.type === "pushScreen") {
-                if (!loadingAssets) {log(`Loading "${values.screen}"`)}
-                if (values.screen === "AssetLoader") {
-                    dataReceived.emit("ok")
+
+            if (loadingAssets) {
+                deviceFileList = json
+                if (values.type === "pushScreen") {
+                    if (values.screen === "AssetLoader") {
+                        dataReceived.emit("screenok")
+                    }
                 } else {
-                    senddata(yail[values.screen]);//, false)
-                    screenStack.push(values.screen)
-    
+                    dataReceived.emit("ok")
                 }
 
-            } else if (values.type === 'popScreen') {
-                screenStack.pop()
-                last = screenStack[screenStack.length - 1]
-                senddata(yail[last]);//, false)
-                //this is to fake out the listener so it doesn't send the item on the stack before this and stuff things up
-                lastMessageSent = yail[screenStack[screenStack.length - 1]]
+
+            } else {
+
+                if (values.type === "pushScreen") {
+                    log(`Loading "${values.screen}"`)
+                    senddata(yail[values.screen]);//, false)
+                    screenStack.push(values.screen)
+                } else if (values.type === 'popScreen') {
+                    screenStack.pop()
+                    last = screenStack[screenStack.length - 1]
+                    senddata(yail[last]);//, false)
+                    //this is to fake out the listener so it doesn't send the item on the stack before this and stuff things up
+                    lastMessageSent = yail[screenStack[screenStack.length - 1]]
+                }
+                log(`Device returned OK for data.`)
             }
-            if (!loadingAssets) {log(`Device returned OK for data.`)}
 
         } else {
             log("webrtc(onmessage): " + ev.data);
@@ -366,18 +375,83 @@ function startListener() {
 
 
 
-
-////This is where the assets are sent over webrtc
+/////////////////////////////////////////////////////
+////This is where the assets are sent over webrtc ///
+///////
 let assetList = []
-function loadAssetList(sentAssets) {
+let loadingAssets = false;
+let deviceFileList = []
+let shouldDeleteAllFiles = false
+
+function loadAssetList(sentAssets, deleteAll=false) {
     assetList = sentAssets
+    shouldDeleteAllFiles = deleteAll
     console.log(`${assetList.length} assets required.`)
 }
 
-let loadingAssets = false;
 async function loadAssets() {
     loadingAssets = true
-    console.log("Attempting to load assets.")
+    
+        //to get the list of file on the device, you need to load a form and then run a "do it" to get the repl to spit out file list
+        let message1 = `(begin (require <com.google.youngandroid.runtime>) (process-repl-input -1 (begin (define-syntax protect-enum   (lambda (x)     (syntax-case x ()       ((_ enum-value number-value)         (if (< com.google.appinventor.components.common.YaVersion:BLOCKS_LANGUAGE_VERSION 34)           #'number-value           #'enum-value)))))(clear-current-form))))`
+        let message2 = `(begin (require <com.google.youngandroid.runtime>) (process-repl-input -1 (begin (try-catch (let ((attempt (delay (set-form-name "Screen2")))) (force attempt)) (exception java.lang.Throwable 'notfound)))))`
+        let message3 = `(begin (require <com.google.youngandroid.runtime>) (process-repl-input -1 (begin (rename-component "Screen1" "Screen2")(do-after-form-creation (set-and-coerce-property! 'Screen2 'AppName "loopback" 'text)(set-and-coerce-property! 'Screen2 'ShowListsAsJson #t 'boolean)(set-and-coerce-property! 'Screen2 'Sizing "Responsive" 'text)(set-and-coerce-property! 'Screen2 'Title "Screen2" 'text))(add-component Screen2 com.google.appinventor.components.runtime.File File1 ))))`
+        let message4 = `(begin (require <com.google.youngandroid.runtime>) (process-repl-input -1 (begin (init-runtime))))`
+        let message5 = `(begin (require <com.google.youngandroid.runtime>) (process-repl-input "{L1w@aaK%_8!!9_altvx" (begin (def g$name ""))))`
+        let message6 = `(begin (require <com.google.youngandroid.runtime>) (process-repl-input -1 (begin (call-Initialize-of-components 'Screen2 'File1))))`
+    
+        webrtcdata.send(message1);
+        await new Promise(resolve => dataReceived.once("ok", resolve))
+        webrtcdata.send(message2);
+        await new Promise(resolve => dataReceived.once("ok", resolve))
+        webrtcdata.send(message3);
+        await new Promise(resolve => dataReceived.once("ok", resolve))
+        webrtcdata.send(message4);
+        await new Promise(resolve => dataReceived.once("ok", resolve))
+        webrtcdata.send(message5);
+        await new Promise(resolve => dataReceived.once("ok", resolve))
+        webrtcdata.send(message6);
+        await new Promise(resolve => dataReceived.once("ok", resolve))
+    
+        let requestFileList = `(begin (require <com.google.youngandroid.runtime>) (process-repl-input "requestFileList" (begin (call-component-method-with-blocking-continuation 'File1 'ListDirectory (*list-for-runtime* (protect-enum (static-field com.google.appinventor.components.common.FileScope "App") "App")  "/assets/") '(com.google.appinventor.components.common.FileScopeEnum text)))))`
+        webrtcdata.send(requestFileList);
+        await new Promise(resolve => dataReceived.once("ok", resolve))
+    
+    
+        let files = JSON.parse(deviceFileList.values[0].value)
+
+        if (shouldDeleteAllFiles) {
+    
+            //get the returned files
+            if (files.indexOf("external_comps") !== -1) {
+                files.splice(files.indexOf("external_comps"), 1)
+            }
+    
+            console.log("Deleting all files on device.")
+            console.log(files)
+    
+            for (let i = 0; i < files.length; i++) {
+                let deleteFileCode = `(begin (require <com.google.youngandroid.runtime>) (process-repl-input "G1a[)k3GA/Z(n$R=;eZP" (begin (call-component-method 'File1 'Delete (*list-for-runtime* "/assets/${files[i]}") '(text)))))`
+                webrtcdata.send(deleteFileCode);
+                await new Promise(resolve => dataReceived.once("ok", resolve))
+            }
+            files.length = 0
+    
+        }
+    
+    
+        //remove anything already on device
+        for (let i = assetList.length - 1; i >= 0; i--) {
+            if (files.includes(assetList[i])) {
+                console.log(`"${assetList[i]}" already on device. Skipping.`)
+                assetList.splice(i, 1)
+            }
+        }
+    
+    //load any other assets
+    if (assetList.length > 0) {
+        console.log("Attempting to load assets.")
+    }
     for (let i = 0; i < assetList.length; i++) {
         console.log("Asset: " + assetList[i])
         let schemeFragments = assetSideLoader.run(assetList[i])
@@ -385,8 +459,9 @@ async function loadAssets() {
             webrtcdata.send(schemeFragments[j]);
         }
 
-        await new Promise(resolve => dataReceived.once("ok", resolve))
+        await new Promise(resolve => dataReceived.once("screenok", resolve))
     }
+
     loadAssets = false
     return true
 }
@@ -398,4 +473,4 @@ async function loadAssets() {
 exports.load = loadData
 exports.update = senddata
 exports.run = poll
-exports.loadAssets = loadAssetList
+exports.loadAssetList = loadAssetList
