@@ -5,6 +5,10 @@ const fs = require("fs")
 
 function main(filename, elementList) {
 
+
+    fs.writeFileSync(`${filename}Helper.js`, "")
+    return
+
     let helperClasses = ""
     let helperVariables = ""
     let elementTypesUsed = []

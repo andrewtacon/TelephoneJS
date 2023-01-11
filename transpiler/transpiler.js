@@ -430,24 +430,7 @@ function transpileDeclarations(node) {
                 //these are the system functions
 
                 switch (node.callee.name) {
-                    /*    case "getServerAddress":
-                            return `(get-server-address)`
-                            ;; Use the following if we ever decide that we want to be able to get the phone's IP address
-                            ;; even if if it's on the cell data network //this always crashes
-                            ;;
-                            ;; (define (get-server-address)
-                            ;;   (let ((ext-socket (java.net.Socket "www.google.com" 80)))
-                            ;;     (try-finally
-                            ;;      (let ((ip-address (ext-socket:getLocalAddress)))
-                            ;;        (if (not (eq? ip-address #!null))
-                            ;;            (ip-address:getHostAddress)
-                            ;;            "no ip address found"))
-                            ;;      (try-catch
-                            ;;       (ext-socket:close)
-                            ;;       (exception java.io.IOException 'ignore)))))
-                        case "getIpAddress":
-                            return `(get-server-address-from-wifi)`*/
-                    case "inject":
+                    case "inject":  //inject scheme code directly into the application
                         return node.arguments[0].quasis[0].value.raw
                     case "require":
                         return ""   //ignore require for now - this is so can use the helper file
@@ -609,6 +592,7 @@ function transpileDeclarations(node) {
                         }
                     }
 
+ 
                     switch (isVariableOfScope) {
                         case "component":
 
@@ -617,12 +601,26 @@ function transpileDeclarations(node) {
                                 let methodCalled = node.callee.property.name
                                 let args = JSON.parse(JSON.stringify(node.arguments))
 
+                                //get legal methods for each component and check that this is one of them
+
+                                let legalMethods = ELEMENTS[isVariableOfType].methods
+                                legalMethods.push("addEventListener")
+                                if (!legalMethods.includes(methodCalled)) {
+                                    console.log(`"${elementName}" is a ${isVariableOfType} and does not have a method "${methodCalled}". Ignoring.`)
+                                    return ""
+                                }
 
                                 //check if the method that is called is a legal method for this particular element type (refer to supplied elements list)
                                 switch (methodCalled) {
                                     case "addEventListener":
                                         //TODO check element and type to make sure that the eventType is a legal event for that type of element/component
                                         //args[0] here is the event type
+                                        let legalEvents = ELEMENTS[isVariableOfType].events
+                                        if (!legalEvents.includes(args[0].value)) {
+                                            console.log(`"${elementName}" is a ${isVariableOfType} and does not have an event "${args[0].value}". Perhaps check your capitalisation. Ignoring.`)
+                                            return ""
+                                        }
+        
 
                                         let params = ""
                                         for (let i = 0; i < args[1].params.length; i++) {

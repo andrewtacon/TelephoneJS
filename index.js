@@ -22,6 +22,13 @@ files = files.filter(file => file.toLowerCase().endsWith(".xml"))
 
 for (let i = 0; i < files.length; i++) {
     let data = generateYail.for(files[i])
+
+    //check for screen1 proper capitalistion otherwise first page won't load properly as it is already in the screenstack in the USB/emulator (case sensitivity of JS)
+    if (data.screenName.toLowerCase() === "screen1") {
+        data.screenName = "Screen1"
+    }
+
+
     yail[data.screenName] = data.yail
     for (let i = 0; i < data.assetsList.length; i++) {
         if (!assetList.includes(data.assetsList[i])) {
@@ -57,6 +64,12 @@ fs.watch(__dirname, 'utf8', function (eventType, filename) {
 
 function update(filename) {
     let data = generateYail.for(filename)
+
+    //check for screen1 proper capitalistion otherwise first page won't load properly as it is already in the screenstack in the USB/emulator (case sensitivity of JS)
+    if (data.screenName.toLowerCase() === "screen1") {
+        data.screenName = "Screen1"
+    }
+
     yail[data.screenName] = data.yail
     for (let i = 0; i < data.assetsList.length; i++) {
         if (!assetList.includes(data.assetsList[i])) {
@@ -97,7 +110,7 @@ async function main(arg) {
     //    args[i] = args[i].toLowerCase().trim()
     //}
 
-    if (arg=== 'net' || arg==="wifi") {
+    if (arg === 'net' || arg === "wifi") {
         //log("Network mode")
         mode = IS_NET
         networkInterface = require("./emulatorInterface/networkConnection")
@@ -109,12 +122,12 @@ async function main(arg) {
         emulatorInterface = require("./emulatorInterface/emulatorUSBConnection")
         emulatorInterface.load(yail)
 
-        if (arg==="usb") {
-        //    log("USB mode")
+        if (arg === "usb") {
+            log("USB mode")
             mode = IS_USB
             await emulatorInterface.run(IS_USB)
         } else {
-        //    console.log("Emulator mode")
+            console.log("Emulator mode")
             mode = IS_EMULATOR
             await emulatorInterface.run(IS_EMULATOR)
         }
@@ -128,7 +141,7 @@ async function main(arg) {
 //main()
 
 function showMainMenu() {
-    console.clear()
+   // console.clear()
     console.log("App Inventor JavaScript Tool\n")
     console.log("1. Connect to Emulator")
     console.log("2. Connect via USB")
@@ -141,13 +154,13 @@ showMainMenu()
 rl.question("Enter selection: ", response)
 
 async function response(answer) {
-    if (answer==="1") {await main()}
-    if (answer==="2") {await main('usb')}
-    if (answer==="3") {await main('wifi')}
-    if (answer.toLowerCase() === 'x') {process.exit(0)}
-  //  console.clear()
-  //  showMainMenu()
-  //  rl.question("Enter selection: ", response)
+    if (answer === "1") { await main() }
+    if (answer === "2") { await main('usb') }
+    if (answer === "3") { await main('wifi') }
+    if (answer.toLowerCase() === 'x') { process.exit(0) }
+    //  console.clear()
+    //  showMainMenu()
+    //  rl.question("Enter selection: ", response)
     rl.close()
 }
 
