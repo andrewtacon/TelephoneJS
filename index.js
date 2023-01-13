@@ -22,7 +22,7 @@ let log = console.log
 //////////////////////////
 
 const helperMaker = require("./helpMaker/help")
-let buildTest =     helperMaker.buildTest("screen")
+//let buildTest =     helperMaker.buildTest("screen")
 
 /////////////////////////
 // END TEST /////////////
@@ -65,7 +65,7 @@ fs.watch(__dirname, 'utf8', function (eventType, filename) {
             changedFiles.push(filename)
         }
     }
-    if (filename.toLowerCase().endsWith(".js")) {
+    if (filename.toLowerCase().endsWith(".js") && !filename.includes("Helper")) {
         filename = filename.replaceAll(".js", ".xml")
         if (fs.existsSync(filename)) {
             if (!changedFiles.includes(filename)) {

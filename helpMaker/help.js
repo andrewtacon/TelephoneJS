@@ -45,6 +45,10 @@ function main(filename, elementList) {
                 methodDoc += `\n/**\n`
                 let paramList = ""
                 if (methodDocs) {
+                    if (methodDocs.description) {
+                        methodDoc += `* ${methodDocs.description}\n`
+                    }
+
                     if (methodDocs.params) {
                         for (let k = 0; k < methodDocs.params.length; k++) {
                             methodDoc += `* @param ${methodDocs.params[k].type} ${methodDocs.params[k].name} ${methodDocs.params[k].info}`
@@ -52,13 +56,18 @@ function main(filename, elementList) {
                         }
                     }
 
-                    if (methodDocs.description) {
-                        methodDoc += `* @description ${methodDocs.description}\n`
+                    if (methodDocs.events) {
+                        if (methodDocs.events[elementInstance.type]) {
+                            methodDoc += `\n`
+                            for (const [key, value] of Object.entries(methodDocs.events[elementInstance.type])) {
+                                methodDoc += `* @example <caption>${key}</caption>\n`
+                                methodDoc += `* ${value}`
+                                methodDoc += `\n`
+                            }
+                        }
                     }
 
                 }
-
-
 
                 methodDoc += `*/\n`
                 paramList = paramList.substring(1).trim()
@@ -199,19 +208,38 @@ function buildTest(el) {
     }
 
 
+    //METHODS
+    tests +="\n//METHOD TESTS\n\n"
+
+    for (let a = 0; a < element.methods.length; a++) {
+        let method = element.methods[a]
+        if (method === "addEventListener") { continue }    
+        let detail = METHODS[method]
+        if (detail.params.length === 0) { //no input parameters
+            tests += `${el}1.${method}()\n`
+        } else {
+            tests += `${el}1.${method}(${detail.tests.join(", ")})\n`
+        }
+
+    }
+
+
+
+
 
     //EVENTS
+    tests +="\n//EVENTS TESTS\n\n"
 
     for (let a = 0; a < element.events.length; a++) {
         let eventName = element.events[a]
-        let template = `\n
-        ${el}1.addEventListener(
-            "${eventName}",
-            function () {
-                testnote.showAlert("Event detected: ${eventName} ")
-            }
-        )\n\n
-        `
+        let template = `
+${el}1.addEventListener(
+    "${eventName}",
+    function () {
+        testnote.showAlert("Event detected: ${eventName} ")
+    }
+)
+`
         tests += template
     }
 

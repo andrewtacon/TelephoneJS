@@ -65,7 +65,14 @@ const METHODS = {
     },
     "askForPermission": {
         description: "Ask the user to grant access to a sensitive permission, such as ACCESS_FINE_LOCATION. This block is typically used as part of a PermissionDenied event to ask for permission. If the user grants permission, the PermissionGranted event will be run. If the user denies permission, the PermissionDenied event will be run. Note: It is a best practice to only ask for permissions at the time they are needed, which App Inventor components will do when necessary. You should not use AskForPermission in your Initialize event unless access to that permission is critical to the behavior of your app and is needed up front, such as location services for a navigation app.",
-        params: [{ type: "{string}", name: "permissionName", info: "One of CoarseLocation, FineLocation, MockLocation, LocationExtraCommands, ReadExternalStorage, WriteExternalStorage, Camera, Audio, Vibrate, Internet, NearFieldCommunication, Bluetooth, BluetoothAdmin, WifiState, NetworkState, AccountManager, ManageAccounts, GetAccounts, ReadContacts, UseCredentials" }]
+        params: [
+            {
+                type: "{string}",
+                name: "permissionName",
+                info: "One of CoarseLocation, FineLocation, MockLocation, LocationExtraCommands, ReadExternalStorage, WriteExternalStorage, Camera, Audio, Vibrate, Internet, NearFieldCommunication, Bluetooth, BluetoothAdmin, WifiState, NetworkState, AccountManager, ManageAccounts, GetAccounts, ReadContacts, UseCredentials"
+            }
+        ],
+        tests: [`"CoarseLocation"`]
     },
     "authorize": {
         description: "",
@@ -165,7 +172,7 @@ const METHODS = {
     },
     "createElement": {
         description: "Creates an element in a listview.",
-        params: [{type:"string", name:"mainText", info:""},{type:"string", name:"detailText", info:""},{type:"string", name:"imageName", info:""}]
+        params: [{ type: "string", name: "mainText", info: "" }, { type: "string", name: "detailText", info: "" }, { type: "string", name: "imageName", info: "" }]
     },
     "createMarker": {
         description: "",
@@ -352,10 +359,6 @@ const METHODS = {
         params: []
     },
     "goToUrl": {
-        description: "",
-        params: []
-    },
-    "hidInfobox": {
         description: "",
         params: []
     },
@@ -777,11 +780,11 @@ const METHODS = {
     },
     "setDateToDisplay": {
         description: "Allows the user to set the date to be displayed when the date picker opens. Valid values for the month field are 1-12 and 1-31 for the day field.",
-        params: [{type: "number", name:"year", info: "Valid year number."},{type: "number", name: "month", info: "Numerical value from 1 to 12. 1-Jan, 2-Feb..."},{type: "number", name: "day", info: "Day of month between 1 and 31 inclusive."}]
+        params: [{ type: "number", name: "year", info: "Valid year number." }, { type: "number", name: "month", info: "Numerical value from 1 to 12. 1-Jan, 2-Feb..." }, { type: "number", name: "day", info: "Day of month between 1 and 31 inclusive." }]
     },
     "setDateToDisplayFromInstant": {
         description: "Allows the user to set the date from the instant to be displayed when the date picker opens.",
-        params: [{type:"instant", name:"instant", info:""}]
+        params: [{ type: "instant", name: "instant", info: "" }]
     },
     "setLocation": {
         description: "",
@@ -927,7 +930,67 @@ const METHODS = {
         description: "",
         params: []
     },
-    "year": []
+    "year": [],
+    "addEventListener": {
+        description: "Add an event listener to the component.",
+        params: [
+            { type: "string", name: "eventName", info: "The name of the event to listener for." },
+            { type: "function", name: "callbackFunction", info: "The function to run when event triggered. Some events have associated values." }
+        ],
+        events: {
+            "screen": {
+                "backPressed": `
+                screenName.addEventListener(
+                    "backPressed",
+                    function(){
+                        //Your code
+                    }
+                )`,
+                "errorOccured": `
+                screenName.addEventListener(
+                    "errorOccured",
+                    function(component, functionName, errorNumber, message){
+                        //Your code
+                    }
+                )`,
+                "initialize": `
+                screenName.addEventListener(
+                    "initialize",
+                    function(){
+                        //Your code
+                    }
+                )`,
+                "otherScreenClosed": `
+                screenName.addEventListener(
+                    "otherScreenClosed",
+                    function(otherScreenName, result){
+                        //Your code
+                    }
+                )`,
+                "permissionDenied": `
+                screenName.addEventListener(
+                    "permissionDenied",
+                    function(component,functionName, permissionName){
+                        //Your code
+                    }
+                )`,
+                "permissionGranted": `
+                screenName.addEventListener(
+                    "permissionGranted",
+                    function(permissionName){
+                        //Your code
+                    }
+                )`,
+                "screenOrientationChanged": `
+                screenName.addEventListener(
+                    "screenOrientationChanged",
+                    function(){
+                        //Your code
+                    }
+                )`
+            }
+        }
+    }
 }
 
 exports.METHODS = METHODS
