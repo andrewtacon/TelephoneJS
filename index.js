@@ -16,6 +16,20 @@ let mode = IS_NET
 
 let log = console.log
 
+
+//////////////////////////
+/// BUILD TESTS HERE  ////
+//////////////////////////
+
+const helperMaker = require("./helpMaker/help")
+let buildTest =     helperMaker.buildTest("screen")
+
+/////////////////////////
+// END TEST /////////////
+/////////////////////////
+
+
+
 //this sections loads all the XML files into the system as yail code and creates the initial asset list
 let files = fs.readdirSync(__dirname)
 files = files.filter(file => file.toLowerCase().endsWith(".xml"))

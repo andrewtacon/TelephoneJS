@@ -3,18 +3,48 @@
 //the key is the value that the YAIL code requires (it is not case sensitive for the XML designs)
 //the values are acceptable values for this particular element - they are used for the help file
 
+let string = "@type {string}"
+let color = "@type {string} An 8 character hexadecimal string using ARBG e.g. 'AARRGGBB'"
+let number = "@type {number}"
+let bool = "@type {boolean}"
+
+let getset = "@summary Gets or sets."
+let get = "@summary Read-only."
+let set = "@summary Write-only."
+let designer = "@summary Designer only attribute."
+let code = "@summary Code only attribute."
+
 const ATTRIBUTES = {
-    "AboutScreen": ["Text value."],
+    "AboutScreen": [
+        string,
+        getset,
+        "@description Information about the screen. It appears when “About this Application” is selected from the system menu. Use it to tell users about your app. In multiple screen apps, each screen has its own AboutScreen info.",
+        `"Test case for the aboutSceen"`
+    ],
     "AbsoluteStrength": [],
-    "AccentColor": [],
+    "AccentColor": [
+        color,
+        designer,
+        "@description This is the accent color used for highlights and other user interface accents in newer versions of Android. Components affected by this property include dialogs created by the Notifier, the DatePicker, and others.",
+        `"AAFF0000"` //test case colour red
+    ],
     "Accuracy": [],
     "Action": ["Text value."],
     "ActivityClass": ["Text value."],
     "ActivityPackage": ["Text value."],
     "AddressesAndNames": [],
     "AirPressure": [],
-    "AlignHorizontal": [],
-    "AlignVertical": [],
+    "AlignHorizontal": [
+        string,
+        getset,
+        "@description A number that encodes how contents of the screen are aligned horizontally. The choices are the constants LEFT, RIGHT, CENTER",
+        `"center"`  //center for test
+    ],
+    "AlignVertical": [
+        string, getset,
+        "@description A number that encodes how the contents of the arrangement are aligned vertically. The choices are the constants TOP, MIDDLE, BOTTOM. Vertical alignment has no effect if the screen is scrollable.",
+        `"center"` //center for test
+    ],
     "AllowCookies": [],
     "AlternateText": ["Text value."],
     "Altitude": [],
@@ -23,20 +53,40 @@ const ATTRIBUTES = {
     "Angle": [],
     "Animation": [],
     "ApiKey": ["Text value."],
-    "AppName": ["Text value."],
-    "ApplicatioName": ["Text value."],
+    "AppName": [
+        string, designer,
+        "@description This is the display name of the installed application in the phone. If the AppName is blank, it will be set to the name of the project when the project is built.",
+        `"Test App name"`
+    ],
+    "ApplicatioName": ["??????"],
     "Available": [],
     "AvailableCountries": [],
     "AvailableLanguages": [],
     "AvailableProviders": [],
     "AverageLux": [],
     "Azimuth": [],
-    "BackgroundColor": [],
-    "BackgroundImage": ["Text value. Image file name."],
+    "BackgroundColor": [
+        color, getset,
+        "@decription Specifies the background color as an alpha-red-green-blue integer. If an BackgroundImage is available for the component and it has been set, the color change will not be visible until the BackgroundImage is removed.",
+        `"AA00FF00"`
+    ],
+    "BackgroundImage": [
+        string, getset,
+        "@description Specifies the path of the background image. If there is both an BackgroundImage and a BackgroundColor specified, only the BackgroundImage will be visible.",
+        `"cat.png"` //test case
+    ],
     "BackgroundImageinBase64": [],
     "BaudRate": [],
-    "BigDefaultText": [],
-    "Bold": [],
+    "BigDefaultText": [
+        bool, getset,
+        "@description When true, all default size text will be increased in size.",
+        false //turn it on for tests
+    ],
+    //TO ADD PROCESSING FOR
+    "BlocksToolkit": [
+        string, designer,
+        "@description A JSON string representing the subset for the screen. Authors of template apps can use this to control what components, designer properties, and blocks are available in the project."
+    ],
     "BoundingBox": [],
     "BufferSize": [],
     "Center": [],
@@ -45,7 +95,11 @@ const ATTRIBUTES = {
     "Checked": [],
     "Class": [],
     "Clickable": [],
-    "CloseScreenAnimation": [],
+    "CloseScreenAnimation": [
+        string, getset,
+        "@description Sets the animation type for this transition of the form. One of 'default', 'fade', 'zoom', 'slidehorizontal', 'slidevertical', 'none'.",
+        `"slidevertical"` //testcase
+    ],
     "ColorLeft": [],
     "ColorRight": [],
     "Column": [],
@@ -63,7 +117,12 @@ const ATTRIBUTES = {
     "DataType": ["Text value."],
     "DataUri": ["Text value."],
     "Day": [],
-    "DefaultFileScope": [],
+    "DefaultFileScope": [
+        string,
+        "@summary Designer only for screens.",
+        "@description Specifies the default scope used when components access files. One of 'app', 'asset', 'cache', 'legacy', 'private', 'shared'.",
+        `"App"` //test (it is default case)
+    ],
     "DefaultScope": [],
     "Delimiter": [],
     "DelimiterByte": [],
@@ -83,7 +142,11 @@ const ATTRIBUTES = {
     "EnablePan": [],
     "EnableRotation": [],
     "EnableZoom": [],
-    "Enabled": [],
+    "Enabled": [
+        bool, getset,
+        "@descriptor Specifies whether the Button should be active and clickable.",
+        true //have to set as true for tests of won't work
+    ],
     "EndLatitude": [],
     "EndLocation": [],
     "EndLongitude": [],
@@ -96,9 +159,27 @@ const ATTRIBUTES = {
     "FillOpacity": [],
     "FollowLinks": [],
     "Followers": [],
-    "FontSize": [],
-    "FontSizedetail": [],
-    "FontTypeface": [],
+    "FontBold": [
+        bool, getset,
+        "@description Specifies whether the text of the component should be bold. Some fonts do not support bold.",
+        true
+    ],
+    "FontItalic": [
+        bool, getset,
+        "@description Specifies whether the text of the component should be italic. Some fonts do not support italic.",
+        true
+    ],
+    "FontSize": [
+        number, getset,
+        "@description Specifies the text font size of the component, measured in sp(scale-independent pixels).",
+        24
+    ],
+    "FontSizeDetail": [],
+    "FontTypeface": [
+        number, designer,
+        "@description Specifies the text font face of the Button as 'serif', 'sans serif' or 'monospace' if the default is not appropriate.",
+        `"monospace"`
+    ],
     "FontTypefaceDetail": [],
     "FriendTimeline": [],
     "FullScreen": [],
@@ -110,22 +191,48 @@ const ATTRIBUTES = {
     "HasLongitudeLatitude": [],
     "HasMargins": [],
     "Heading": [],
-    "Height": [],
+    "Height": [
+        "@type (number | 'parent' | number%)",
+        "@summary Usage depends on component type.",
+        `@description For Screens (read only in code): Returns the Screen height in pixels (y-size).
+        @description For Buttons (read/write code only): Specifies the Button’s vertical height, measured in pixels.`,
+        200
+    ],
+    "HeightPercent": [
+        number, set,
+        "@description Specifies the Button’s vertical height as a percentage of the Screen's Height.",
+        50
+    ],
     "HighByteFirst": [],
-    "HighContrast": [],
+    "HighContrast": [
+        bool,
+        getset,
+        "@description When true, there will be high contrast mode turned on.",
+        true
+    ],
     "Hint": ["Text value."],
     "HolePoints": [],
     "HolePointsFromString": ["Text value."],
     "HomeUrl": ["Text value."],
     "Hour": [],
     "Humidity": [],
-    "Icon": ["Text value."],
+    "Icon": [
+        string,
+        designer,
+        "@description The image used for your App’s display icon should be a square png or jpeg image with dimensions up to 1024x1024 pixels. Larger images may cause compiling or installing the app to fail. The build server will generate images of standard dimensions for Android devices.",
+        `"cat.png"`
+    ],
     "Id": [],
     "IgnoreSslErrors": [],
-    "Image": ["Text value."],
+    "Image": [
+        string,
+        getset,
+        "@description Specifies the path of the Button’s image. If there is both an Image and a BackgroundColor specified, only the Image will be visible.",
+        `"cat.png"`
+    ],
     "ImageAsset": ["Text value."],
-    "Imageheight": [],
-    "Imagewidth": [],
+    "ImageHeight": [],
+    "ImageWidth": [],
     "Instant": [],
     "Interval": [],
     "IsAccepting": [],
@@ -133,7 +240,6 @@ const ATTRIBUTES = {
     "IsInitialized": [],
     "IsOpen": [],
     "IsPlaying": [],
-    "Italic": [],
     "ItemBackgroundColor": [],
     "ItemTextColor": [],
     "KeepRunningWhenOnPause": [],
@@ -166,7 +272,11 @@ const ATTRIBUTES = {
     "NotifierLength": [],
     "NumbersOnly": [],
     "On": [],
-    "OpenScreenAnimation": [],
+    "OpenScreenAnimation": [
+        string, getset,
+        "@description Sets the animation type for this transition of the form. One of 'default', 'fade', 'zoom', 'slidehorizontal', 'slidevertical', 'none'.",
+        `"fade"`
+    ],
     "Orientation": [],
     "OriginAtCenter": [],
     "PaintColor": [],
@@ -175,14 +285,34 @@ const ATTRIBUTES = {
     "PhoneNumberList": [],
     "Picture": ["Text value."],
     "Pitch": [],
-    "Platform": [],
-    "PlatformVersion": [],
+    "Platform": [
+        code,
+        get,
+        "@description Gets the name of the underlying platform running the app.",
+        `"Microsoft"`
+    ],
+    "PlatformVersion": [
+        code,
+        get,
+        "@description Gets the version number of the platform running the app. This is typically a dotted version number, such as 10.0. Any value can be returned, however, so you should take care to handle unexpected data. If the platform version is unavailable, the empty text will be returned.",
+        2
+    ],
     "PlayOnlyInForeground": [],
     "Points": [],
     "PointsFromString": ["Text value."],
     "PollingRate": [],
-    "PrimaryColor": [],
-    "PrimaryColorDark": [],
+    "PrimaryColor": [
+        color,
+        designer,
+        "@description This is the primary color used as part of the Android theme, including coloring the Screen’s title bar.",
+        `"AA0000FF"`
+    ],
+    "PrimaryColorDark": [
+        color,
+        designer,
+        "@description This is the primary color used when the Theme property is specified to be Dark. It applies to a number of elements, including the Screen’s title bar.",
+        `"AAFFFF00"`
+    ],
     "ProjectID": ["Text value."],
     "Prompt": ["Text value."],
     "PromptForPermission": [],
@@ -215,29 +345,67 @@ const ATTRIBUTES = {
     "ScaleUnits": [],
     "Scaling": [],
     "Scope": [],
-    "ScreenOrienation": [],
-    "Script": [],
-    "Scrollable": [],
+    "ScreenOrientation": [
+        string,
+        getset,
+        "@description Declares the requested screen orientation, specified as a text value. Values are one of 'unspecified', 'landscape', 'portrait', 'sensor', 'user', 'behind', 'nosensor', 'fullsensor', 'reverselandscape', 'reverseportrait', 'sensorlandscape', 'sensorportrait'. ",
+        `"portrait"`
+    ],
+    "Script": [
+        "@description Connects a JavaScript script file to the screen",
+        `"screen1.js"`
+    ],
+    "Scrollable": [
+        bool,
+        getset,
+        "@description When checked, there will be a vertical scrollbar on the screen, and the height of the application can exceed the physical height of the device. When unchecked, the application height is constrained to the height of the device.",
+        true
+    ],
     "SearchResults": [],
     "Secure": [],
     "Selection": ["Text value."],
-    "SelectionIndex": [],
-    "Selectioncolor": [],
-    "Selectiondetailtext": [],
-    "Selectionindex": [],
+    "SelectionColor": [],
+    "SelectionDetailText": ["@returns {string} Returns the Secondary or Detail text in the ListView at the position set by SelectionIndex."],
+    "SelectionIndex": ["{number} The index of the currently selected item, starting at 0. If no item is selected, the value will be -1. If an attempt is made to set this to a number less than 0 or greater than the number of items in the ListView minus 1, SelectionIndex will be set to -1, and Selection will be set to the empty text."],
     "Sensitivity": [],
     "ServiceURL": ["Text value."],
-    "Shape": [],
+    "Shape": [
+        string,
+        designer,
+        "@description Specifies the shape of the Button. The valid values for this property are 'round', 'rectangle', and 'oval'. The Shape will not be visible if an Image is used.",
+        `"round"`
+
+    ],
     "ShowCompass": [],
-    "ShowFeedback": [],
+    "ShowFeedback": [
+        bool,
+        getset,
+        "@description Specifies if a visual feedback should be shown when a Button with an assigned Image is pressed.",
+        true
+    ],
     "ShowFilterBar": [],
-    "ShowListsAsJSON": [],
+    "ShowListsAsJson": [
+        bool,
+        designer,
+        "@description If true (the default), lists will be shown as strings in JSON/Python notation for example [1, “a”, true]. If false, lists will be shown in the LISP notation, for example (1 a true). Note: This property should be set only in Screen1 and the value for Screen1 determines the behavior for all screens in the app.",
+        true
+    ],
     "ShowScale": [],
-    "ShowStatusBar": [],
+    "ShowStatusBar": [
+        bool,
+        getset,
+        "@description The status bar is the topmost bar on the screen. This property reports whether the status bar is visible.",
+        true
+    ],
     "ShowUser": [],
     "ShowZoom": [],
     "SimpleSteps": [],
-    "Sizing": [],
+    "Sizing": [
+        string,
+        designer,
+        "@description If set to 'responsive' (the default), screen layouts will use the actual resolution of the device. If set to 'fixed', screen layouts will be created for a single fixed-size screen and autoscaled. Note: This property should be set on Screen1 only and controls the sizing for all screens in the app.",
+        `"responsive"`
+    ],
     "Source": ["Text value."],
     "SourceFile": ["Text value."],
     "SouthLatitude": [],
@@ -255,13 +423,32 @@ const ATTRIBUTES = {
     "Style": [],
     "TapThreshold": [],
     "Temperature": [],
-    "Text": ["Text value."],
-    "TextAlignment": [],
-    "TextColor": [],
-    "TextColordetail": [],
+    "Text": [
+        string,
+        getset,
+        "@description Specifies the text displayed by the component.",
+        `"Test value for text"`
+    ],
+    "TextAlignment": [
+        string,
+        designer,
+        "@description Specifies the alignment of the Button’s text. Valid values are: 'left' (left-justified if text is written left to right), 'center', or 'right' (right-justified if text is written left to right).",
+        `"center"`
+    ],
+    "TextColor": [
+        color,
+        getset,
+        "@description Specifies the text color of the Button as an alpha-red-green-blue integer.",
+        `"AA00FFFF"`
+    ],
+    "TextColorDetail": [],
     "TextToWrite": [],
     "Textsize": [],
-    "Theme": [],
+    "Theme": [
+        string,
+        designer,
+        "@designer Selects the theme for the application. Theme can only be set at compile time and the Companion will approximate changes during live development. Possible options are:<ul><li><code >Classic</code>, which is the same as older versions of App Inventor;</li><li><code >Device Default</code>, which gives the same theme as the version of Android running on thedevice and uses PrimaryColor for the Action Bar and has light buttons;</li><li><code >Black Title Text</code>, which is the <code >Device Default</code> theme but with black title text; and</li><li><code >Dark</code>, which is a dark version of the <code >Device Default</code> theme using <code >PrimaryColorDark</code> and having dark grey components.</li></ul>"
+    ],
     "ThumbColorActive": [],
     "ThumbColorInactive": [],
     "Thumbenabled": [],
@@ -271,12 +458,28 @@ const ATTRIBUTES = {
     "TimerAlwaysFires": [],
     "TimerEnabled": [],
     "TimerInterval": [],
-    "Title": ["Text value."],
-    "TitleVisible": [],
+    "Title": [
+        string,
+        getset,
+        "@description Title property setter method: sets a new caption for the form in the form’s title bar.",
+        `"Test for title"`
+    ],
+    "TitleVisible": [
+        bool,
+        getset,
+        "@description The title bar is the top gray bar on the screen. This property reports whether the title bar is visible.",
+        true
+    ],
     "Token": ["Text value."],
     "TrackColorActive": [],
     "TrackColorInactive": [],
     "TransportationMethod": [],
+    "TutorialURL": [
+        string,
+        designer,
+        "@descriptionA URL which will be opened on the left side panel (which can be toggled once it is open). This is intended for projects that have an in-line tutorial as part of the project. For security reasons, only tutorials hosted on http://appinventor.mit.edu or linked to from our URL shortener (http://appinv.us) may be used here. Other URLs will be silently ignored.",
+        `"Test for tutorial url"`
+    ],
     "Type": [],
     "Url": ["Text value."],
     "UseExternalScanner": [],
@@ -286,14 +489,41 @@ const ATTRIBUTES = {
     "UserLongitude": [],
     "Username": [],
     "UsesLocation": [],
-    "VersionCode": [],
-    "VersionName": ["Text value."],
-    "Visible": [],
+    "VersionCode": [
+        number,
+        designer,
+        "@description An integer value which must be incremented each time a new Android Application Package File (APK) is created for the Google Play Store.",
+        2
+    ],
+    "VersionName": [
+        string,
+        designer,
+        "@description A string which can be changed to allow Google Play Store users to distinguish between different versions of the App.",
+        `"Test version"`
+    ],
+    "Visible": [
+        bool,
+        getset,
+        "@description Specifies whether the Button should be visible on the screen. Value is true if the Button is showing and false if hidden.",
+        true
+    ],
     "Volume": [],
     "WalkSteps": [],
     "WebViewString": [],
     "WestLongitude": [],
-    "Width": [],
+    "Width": [
+        "@type (number | 'parent' | number%)",
+        "@summary Usage depends on component type.",
+        `@description For Screens (read only in code): Returns the Screen width in pixels (x-size).
+        @description For Buttons (read/write in code): Specifies the horizontal width of the Button, measured in pixels.`,
+        `"parent"`
+    ],
+    "WidthPercent": [
+        number, set,
+        "@description Specifies the horizontal width of the Button as a percentage of the Screen’s Width.",
+        80
+
+    ],
     "WritePermission": [],
     "Writetype": [],
     "X": [],
@@ -356,6 +586,7 @@ function setAttribute(key, value, name, descriptor, useQuotes = true) {
         case "Language":
         case "Message":
         case "Namespace":
+        case "Platform":
         case "PhoneNumber":
         case "Picture":
         case "PointsFromString": //this is array of arrays of x,y - should be a convience method to load these better//e.g. [[68.02222323204114,-127.02117919921876],[68.01142776369724,-126.99234008789064]]
@@ -373,6 +604,7 @@ function setAttribute(key, value, name, descriptor, useQuotes = true) {
         case "Text":
         case "Title":
         case "Token":
+        case "TutorialURL":
         case "Url":
         case "VersionName":
             return setText(key, value, name, descriptor)
@@ -388,7 +620,7 @@ function setAttribute(key, value, name, descriptor, useQuotes = true) {
         case "Rotates":
         case "Secure":
         case "ShowFeedback":
-        case "ShowListsAsJSON":
+        case "ShowListsAsJson":
         case "ShowStatusBar":
         case "ThumbEnabled":
         case "TimerAlwaysFires":
@@ -444,12 +676,14 @@ function setAttribute(key, value, name, descriptor, useQuotes = true) {
         case "FontSize":
         case "FontSizeDetail":
         case "Heading":
+        case "HeightPercent":
         case "Latitude": //should be a special method to test for latitude and longitude correctness
         case "LineWidth":
         case "Longitude":
         case "MaxValue":
         case "MinValue":
         case "NorthLatitude":
+        case "PlatformVersion":
         case "Pitch":
         case "PollingRate":
         case "Radius": //there are cases where this should be an integer - hope this doesn't break anything
@@ -506,6 +740,7 @@ function setAttribute(key, value, name, descriptor, useQuotes = true) {
         case "RefreshTime":
         case "Row":
         case "Rows":
+        case "SelectionIndex":
         case "StopDetectionTimeout":
         case "StrokeWidth":
         case "TapThreshold":
@@ -526,18 +761,19 @@ function setAttribute(key, value, name, descriptor, useQuotes = true) {
         case "FeaturesFromGeoJSON":
             return setGeoJSONData(key, value, name, descriptor)
             break;
+        case "DefaultFileScope":
         case "DefaultScope":
             return setScope(key, value, name, descriptor)
             break;
         case "CloseScreenAnimation":
         case "OpenScreenAnimation":
-            return fromTextList(key, value, name, ['fade', 'zoom', 'slidehorizontal', 'slidevertical', 'none'], descriptor)
+            return fromTextList(key, value, name, ['default', 'fade', 'zoom', 'slidehorizontal', 'slidevertical', 'none'], descriptor)
             break;
         case "TransportationMethod":
             return fromTextList(key, value, name, ['driving', 'cycling', 'wheelchair'], "TransportationMethod")
             break;
         case "ScreenOrientation":
-            return fromTextList(key, value, name, ['portrait', 'landscape', 'sensor', 'user'], "TransportationMethod")
+            return fromTextList(key, value, name, ['unspecified', 'landscape', 'portrait', 'sensor', 'user', 'behind', 'nosensor', 'fullsensor', 'reverselandscape', 'reverseportrait', 'sensorlandscape', 'sensorportrait'], "ScreenOrientation")
             break;
         case "Sizing":
             return fromTextList(key, value, name, ['fixed', 'responsive'], descriptor)
@@ -552,7 +788,7 @@ function setAttribute(key, value, name, descriptor, useQuotes = true) {
             return fromList(key, value, name, ['sans serif', 'serif', 'monospace'], "FontTypefaceDetail")
             break;
         case "Shape":
-            return fromList(key, value, name, ['rounded', 'rectangular', 'oval'], "Shape")
+            return fromList(key, value, name, ['round', 'rectangle', 'oval'], "Shape")
             break;
         case "AlignVertical":
         case "AnchorVertical":
@@ -596,6 +832,12 @@ function setAttribute(key, value, name, descriptor, useQuotes = true) {
         case "Style":
             return ""
             break;
+
+        ///These are the get only methods
+        case "SelectionDetailText":
+            return getProperty(key, value, name, descriptor)
+
+
         default:
             console.log(`Error: Unknown descriptor "${descriptor}". Ignoring.`)
     }
@@ -607,7 +849,18 @@ function setAttribute(key, value, name, descriptor, useQuotes = true) {
 
 
 /////////////////////////////////////////////////////////
-//// These are the master parameter creation methods ////
+/// These are the master GET methods ////////////////////
+/////////////////////////////////////////////////////////
+
+function getProperty(key, value, name, descriptor) {
+    return `(get-property '${name} '${descriptor})`
+}
+
+
+
+
+/////////////////////////////////////////////////////////
+//// These are the master parameter SET methods ////
 /////////////////////////////////////////////////////////
 
 function setText(key, value, name, descriptor) {
@@ -639,11 +892,21 @@ function setText(key, value, name, descriptor) {
 
 
 function setTrueFalse(key, value, name, descriptor) {
+
+    if (value === "#f") { //need to do this conversion for reloads
+        value = false
+    }
+    if (value === "#t") {
+        value = true
+    }
+
     //this is to handle data coming from the transpiler
     if (typeof value === "string") {
         if (value.startsWith('"') && value.endsWith('"')) {
             value = value.substring(1, value.length - 1)
         }
+    } else if (typeof value === "boolean") {
+        value = value + ""
     }
 
     value = value.toLowerCase().trim()
@@ -724,9 +987,7 @@ function fromList(key, value, name, options, descriptor) {
         if (value.startsWith('"') && value.endsWith('"')) {
             value = value.substring(1, value.length - 1)
         }
-    }
 
-    if (options.includes(value.toLowerCase())) {
         let index = options.indexOf(value) + 1
 
         //special case
@@ -737,9 +998,17 @@ function fromList(key, value, name, options, descriptor) {
         if (descriptor === "Sensitivity") { if (index === 2) { } return }
 
         return `\n\t(set-and-coerce-property! '${name} '${descriptor} ${index} 'number)`
-    } else {
-        console.log(`${descriptor} value of "${value}" is invalid for this descriptor.`)
     }
+
+    if (typeof value === "number") {
+        let index = options.indexOf(value)
+        if (index !== -1) {
+            return `\n\t(set-and-coerce-property! '${name} '${descriptor} ${value} 'number)`
+        }
+    }
+
+    console.log(`${descriptor} value of "${value}" is invalid for this descriptor.`)
+
 
     return ""
 }
@@ -777,7 +1046,7 @@ function setDimensions(key, value, name, descriptor) {
             value = value.substring(1, value.length - 1)
         }
     } else if (typeof value === "number") {
-        value = value+""
+        value = value + ""
     }
 
 
@@ -857,38 +1126,38 @@ function fromTextList(key, value, name, options, descriptor) {
             console.log(`Transportation method set to "Walking": either not supplied or invalid method given.`)
             return ""
         }
-    }
-    if (descriptor === "CloseScreenAnimation" || descriptor === "OpenScreenAnimation") {
-        if (options.indexOf(value) === -1) {
-            console.log(`Invalid option given for Open/Close Screen Animation: setting to default.`)
-            return ""
-        }
-    }
-    if (descriptor === "ScreenOrientation") {
-        if (options.indexOf(value) === -1) {
-            console.log(`Invalid option given for Screen Orientation: setting to default.`)
-            return ""
-        }
-    }
-    if (descriptor === "Sizing") {
-        if (options.indexOf(value) === -1) {
-            value = "responsive"
-            console.log(`Invalid option given for Sizing (of screen): setting to responsive.`)
-        }
-    }
-    if (descriptor === "Theme") {
-        if (value === "devicedefault") { value = "AppTheme.Light.DarkActionBar" }
-        else if (value === "blacktitle") { value = "AppTheme.Light" }
-        else if (value === "dark") { value = "AppTheme" }
-        else {
-            console.log("Invalid value for theme (of screen): setting to 'classic'.")
-            return ""
-        }
-    }
+    } else
+        if (descriptor === "CloseScreenAnimation" || descriptor === "OpenScreenAnimation") {
+            if (options.indexOf(value) === -1) {
+                console.log(`Invalid option given for Open/Close Screen Animation: setting to default.`)
+                return ""
+            }
+        } else
+            if (descriptor === "ScreenOrientation") {
+                if (options.indexOf(value) === -1) {
+                    console.log(`Invalid option given for Screen Orientation: setting to default.`)
+                    return ""
+                }
+            } else
+                if (descriptor === "Sizing") {
+                    if (options.indexOf(value) === -1) {
+                        value = "responsive"
+                        console.log(`Invalid option given for Sizing (of screen): setting to responsive.`)
+                    }
+                } else
+                    if (descriptor === "Theme") {
+                        if (value === "devicedefault") { value = "AppTheme.Light.DarkActionBar" }
+                        else if (value === "blacktitle") { value = "AppTheme.Light" }
+                        else if (value === "dark") { value = "AppTheme" }
+                        else {
+                            console.log("Invalid value for theme (of screen): setting to 'classic'.")
+                            return ""
+                        }
+                    }
     return `\n\t(set-and-coerce-property! '${name} '${descriptor} "${value}" 'text)`
 }
 
-function setScope(key, value, name, options, descriptor) {
+function setScope(key, value, name, descriptor) {
     //this is to handle data coming from the transpiler
     if (typeof value === "string") {
         if (value.startsWith('"') && value.endsWith('"')) {
@@ -897,7 +1166,7 @@ function setScope(key, value, name, options, descriptor) {
     }
 
     value = value.toLowerCase()
-    let options2 = ["asset", "cache", "legacy", "private", "shared"]
+    let options2 = ["app", "asset", "cache", "legacy", "private", "shared"]
     if (options2.indexOf(value) === -1) {
         console.log("Invalid default scope for data file. Ignoring.")
         return ""

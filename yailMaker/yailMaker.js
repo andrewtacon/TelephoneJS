@@ -69,6 +69,7 @@ function main(filename = "temp.xml") {
 
     traverse(structure.elements[0])
 
+    console.log('making helper')
 
     let helperFile = helperMaker.run(filename,extractedData)
 
@@ -139,6 +140,7 @@ function traverse(object, parent = '') {
             if (typeof attributes.showlistsasjson === undefined) { attributes.showlistsasjson = "true" }
             if (typeof attributes.sizing === undefined) { attributes.sizing = "responsive" }
             if (typeof attributes.title === undefined) { attributes.title = "Screen1" }
+            if (typeof attributes.name === undefined) { attributes.name = "Screen1" }
             if (typeof attributes.appname === undefined) { attributes.appname = "Crazy Green Pencils" }
             if (attributes.script !== undefined) {
                 let scriptNames = attributes.script.split(",")
@@ -433,7 +435,7 @@ function createElement(element, attributes, parent, elements) {
         //convert key (the attribute to lowercase)
         key = key.toLowerCase()
         //determine if the key is in the list for this element
-        let legalAttributes = [].concat(ELEMENTS[element].attributes, ELEMENTS[element].designerAttributes)
+        let legalAttributes = [].concat(ELEMENTS[element].properties)
         let legalAttributesLowerCase = legalAttributes.map(element => {
             return element.toLowerCase().trim()
         })

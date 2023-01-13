@@ -65,7 +65,7 @@ const METHODS = {
     },
     "askForPermission": {
         description: "Ask the user to grant access to a sensitive permission, such as ACCESS_FINE_LOCATION. This block is typically used as part of a PermissionDenied event to ask for permission. If the user grants permission, the PermissionGranted event will be run. If the user denies permission, the PermissionDenied event will be run. Note: It is a best practice to only ask for permissions at the time they are needed, which App Inventor components will do when necessary. You should not use AskForPermission in your Initialize event unless access to that permission is critical to the behavior of your app and is needed up front, such as location services for a navigation app.",
-        params: [{ type: "{string}", name: "permissionName", info: "One of CourseLocation, FineLocation, MockLocation, LocationExtraCommands, ReadExternalStorage, WriteExternalStorage, Camera, Audio, Vibrate, Internet, NearFieldCommunication, Bluetooth, BluetoothAdmin, WifiState, NetworkState, AccountManager, ManageAccounts, GetAccounts, ReadContacts, UseCredentials" }]
+        params: [{ type: "{string}", name: "permissionName", info: "One of CoarseLocation, FineLocation, MockLocation, LocationExtraCommands, ReadExternalStorage, WriteExternalStorage, Camera, Audio, Vibrate, Internet, NearFieldCommunication, Bluetooth, BluetoothAdmin, WifiState, NetworkState, AccountManager, ManageAccounts, GetAccounts, ReadContacts, UseCredentials" }]
     },
     "authorize": {
         description: "",
@@ -164,8 +164,8 @@ const METHODS = {
         params: []
     },
     "createElement": {
-        description: "",
-        params: []
+        description: "Creates an element in a listview.",
+        params: [{type:"string", name:"mainText", info:""},{type:"string", name:"detailText", info:""},{type:"string", name:"imageName", info:""}]
     },
     "createMarker": {
         description: "",
@@ -364,7 +364,7 @@ const METHODS = {
         params: []
     },
     "hideKeyboard": {
-        description: "",
+        description: "Hides the soft keyboard.",
         params: []
     },
     "hour": {
@@ -404,7 +404,7 @@ const METHODS = {
         params: []
     },
     "launchPicker": {
-        description: "",
+        description: "Launches the DatePicker dialog. The AfterDateSet event will be run after the user confirms their selection.",
         params: []
     },
     "listDirectory": {
@@ -500,7 +500,7 @@ const METHODS = {
         params: []
     },
     "open": {
-        description: "",
+        description: "Opens the ListPicker, as though the user clicked on it.",
         params: []
     },
     "openSerial": {
@@ -776,12 +776,12 @@ const METHODS = {
         params: []
     },
     "setDateToDisplay": {
-        description: "",
-        params: []
+        description: "Allows the user to set the date to be displayed when the date picker opens. Valid values for the month field are 1-12 and 1-31 for the day field.",
+        params: [{type: "number", name:"year", info: "Valid year number."},{type: "number", name: "month", info: "Numerical value from 1 to 12. 1-Jan, 2-Feb..."},{type: "number", name: "day", info: "Day of month between 1 and 31 inclusive."}]
     },
     "setDateToDisplayFromInstant": {
-        description: "",
-        params: []
+        description: "Allows the user to set the date from the instant to be displayed when the date picker opens.",
+        params: [{type:"instant", name:"instant", info:""}]
     },
     "setLocation": {
         description: "",

@@ -5,7 +5,7 @@ const procedures = require("./procedures.js")
 
 const { ELEMENTS } = require("../yailMaker/elements")
 const ATTRIBUTES = require("../yailMaker/attributes")
-const {METHODS} = require("../yailMaker/methods")
+const { METHODS } = require("../yailMaker/methods")
 
 let debug = false
 
@@ -228,7 +228,7 @@ function transpile(input, elements) {
     return transpilation
 }
 
-function camelCase(text) {
+function uppercaseFirstLetter(text) {
     return text.substring(0, 1).toUpperCase() + text.substring(1)
 }
 
@@ -416,6 +416,7 @@ function transpileDeclarations(node) {
             break;
 
         case "BlockStatement":
+           
             return transpileDeclarations(node.body)
 
         case "BreakStatement":
@@ -423,6 +424,8 @@ function transpileDeclarations(node) {
 
 
         case "CallExpression":
+
+      
 
             //this is a call to a function with or with variables
             if (node.callee.type === "Identifier") {
@@ -573,6 +576,7 @@ function transpileDeclarations(node) {
 
                 default:
 
+                    
                     //if not MATH then a variable so find variable type and work based off that
                     //components have built in fixed methods
                     //other variable types have different methods
@@ -592,10 +596,11 @@ function transpileDeclarations(node) {
                         }
                     }
 
- 
+
+
+
                     switch (isVariableOfScope) {
                         case "component":
-
                             //check if a method is called on something
                             if (node.callee.property !== undefined) {
                                 let methodCalled = node.callee.property.name
@@ -620,50 +625,63 @@ function transpileDeclarations(node) {
                                             console.log(`"${elementName}" is a ${isVariableOfType} and does not have an event "${args[0].value}". Perhaps check your capitalisation. Ignoring.`)
                                             return ""
                                         }
-        
 
                                         let params = ""
                                         for (let i = 0; i < args[1].params.length; i++) {
                                             params += args[1].params[i].name + " "
                                         }
-                                        return (`(define-event ${transpileDeclarations(node.callee.object)} ${camelCase(asString(args, 0))}(${params.trim()}) (set-this-form) ${transpileDeclarations(args[1])})`)
+
+                                        return (`(define-event ${transpileDeclarations(node.callee.object)} ${uppercaseFirstLetter(asString(args, 0))}(${params.trim()}) (set-this-form) ${transpileDeclarations(args[1])})`)
                                     case "askForPermission":
-                                        return ""
+                                        //Screen - One of CourseLocation, FineLocation, MockLocation, LocationExtraCommands, ReadExternalStorage, WriteExternalStorage, Camera, Audio, Vibrate, Internet, NearFieldCommunication, Bluetooth, BluetoothAdmin, WifiState, NetworkState, AccountManager, ManageAccounts, GetAccounts, ReadContacts, UseCredentials
+                                        let legalPermissions = ["CoarseLocation", "FineLocation", "MockLocation", "LocationExtraCommands", "ReadExternalStorage", "WriteExternalStorage", "Camera", "Audio", "Vibrate", "Internet", "NearFieldCommunication", "Bluetooth", "BluetoothAdmin", "WifiState", "NetworkState", "AccountManager", "ManageAccounts", "GetAccounts", "ReadContacts", "UseCredentials"]
+                                        if (!legalPermissions.includes(args[0].value)) {
+                                            console.log(`"${elementName}" has called "askForPermission" with an invalid request ("${args[0].value}").\nRequests need to be one of CoarseLocation, FineLocation, MockLocation, LocationExtraCommands, ReadExternalStorage, WriteExternalStorage, Camera, Audio, Vibrate, Internet, NearFieldCommunication, Bluetooth, BluetoothAdmin, WifiState, NetworkState, AccountManager, ManageAccounts, GetAccounts, ReadContacts or UseCredentials.`)
+                                            return ""
+                                        }
+                                        return `(call-component-method '${elementName} 'AskForPermission (*list-for-runtime* (static-field com.google.appinventor.components.common.Permission "${args[0].value}")) '(text))`
 
                                     //methods with no inputs - no return value
                                     case "dismissProgressDialog":
-                                    case "launchPicker":
-                                    case "open":
+                                    case "hideKeyboard": //screen
+                                    case "launchPicker": //datepicker
+                                    case "open": //listpicker
                                     case "refresh":
-                                        return (`(call-component-method '${elementName} '${camelCase(methodCalled)} (*list-for-runtime*) '()`)
+                                        return (`(call-component-method '${elementName} '${uppercaseFirstLetter(methodCalled)} (*list-for-runtime*) '()`)
 
                                     //methods with one instant in time input - no return value
-                                    case "setDateToDisplayFromInstant":
-                                        return (`(call-component-method '${elementName} '${camelCase(methodCalled)} (*list-for-runtime* ${asInstantInTime(args, 0)}) '(InstantInTime)`)
+                                    //TO DO -> make instants in time 
+                                    case "setDateToDisplayFromInstant": //datepicker
+                                        return (`(call-component-method '${elementName} '${uppercaseFirstLetter(methodCalled)} (*list-for-runtime* ${args[0]}) '(InstantInTime)`)
 
                                     //methods with one text input - no return value
                                     case "showAlert":
                                     case "logInfo":
                                     case "logWarning":
                                     case "logError":
-                                        return (`\n(call-component-method '${elementName} '${camelCase(methodCalled)}  (*list-for-runtime*  ${transpileDeclarations(args[0])} )  '(text))`)
+                                        return (`\n(call-component-method '${elementName} '${uppercaseFirstLetter(methodCalled)}  (*list-for-runtime*  ${transpileDeclarations(args[0])} )  '(text))`)
 
                                     //methods with 2 text and an optional true/false (default true) - no return value
                                     case "showPasswordDialog":
                                     case "showTextDialog":
-                                        return (`(call-component-method '${elementName} '${camelCase(methodCalled)} (*list-for-runtime* ${transpileDeclarations(args[0])} ${transpileDeclarations(args[1])} ${transpileDeclarations(args[2])}) '(text text boolean)`)
+                                        return (`(call-component-method '${elementName} '${uppercaseFirstLetter(methodCalled)} (*list-for-runtime* ${transpileDeclarations(args[0])} ${transpileDeclarations(args[1])} ${transpileDeclarations(args[2])}) '(text text boolean)`)
 
                                     //methods with 3 text inputs - no return value
                                     case "showMessageDialog":
-                                        return (`(call-component-method '${elementName} '${camelCase(methodCalled)} (*list-for-runtime* ${transpileDeclarations(args[0])} ${transpileDeclarations(args[1])} ${transpileDeclarations(args[2])}) '(text text text))`)
+                                    case "createElement": //listview
+                                        return (`(call-component-method '${elementName} '${uppercaseFirstLetter(methodCalled)} (*list-for-runtime* ${transpileDeclarations(args[0])} ${transpileDeclarations(args[1])} ${transpileDeclarations(args[2])}) '(text text text))`)
 
                                     //methods with 3 numerical inputs - no return value
-                                    case "setDateToDisplay":
-                                        return (`(call-component-method '${elementName} '${camelCase(methodCalled)} (*list-for-runtime* ${transpileDeclarations(args[0])} ${transpileDeclarations(args[1])} ${transpileDeclarations(args[2])}) '(number number number))`)
+                                    //TO CHECK AT END - if this is only date picker then check the ranges of the acceptable values.
+                                    case "setDateToDisplay": //datepicker
+                                        if (args.length !== 3) {
+                                            console.log(`"${elementName}" of type "${isVariableOfType}" requires three numerical arguments.`)
+                                        }
+                                        return (`(call-component-method '${elementName} '${uppercaseFirstLetter(methodCalled)} (*list-for-runtime* ${transpileDeclarations(args[0])} ${transpileDeclarations(args[1])} ${transpileDeclarations(args[2])}) '(number number number))`)
 
                                     //methods with 4 text and an optional true/false (default true) - no return value
                                     case "showChooseDialog":
-                                        return (`(call-component-method '${elementName} '${camelCase(methodCalled)} (*list-for-runtime* ${transpileDeclarations(args[0])} ${transpileDeclarations(args[1])} ${transpileDeclarations(args[2])} ${transpileDeclarations(args[3])} ${transpileDeclarations(args[4])}) '(text text text text boolean))`)
+                                        return (`(call-component-method '${elementName} '${uppercaseFirstLetter(methodCalled)} (*list-for-runtime* ${transpileDeclarations(args[0])} ${transpileDeclarations(args[1])} ${transpileDeclarations(args[2])} ${transpileDeclarations(args[3])} ${transpileDeclarations(args[4])}) '(text text text text boolean))`)
 
                                     default:
                                 }
@@ -1096,11 +1114,18 @@ function transpileDeclarations(node) {
             }
 
             //  '()   is an empty list - it is equivalent to null
-
             switch (MEisVariableOfScope) {
                 //Do components first
                 case "component":
-                    switch (MemberExpressionProperty) {
+
+//TODO need to make sure that these are legally get-able values for different elements
+                    //valid for
+                    //textbox text
+                    //listview selectionDetailText
+
+                    return `(get-property '${MEelementName} '${uppercaseFirstLetter(MemberExpressionProperty)})`
+
+    /*                switch (MemberExpressionProperty) {
                         case "text":
 
                             if (MEisVariableOfType === "textbox") {
@@ -1110,7 +1135,7 @@ function transpileDeclarations(node) {
                             //(set-and-coerce-property! 'TextBox1 'Text "text value" 'text)
                             return ""
 
-                    }
+                    }*/
                     break;
 
                 //then deal with everything else
@@ -1185,7 +1210,7 @@ function transpileDeclarations(node) {
                     let elemInfo = ELEMENTS[MESisVariableOfType + ""]
 
                     //get the attributes that can be set (for now)
-                    let allowableAttributes = [].concat(elemInfo.attributes, elemInfo.blocksAttributes, elemInfo.blocksReadOnly, elemInfo.blocksWriteOnly)
+                    let allowableAttributes = [].concat(elemInfo.properties)
                     if (!allowableAttributes.includes(MemberExpressionSetProperty)) {
                         console.log(`Cannot set the "${MemberExpressionSetProperty}" of a ${MESisVariableOfType}`)
                         console.log('Ignoring this instruction.')
@@ -1193,7 +1218,6 @@ function transpileDeclarations(node) {
                     }
 
                     let descriptor = MemberExpressionSetProperty[0].toUpperCase() + MemberExpressionSetProperty.substring(1)
-
                     //setAttribute(key, value, name, descriptor, useQuotes = true)
                     return ATTRIBUTES.setAttribute("", transpileDeclarations(node.assignedRight), MESelementName, descriptor, false)
 

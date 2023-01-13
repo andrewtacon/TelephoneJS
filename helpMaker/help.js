@@ -1,19 +1,13 @@
 const { ELEMENTS } = require("../yailMaker/elements")
 const { ATTRIBUTES } = require("../yailMaker/attributes")
-const {METHODS} = require("../yailMaker/methods")
+const { METHODS } = require("../yailMaker/methods")
 const fs = require("fs")
 
 function main(filename, elementList) {
 
-
-    fs.writeFileSync(`${filename}Helper.js`, "")
-    return
-
     let helperClasses = ""
     let helperVariables = ""
     let elementTypesUsed = []
-  //  console.log("Building Helper File.")
-  //  console.log(elementList)
 
 
     for (let i = 0; i < elementList.length; i++) {
@@ -22,35 +16,25 @@ function main(filename, elementList) {
         if (!elementTypesUsed.includes(elementInstance.type)) {
 
             let element = ELEMENTS[elementInstance.type]
+            let allAttributes = [].concat(element.properties)
 
             let attributes = ""
             let index = 0
-            for (let a = 0; a < element.attributes.length; a++) {
-                let att = element.attributes[a]
-                let attInfo = ATTRIBUTES[att[0].toUpperCase() + att.substring(1)][0]
-                if (attInfo) {
-                    attributes += `${att}:"${attInfo}";`
-                } else {
-                    attributes += `${att};`
+            for (let a = 0; a < allAttributes.length; a++) {
+                let att = allAttributes[a]
+                let attInfo
 
+                //this is a test for missing attributes
+                try { attInfo = ATTRIBUTES[att[0].toUpperCase() + att.substring(1)] } catch (error) { console.log(att); console.log(error); process.exit(0) }
+
+                let attDoc = "\n/**\n"
+                for (let a = 0; a < attInfo.length; a++) {
+                    if (typeof attInfo !== "string") { continue } //skip non-strings they are test values
+                    if (!attInfo.startsWith("@")) { continue } //this is to skip test cases for the test compiler. The JSDoc has all lines starting with @.
+                    attDoc += "* " + attInfo[a] + "\n"
                 }
-            }
-
-            //ignore designer only attributes
-
-            for (let a = 0; a < element.blocksAttributes.length; a++) {
-                let att = element.blocksAttributes[a]
-                attributes += `${att};`
-            }
-
-            for (let a = 0; a < element.blocksReadOnly.length; a++) {
-                let att = element.blocksReadOnly[a]
-                attributes += `${att};`
-            }
-
-            for (let a = 0; a < element.blocksWriteOnly.length; a++) {
-                let att = element.blocksWriteOnly[a]
-                attributes += `${att};`
+                attDoc += `*/\n`
+                attributes += `${attDoc}${att};`
             }
 
             let methods = ""
@@ -60,15 +44,25 @@ function main(filename, elementList) {
                 let methodDoc = ""
                 methodDoc += `\n/**\n`
                 let paramList = ""
-                for (let k=0; k<methodDocs.params.length; k++){
-                    methodDoc += `* @param ${methodDocs.params[k].type} ${methodDocs.params[k].name} ${methodDocs.params[k].info}\n`
-                    paramList += ` ${methodDocs.params[k].name},`
-                }
-                methodDoc +=`* @description ${methodDocs.description}\n`
-                methodDoc += `*/\n`
-                paramList=paramList.substring(1).trim()
-                methods += `${methodDoc}${method}(${paramList}){};\n`
+                if (methodDocs) {
+                    if (methodDocs.params) {
+                        for (let k = 0; k < methodDocs.params.length; k++) {
+                            methodDoc += `* @param ${methodDocs.params[k].type} ${methodDocs.params[k].name} ${methodDocs.params[k].info}`
+                            paramList += ` ${methodDocs.params[k].name},`
+                        }
+                    }
 
+                    if (methodDocs.description) {
+                        methodDoc += `* @description ${methodDocs.description}\n`
+                    }
+
+                }
+
+
+
+                methodDoc += `*/\n`
+                paramList = paramList.substring(1).trim()
+                methods += `${methodDoc}${method}(${paramList}){};\n`
             }
 
             let newHelperClass = `class ${elementInstance.type.toUpperCase()} {${attributes}constructor(){};${methods}};`
@@ -81,7 +75,24 @@ function main(filename, elementList) {
 
     }
 
-    let finalHelperCode = helperClasses + helperVariables
+    let constants =
+        `
+    const LEFT = 1;
+    const RIGHT = 2;
+    const CENTER = 3;
+    const TOP = 1;
+    const MIDDLE =2;
+    const BOTTOM = 3; 
+    const FONT= {
+        Default:0,
+        Serif: 2,
+        SansSerif:1,
+        Monospace:3
+    }
+    `
+
+
+    let finalHelperCode = helperClasses + helperVariables + constants
 
     filename = filename.substring(0, filename.lastIndexOf("."))
 
@@ -89,4 +100,125 @@ function main(filename, elementList) {
 
 }
 
+
+function buildTest(el) {
+
+    //Construct the XML document
+
+    let head = `
+    <screen script="screen1.js" name="screen1" AppName="yail" Title="Great Title!" TitleVisible="false" ShowStatusBar="false" Scrollable="true">
+    `
+
+    let tail = `
+        <textbox name="testbox" width="80%" height="parent" multiLine="true" />
+        <notifier name="testnote" />
+    </screen>
+    `
+
+    let element = ELEMENTS[el]
+
+    let allAttributes = [].concat(element.properties)
+    allAttributes = allAttributes.filter(
+        function (el) {
+            return !element.designerNoWrite.includes(el)
+        })
+
+    let middle = `<${el} `
+    for (let a = 0; a < allAttributes.length; a++) {
+        let att = allAttributes[a]
+        let attCase = att[0].toUpperCase() + att.substring(1, att.length)
+        let attInfo = ATTRIBUTES[`${attCase}`]
+
+        let test = attInfo
+
+        if (!Array.isArray(attInfo)) {
+            continue
+        }
+        if (attInfo.length === 0) {
+            continue
+        }
+
+        if (typeof attInfo[attInfo.length - 1] === "string") {
+            if (attInfo[attInfo.length - 1].startsWith("@")) {
+                continue //skip those without a test case
+            }
+            middle += `\n${att}=${attInfo[attInfo.length - 1]} `
+        } else {
+            middle += ` \n${att}="${attInfo[attInfo.length - 1]}" `
+        }
+    }
+
+    let xml = ""
+    if (el === 'screen') {
+        xml = middle + " name='screen1'>\n" + tail
+    } else {
+        xml = head + "\n" + middle + "/>" + tail
+    }
+
+    fs.writeFileSync("screen1.xml", xml)
+
+    //////////////////////////////////////
+    //Construct the JavaScript Code
+    //////////////////////////////////////
+
+    //PROPERTIES
+
+    allAttributes = [].concat(element.properties)
+    let tests = `require("./screen1Helper")\n\n`
+
+    tests += `\n\ntestbox.text = testbox.text +"\\n\\n${el.toUpperCase()} READING AND WRITING TESTS\\n\\n"\n\n`
+
+    for (let a = 0; a < allAttributes.length; a++) {
+        let att = allAttributes[a]
+        let attCase = att[0].toUpperCase() + att.substring(1, att.length)
+        let attInfo = ATTRIBUTES[`${attCase}`]
+
+        let test = attInfo
+
+        if (typeof attInfo[attInfo.length - 1] === "string") {
+            if (attInfo[attInfo.length - 1].startsWith("@")) {
+                continue //skip those without a test case
+            }
+        }
+
+        let print = attInfo[attInfo.length - 1]
+        if (typeof print === "string") {
+            print = print.replaceAll('"', "'")
+        }
+
+        tests += `testbox.text = testbox.text + "Setting ${el}1.${att} to ${print}\\n"\n`
+        if (!element.codeNoWrite.includes(att)) {
+            tests += `${el}1.${att} = ${attInfo[attInfo.length - 1]} \n`
+        }
+
+        if (!element.codeNoRead.includes(att)) {
+            tests += `testbox.text = testbox.text + "Value after test => "+${el}1.${att} +"\\n"\n`
+        }
+
+        tests += "\n"
+    }
+
+
+
+    //EVENTS
+
+    for (let a = 0; a < element.events.length; a++) {
+        let eventName = element.events[a]
+        let template = `\n
+        ${el}1.addEventListener(
+            "${eventName}",
+            function () {
+                testnote.showAlert("Event detected: ${eventName} ")
+            }
+        )\n\n
+        `
+        tests += template
+    }
+
+    fs.writeFileSync("screen1.js", tests)
+
+}
+
+
 exports.run = main
+exports.buildTest = buildTest
