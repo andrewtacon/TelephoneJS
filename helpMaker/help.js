@@ -138,17 +138,18 @@ function buildTest(el) {
         let attCase = att[0].toUpperCase() + att.substring(1, att.length)
         let attInfo = ATTRIBUTES[`${attCase}`]
 
-        let test = attInfo
+      //  let test = attInfo
 
-        if (!Array.isArray(attInfo)) {
+   /*     if (!Array.isArray(attInfo)) {
             continue
         }
         if (attInfo.length === 0) {
             continue
-        }
+        }*/
 
         if (typeof attInfo[attInfo.length - 1] === "string") {
             if (attInfo[attInfo.length - 1].startsWith("@")) {
+                console.log(`No test case for property "${att}". Skipping.`)
                 continue //skip those without a test case
             }
             middle += `\n${att}=${attInfo[attInfo.length - 1]} `
@@ -161,7 +162,7 @@ function buildTest(el) {
     if (el === 'screen') {
         xml = middle + " name='screen1'>\n" + tail
     } else {
-        xml = head + "\n" + middle + "/>" + tail
+        xml = `${head} \n ${middle} \n name="${el}1" /> ${tail}`
     }
 
     fs.writeFileSync("screen1.xml", xml)

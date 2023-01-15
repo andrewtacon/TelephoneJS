@@ -416,7 +416,7 @@ function transpileDeclarations(node) {
             break;
 
         case "BlockStatement":
-           
+
             return transpileDeclarations(node.body)
 
         case "BreakStatement":
@@ -425,7 +425,7 @@ function transpileDeclarations(node) {
 
         case "CallExpression":
 
-      
+
 
             //this is a call to a function with or with variables
             if (node.callee.type === "Identifier") {
@@ -576,7 +576,7 @@ function transpileDeclarations(node) {
 
                 default:
 
-                    
+
                     //if not MATH then a variable so find variable type and work based off that
                     //components have built in fixed methods
                     //other variable types have different methods
@@ -647,12 +647,12 @@ function transpileDeclarations(node) {
                                     case "launchPicker": //datepicker
                                     case "open": //listpicker
                                     case "refresh":
-                                        return (`(call-component-method '${elementName} '${uppercaseFirstLetter(methodCalled)} (*list-for-runtime*) '()`)
+                                        return (`(call-component-method '${elementName} '${uppercaseFirstLetter(methodCalled)} (*list-for-runtime*) '() )`)
 
                                     //methods with one instant in time input - no return value
                                     //TO DO -> make instants in time 
                                     case "setDateToDisplayFromInstant": //datepicker
-                                        return (`(call-component-method '${elementName} '${uppercaseFirstLetter(methodCalled)} (*list-for-runtime* ${args[0]}) '(InstantInTime)`)
+                                        return (`(call-component-method '${elementName} '${uppercaseFirstLetter(methodCalled)} (*list-for-runtime* ${transpileDeclarations(args[0])}) '(InstantInTime))`)
 
                                     //methods with one text input - no return value
                                     case "showAlert":
@@ -664,7 +664,7 @@ function transpileDeclarations(node) {
                                     //methods with 2 text and an optional true/false (default true) - no return value
                                     case "showPasswordDialog":
                                     case "showTextDialog":
-                                        return (`(call-component-method '${elementName} '${uppercaseFirstLetter(methodCalled)} (*list-for-runtime* ${transpileDeclarations(args[0])} ${transpileDeclarations(args[1])} ${transpileDeclarations(args[2])}) '(text text boolean)`)
+                                        return (`(call-component-method '${elementName} '${uppercaseFirstLetter(methodCalled)} (*list-for-runtime* ${transpileDeclarations(args[0])} ${transpileDeclarations(args[1])} ${transpileDeclarations(args[2])}) '(text text boolean))`)
 
                                     //methods with 3 text inputs - no return value
                                     case "showMessageDialog":
@@ -1118,24 +1118,28 @@ function transpileDeclarations(node) {
                 //Do components first
                 case "component":
 
-//TODO need to make sure that these are legally get-able values for different elements
+                    //TODO need to make sure that these are legally get-able values for different elements
                     //valid for
                     //textbox text
                     //listview selectionDetailText
 
-                    return `(get-property '${MEelementName} '${uppercaseFirstLetter(MemberExpressionProperty)})`
+                    if (uppercaseFirstLetter(MemberExpressionProperty) === "Instant") {
+                        return `(com.google.appinventor.components.runtime.Clock:GetMillis (get-property '${MEelementName} '${uppercaseFirstLetter(MemberExpressionProperty)}) )`
+                    } else {
+                        return `(get-property '${MEelementName} '${uppercaseFirstLetter(MemberExpressionProperty)})`
+                    }
 
-    /*                switch (MemberExpressionProperty) {
-                        case "text":
-
-                            if (MEisVariableOfType === "textbox") {
-                                return `(get-property 'textbox 'Text)`
-
-                            }
-                            //(set-and-coerce-property! 'TextBox1 'Text "text value" 'text)
-                            return ""
-
-                    }*/
+                    /*                switch (MemberExpressionProperty) {
+                                        case "text":
+                
+                                            if (MEisVariableOfType === "textbox") {
+                                                return `(get-property 'textbox 'Text)`
+                
+                                            }
+                                            //(set-and-coerce-property! 'TextBox1 'Text "text value" 'text)
+                                            return ""
+                
+                                    }*/
                     break;
 
                 //then deal with everything else

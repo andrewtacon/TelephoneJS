@@ -22,7 +22,7 @@ let log = console.log
 //////////////////////////
 
 const helperMaker = require("./helpMaker/help")
-//let buildTest =     helperMaker.buildTest("screen")
+//let buildTest =     helperMaker.buildTest("datepicker")
 
 /////////////////////////
 // END TEST /////////////

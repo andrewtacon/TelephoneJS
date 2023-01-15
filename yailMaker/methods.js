@@ -780,11 +780,13 @@ const METHODS = {
     },
     "setDateToDisplay": {
         description: "Allows the user to set the date to be displayed when the date picker opens. Valid values for the month field are 1-12 and 1-31 for the day field.",
-        params: [{ type: "number", name: "year", info: "Valid year number." }, { type: "number", name: "month", info: "Numerical value from 1 to 12. 1-Jan, 2-Feb..." }, { type: "number", name: "day", info: "Day of month between 1 and 31 inclusive." }]
+        params: [{ type: "number", name: "year", info: "Valid year number." }, { type: "number", name: "month", info: "Numerical value from 1 to 12. 1-Jan, 2-Feb..." }, { type: "number", name: "day", info: "Day of month between 1 and 31 inclusive." }],
+        tests: [1980, 2,8]
     },
     "setDateToDisplayFromInstant": {
         description: "Allows the user to set the date from the instant to be displayed when the date picker opens.",
-        params: [{ type: "instant", name: "instant", info: "" }]
+        params: [{ type: "instant", name: "instant", info: "" }],
+        tests:[]
     },
     "setLocation": {
         description: "",
@@ -937,7 +939,7 @@ const METHODS = {
             { type: "string", name: "eventName", info: "The name of the event to listener for." },
             { type: "function", name: "callbackFunction", info: "The function to run when event triggered. Some events have associated values." }
         ],
-        events: {
+        events: { //name, then event code and samples
             "screen": {
                 "backPressed": `
                 screenName.addEventListener(
@@ -988,7 +990,32 @@ const METHODS = {
                         //Your code
                     }
                 )`
+            },
+            "button":{
+                "Button have six events: click, gotFocus, longClick, lostFocus, touchDown, touchUp. All are accessed in the same manner.":
+                `
+                button.addEventListener(
+                    "eventName",
+                    function () {
+                        //Your code here
+                    }
+                )
+                `
+
+            },
+            "checkbox":{
+                "Checkboxes have three events: changed, gotFocus, lostFocus. All are accessed in the same manner.":
+                `
+                button.addEventListener(
+                    "eventName",
+                    function () {
+                        //Your code here
+                    }
+                )
+                `
+
             }
+
         }
     }
 }

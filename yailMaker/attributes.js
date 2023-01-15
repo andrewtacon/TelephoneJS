@@ -7,6 +7,7 @@ let string = "@type {string}"
 let color = "@type {string} An 8 character hexadecimal string using ARBG e.g. 'AARRGGBB'"
 let number = "@type {number}"
 let bool = "@type {boolean}"
+let instant = "@type {instant}"
 
 let getset = "@summary Gets or sets."
 let get = "@summary Read-only."
@@ -92,8 +93,17 @@ const ATTRIBUTES = {
     "Center": [],
     "CenterFromString": ["Text value."],
     "CharacterEncoding": ["Text value."],
-    "Checked": [],
-    "Class": [],
+    "Checked": [
+        bool,
+        getset,
+        "@description Specifies whether the CheckBox should be active and clickable."
+    ],
+    "Class": [
+        string,
+        designer,
+        "@description Sets the design class to apply property settings from a CSS file.",
+        `"TestClass"`
+    ],
     "Clickable": [],
     "CloseScreenAnimation": [
         string, getset,
@@ -102,7 +112,12 @@ const ATTRIBUTES = {
     ],
     "ColorLeft": [],
     "ColorRight": [],
-    "Column": [],
+    "Column": [
+        number,
+        designer,
+        "@description Sets the column position of the component in a table arrangement.",
+        0
+    ],
     "ColumnNames": [],
     "Columns": [],
     "ConsumerKey": ["Text value."],
@@ -116,7 +131,12 @@ const ATTRIBUTES = {
     "CurrentUrl": [],
     "DataType": ["Text value."],
     "DataUri": ["Text value."],
-    "Day": [],
+    "Day": [
+        number,
+        get,
+        "@description Returns the Day of the month that was last picked using the DatePicker.",
+        3
+    ],
     "DefaultFileScope": [
         string,
         "@summary Designer only for screens.",
@@ -144,7 +164,7 @@ const ATTRIBUTES = {
     "EnableZoom": [],
     "Enabled": [
         bool, getset,
-        "@descriptor Specifies whether the Button should be active and clickable.",
+        "@descriptor Specifies whether the component should be active and clickable.",
         true //have to set as true for tests of won't work
     ],
     "EndLatitude": [],
@@ -177,7 +197,7 @@ const ATTRIBUTES = {
     "FontSizeDetail": [],
     "FontTypeface": [
         number, designer,
-        "@description Specifies the text font face of the Button as 'serif', 'sans serif' or 'monospace' if the default is not appropriate.",
+        "@description Specifies the text font face of the component as 'serif', 'sans serif' or 'monospace' if the default is not appropriate.",
         `"monospace"`
     ],
     "FontTypefaceDetail": [],
@@ -195,12 +215,12 @@ const ATTRIBUTES = {
         "@type (number | 'parent' | number%)",
         "@summary Usage depends on component type.",
         `@description For Screens (read only in code): Returns the Screen height in pixels (y-size).
-        @description For Buttons (read/write code only): Specifies the Button’s vertical height, measured in pixels.`,
+        @description For other components (read/write code only): Specifies the Button’s vertical height, measured in pixels.`,
         200
     ],
     "HeightPercent": [
         number, set,
-        "@description Specifies the Button’s vertical height as a percentage of the Screen's Height.",
+        "@description Specifies the component's vertical height as a percentage of the Screen's Height.",
         50
     ],
     "HighByteFirst": [],
@@ -222,18 +242,28 @@ const ATTRIBUTES = {
         "@description The image used for your App’s display icon should be a square png or jpeg image with dimensions up to 1024x1024 pixels. Larger images may cause compiling or installing the app to fail. The build server will generate images of standard dimensions for Android devices.",
         `"cat.png"`
     ],
-    "Id": [],
+    "Id": [
+        string,
+        designer,
+        "@description Sets the id for an component in a CSS file.",
+        `"TestId"`
+    ],
     "IgnoreSslErrors": [],
     "Image": [
         string,
         getset,
-        "@description Specifies the path of the Button’s image. If there is both an Image and a BackgroundColor specified, only the Image will be visible.",
+        "@description Specifies the path of the component’s image. If there is both an Image and a BackgroundColor specified, only the Image will be visible.",
         `"cat.png"`
     ],
     "ImageAsset": ["Text value."],
     "ImageHeight": [],
     "ImageWidth": [],
-    "Instant": [],
+    "Instant": [
+        instant,
+        get,
+        "@description Returns instant of the date that was last picked using the DatePicker in milliseconds since January 1, 1970.",
+        0
+    ],
     "Interval": [],
     "IsAccepting": [],
     "IsConnected": [],
@@ -263,10 +293,24 @@ const ATTRIBUTES = {
     "MinValue": [],
     "MinimumInterval": [],
     "Minute": [],
-    "Month": [],
-    "MonthInText": [],
+    "Month": [
+        number,
+        get,
+        "@description Returns the number of the Month that was last picked using the DatePicker.",
+        2
+    ],
+    "MonthInText": [
+        string,
+        get,
+        "@description Returns the name of the Month that was last picked using the DatePicker.",
+        `"May"`
+    ],
     "MultiLine": [],
-    "Name": [],
+    "Name": [
+        string,
+        designer,
+        "@description Sets the name of the element. This appears as a variable in the JavaScript file."
+    ],
     "Namespace": ["Text value."],
     "NorthLatitude": [],
     "NotifierLength": [],
@@ -337,7 +381,12 @@ const ATTRIBUTES = {
     "Rotates": [],
     "Rotation": [],
     "RotationAngle": [],
-    "Row": [],
+    "Row": [
+        number,
+        designer,
+        "@description Sets the row position of the component in a table arrangement.",
+        0
+    ],
     "Rows": [],
     "SaveResponse": [],
     "SavedRecording": ["Text value."],
@@ -372,7 +421,7 @@ const ATTRIBUTES = {
     "Shape": [
         string,
         designer,
-        "@description Specifies the shape of the Button. The valid values for this property are 'round', 'rectangle', and 'oval'. The Shape will not be visible if an Image is used.",
+        "@description Specifies the shape of the component. The valid values for this property are 'round', 'rectangle', and 'oval'. The Shape will not be visible if an Image is used.",
         `"round"`
 
     ],
@@ -380,7 +429,7 @@ const ATTRIBUTES = {
     "ShowFeedback": [
         bool,
         getset,
-        "@description Specifies if a visual feedback should be shown when a Button with an assigned Image is pressed.",
+        "@description Specifies if a visual feedback should be shown when a component with an assigned Image is pressed.",
         true
     ],
     "ShowFilterBar": [],
@@ -432,13 +481,13 @@ const ATTRIBUTES = {
     "TextAlignment": [
         string,
         designer,
-        "@description Specifies the alignment of the Button’s text. Valid values are: 'left' (left-justified if text is written left to right), 'center', or 'right' (right-justified if text is written left to right).",
+        "@description Specifies the alignment of the component’s text. Valid values are: 'left' (left-justified if text is written left to right), 'center', or 'right' (right-justified if text is written left to right).",
         `"center"`
     ],
     "TextColor": [
         color,
         getset,
-        "@description Specifies the text color of the Button as an alpha-red-green-blue integer.",
+        "@description Specifies the text color of the component as an alpha-red-green-blue integer.",
         `"AA00FFFF"`
     ],
     "TextColorDetail": [],
@@ -504,7 +553,7 @@ const ATTRIBUTES = {
     "Visible": [
         bool,
         getset,
-        "@description Specifies whether the Button should be visible on the screen. Value is true if the Button is showing and false if hidden.",
+        "@description Specifies whether the component should be visible on the screen. Value is true if the Button is showing and false if hidden.",
         true
     ],
     "Volume": [],
@@ -515,12 +564,12 @@ const ATTRIBUTES = {
         "@type (number | 'parent' | number%)",
         "@summary Usage depends on component type.",
         `@description For Screens (read only in code): Returns the Screen width in pixels (x-size).
-        @description For Buttons (read/write in code): Specifies the horizontal width of the Button, measured in pixels.`,
+        @description For other components (read/write in code): Specifies the horizontal width of the Button, measured in pixels.`,
         `"parent"`
     ],
     "WidthPercent": [
         number, set,
-        "@description Specifies the horizontal width of the Button as a percentage of the Screen’s Width.",
+        "@description Specifies the horizontal width of the component as a percentage of the Screen’s Width.",
         80
 
     ],
@@ -534,7 +583,12 @@ const ATTRIBUTES = {
     "YAccel": [],
     "YAngularVelocity": [],
     "YStrength": [],
-    "Year": [],
+    "Year": [
+        number,
+        get,
+        "@description Returns the Year that was last picked using the DatePicker.",
+        1902
+    ],
     "Z": [],
     "ZAccel": [],
     "ZAngularVelocity": [],
@@ -585,6 +639,7 @@ function setAttribute(key, value, name, descriptor, useQuotes = true) {
         case "ImageAsset":
         case "Language":
         case "Message":
+        case "MonthInText":
         case "Namespace":
         case "Platform":
         case "PhoneNumber":
@@ -700,6 +755,7 @@ function setAttribute(key, value, name, descriptor, useQuotes = true) {
         case "ThumbPosition":
         case "Volume":
         case "WestLongitude":
+        case "WidthPercent":
         case "X":
         case "Y":
         case "Z":
@@ -730,12 +786,14 @@ function setAttribute(key, value, name, descriptor, useQuotes = true) {
         case "BufferSize":
         case "Column":
         case "Columns":
+        case "Day":
         case "DelimiterByte":
         case "DistanceInterval": ///limit to 0, 1, 10, 100
         case "ImageHeight":
         case "ImageWidth":
         case "Interval":
         case "MinimumInterval":
+        case "Month":
         case "RedisPort":
         case "RefreshTime":
         case "Row":
@@ -748,6 +806,7 @@ function setAttribute(key, value, name, descriptor, useQuotes = true) {
         case "Timeout":
         case "TimerInterval":
         case "VersionCode":
+        case "Year":
         case "ZoomLevel":
             return setInteger(key, value, name, descriptor);
             break;
@@ -832,6 +891,9 @@ function setAttribute(key, value, name, descriptor, useQuotes = true) {
         case "Style":
             return ""
             break;
+
+        case "Instant":
+            return setInstant(key, value, name, descriptor)
 
         ///These are the get only methods
         case "SelectionDetailText":
@@ -1185,6 +1247,12 @@ function setGeoJSONData(key, value, name, descriptor) {
 
     //TODO - load the data from the GeoJSON file, somehow apply 
 
+}
+
+
+
+function setInstant(key, value, name, descriptor){
+    return `(call-component-method '${name} 'SetDateToDisplayFromInstant (*list-for-runtime* ${value}) '(InstantInTime))`
 }
 
 

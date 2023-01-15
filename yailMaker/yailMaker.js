@@ -38,8 +38,8 @@ let extractedData = []
 let scripts = []
 let screenName =""
 
-fs.writeFileSync("code.scm", "")
 function main(filename = "temp.xml") {
+    fs.writeFileSync("code.scm", "")
 
 
 
