@@ -1017,7 +1017,7 @@ const METHODS = {
             "datepicker":{
                 "Datepickers have five events: afterDateSet, gotFocus, lostFocus, touchDown, touchUp All are accessed in the same manner.":
                 `
-                eventPicker.addEventListener(
+                datePicker.addEventListener(
                     "eventName",
                     function () {
                         //Your code here
@@ -1035,7 +1035,18 @@ const METHODS = {
                     }
                 )
                 `
-            }
+            },
+            "listpicker":{
+                "Listpickers have six events: afterPicking, beforePicking, gotFocus, lostFocus, touchDown, touchUp. All are accessed in the same manner.":
+                `
+                listPicker.addEventListener(
+                    "eventName",
+                    function () {
+                        //Your code here
+                    }
+                )
+                `
+            },
 
         }
     }

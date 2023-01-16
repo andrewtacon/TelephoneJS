@@ -8,6 +8,7 @@ let color = "@type {string} An 8 character hexadecimal string using ARBG e.g. 'A
 let number = "@type {number}"
 let bool = "@type {boolean}"
 let instant = "@type {instant}"
+let list = "@type {array}"
 
 let getset = "@summary Gets or sets."
 let get = "@summary Read-only."
@@ -169,8 +170,18 @@ const ATTRIBUTES = {
     "Draggable": [],
     "EastLongitude": [],
     "ElapsedTime": [],
-    "Elements": [],
-    "ElementsFromString": ["Text value."],
+    "Elements": [
+        list,
+        set,
+        "@description Specifies the list of choices to display.",
+        `["test choice 1", "test choice 2"]`
+    ],
+    "ElementsFromString": [
+        string,
+        set,
+        "@description Set the list of choices from a string of comma-separated values.",
+        `"test choice 1, test choice 2"`
+    ],
     "EmailAddress": [],
     "EmailAddressList": [],
     "EnableInfoBox": [],
@@ -282,7 +293,7 @@ const ATTRIBUTES = {
     "Image": [
         string,
         getset,
-        "@description Specifies the path of the component’s image. If there is both an Image and a BackgroundColor specified, only the Image will be visible.",
+        "@description Specifies the path of the component's image. If there is both an Image and a BackgroundColor specified, only the Image will be visible.",
         `"cat.png"`
     ],
     "ImageAsset": ["Text value."],
@@ -300,8 +311,18 @@ const ATTRIBUTES = {
     "IsInitialized": [],
     "IsOpen": [],
     "IsPlaying": [],
-    "ItemBackgroundColor": [],
-    "ItemTextColor": [],
+    "ItemBackgroundColor": [
+        color,
+        getset,
+        "@description The background color of the ListPicker items.",
+        `"AAFF00F0"`
+    ],
+    "ItemTextColor": [
+        color,
+        getset,
+        "@description The text color of the ListPicker items.",
+        `"AAF0F0F0"`
+    ],
     "KeepRunningWhenOnPause": [],
     "Language": ["Text value."],
     "LastMessage": [],
@@ -462,10 +483,20 @@ const ATTRIBUTES = {
     ],
     "SearchResults": [],
     "Secure": [],
-    "Selection": ["Text value."],
+    "Selection": [
+        string,
+        getset,
+        "@description The selected item. When directly changed by the programmer, the SelectionIndex property is also changed to the first item in the ListPicker with the given value. If the value is not in Elements, SelectionIndex will be set to 0.",
+        `"test choice 1"`
+    ],
     "SelectionColor": [],
     "SelectionDetailText": ["@returns {string} Returns the Secondary or Detail text in the ListView at the position set by SelectionIndex."],
-    "SelectionIndex": ["{number} The index of the currently selected item, starting at 0. If no item is selected, the value will be -1. If an attempt is made to set this to a number less than 0 or greater than the number of items in the ListView minus 1, SelectionIndex will be set to -1, and Selection will be set to the empty text."],
+    "SelectionIndex": [
+        number,
+        getset,
+        "@description Selection index property setter method.",
+        0
+    ],
     "Sensitivity": [],
     "ServiceURL": ["Text value."],
     "Shape": [
@@ -473,7 +504,6 @@ const ATTRIBUTES = {
         designer,
         "@description Specifies the shape of the component. The valid values for this property are 'round', 'rectangle', and 'oval'. The Shape will not be visible if an Image is used.",
         `"round"`
-
     ],
     "ShowCompass": [],
     "ShowFeedback": [
@@ -482,7 +512,12 @@ const ATTRIBUTES = {
         "@description Specifies if a visual feedback should be shown when a component with an assigned Image is pressed.",
         true
     ],
-    "ShowFilterBar": [],
+    "ShowFilterBar": [
+        bool,
+        getset,
+        "@description If true, the ListPicker will show a search filter bar.",
+        true
+    ],
     "ShowListsAsJson": [
         bool,
         designer,
@@ -560,7 +595,8 @@ const ATTRIBUTES = {
     "Title": [
         string,
         getset,
-        "@description Title property setter method: sets a new caption for the form in the form’s title bar.",
+        "@description Screen: Title property setter method: sets a new caption for the form in the form’s title bar.",
+        "@description ListPicker: Optional title displayed at the top of the list of choices.",
         `"Test for title"`
     ],
     "TitleVisible": [
