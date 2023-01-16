@@ -47,12 +47,22 @@ const ATTRIBUTES = {
         `"center"` //center for test
     ],
     "AllowCookies": [],
-    "AlternateText": ["Text value."],
+    "AlternateText": [
+        string,
+        set,
+        "@description A written description of what the image looks like.",
+        `"Text Alternate Text"`
+    ],
     "Altitude": [],
     "AnchorHorizontal": [],
     "AnchorVertical": [],
     "Angle": [],
-    "Animation": [],
+    "Animation": [
+        string,
+        set,
+        "@description This is a limited form of animation that can attach a small number of motion types to images. The allowable motions are 'ScrollRightSlow', 'ScrollRight', 'ScrollRightFast', 'ScrollLeftSlow', 'ScrollLeft', 'ScrollLeftFast', and 'Stop'.",
+        `"ScrollLeftSlow"`
+    ],
     "ApiKey": ["Text value."],
     "AppName": [
         string, designer,
@@ -104,7 +114,12 @@ const ATTRIBUTES = {
         "@description Sets the design class to apply property settings from a CSS file.",
         `"TestClass"`
     ],
-    "Clickable": [],
+    "Clickable": [
+        bool,
+        getset,
+        "@description Specifies whether the image should be clickable or not.",
+        true
+    ],
     "CloseScreenAnimation": [
         string, getset,
         "@description Sets the animation type for this transition of the form. One of 'default', 'fade', 'zoom', 'slidehorizontal', 'slidevertical', 'none'.",
@@ -327,7 +342,12 @@ const ATTRIBUTES = {
     "Passwordvisible": [],
     "PhoneNumber": ["Text value."],
     "PhoneNumberList": [],
-    "Picture": ["Text value."],
+    "Picture": [
+        string,
+        getset,
+        "@description Specifies the path of the Image’s Picture.",
+        `"cat.png"`
+    ],
     "Pitch": [],
     "Platform": [
         code,
@@ -380,7 +400,12 @@ const ATTRIBUTES = {
     "Roll": [],
     "Rotates": [],
     "Rotation": [],
-    "RotationAngle": [],
+    "RotationAngle": [
+        number,
+        getset,
+        "@description The angle at which the image picture appears rotated. This rotation does not appear on the designer screen, only on the device.",
+        45
+    ],
     "Row": [
         number,
         designer,
@@ -390,9 +415,19 @@ const ATTRIBUTES = {
     "Rows": [],
     "SaveResponse": [],
     "SavedRecording": ["Text value."],
-    "ScalePictureToFit": [],
+    "ScalePictureToFit": [
+        bool,
+        set,
+        "@designer Specifies whether the image should be resized to match the size of the ImageView.",
+        true
+    ],
     "ScaleUnits": [],
-    "Scaling": [],
+    "Scaling": [
+        number,
+        set,
+        "@designer This property determines how the picture scales according to the Height or Width of the Image. Scale proportionally (0) preserves the picture aspect ratio. Scale to fit (1) matches the Image area, even if the aspect ratio changes.",
+        1
+    ],
     "Scope": [],
     "ScreenOrientation": [
         string,
@@ -614,6 +649,7 @@ function setAttribute(key, value, name, descriptor, useQuotes = true) {
         case "ActivityClass":
         case "ActivityPackage":
         case "AlternateText":
+        case "Animation":
         case "ApiKey":
         case "ApplicationName":
         case "AppName":
@@ -744,6 +780,7 @@ function setAttribute(key, value, name, descriptor, useQuotes = true) {
         case "Radius": //there are cases where this should be an integer - hope this doesn't break anything
         case "Rotation":
         case "RotationAngle":
+        case "Scaling":
         case "SouthLatitude":
         case "SpeechRate":
         case "Speed":
@@ -1251,7 +1288,7 @@ function setGeoJSONData(key, value, name, descriptor) {
 
 
 
-function setInstant(key, value, name, descriptor){
+function setInstant(key, value, name, descriptor) {
     return `(call-component-method '${name} 'SetDateToDisplayFromInstant (*list-for-runtime* ${value}) '(InstantInTime))`
 }
 

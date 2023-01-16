@@ -40,6 +40,7 @@ function main(filename, elementList) {
             let methods = ""
             for (let a = 0; a < element.methods.length; a++) {
                 let method = element.methods[a]
+
                 let methodDocs = METHODS[method]
                 let methodDoc = ""
                 methodDoc += `\n/**\n`
@@ -71,6 +72,7 @@ function main(filename, elementList) {
 
                 methodDoc += `*/\n`
                 paramList = paramList.substring(1).trim()
+
                 methods += `${methodDoc}${method}(${paramList}){};\n`
             }
 

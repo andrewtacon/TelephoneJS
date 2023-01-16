@@ -1013,7 +1013,28 @@ const METHODS = {
                     }
                 )
                 `
-
+            },
+            "datepicker":{
+                "Datepickers have five events: afterDateSet, gotFocus, lostFocus, touchDown, touchUp All are accessed in the same manner.":
+                `
+                eventPicker.addEventListener(
+                    "eventName",
+                    function () {
+                        //Your code here
+                    }
+                )
+                `
+            },
+            "image" :{
+                "Images have one event: click.":
+                `
+                image.addEventListener(
+                    "click",
+                    function () {
+                        //Your code here
+                    }
+                )
+                `
             }
 
         }
