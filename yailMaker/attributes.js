@@ -219,12 +219,27 @@ const ATTRIBUTES = {
     "FriendTimeline": [],
     "FullScreen": [],
     "GoogleVoiceEnabled": [],
-    "HTMLContent": [],
-    "HTMLFormat": [],
+    "HTMLContent": [
+        string,
+        get,
+        "@decription Returns the content of the Label as HTML. This is only useful if the HTMLFormat property is true.",
+        `"Test HTML Content"`
+    ],
+    "HTMLFormat": [
+        bool,
+        designer,
+        "@description Specifies the label’s text’s format.",
+        true
+    ],
     "HasAccuracy": [],
     "HasAltitude": [],
     "HasLongitudeLatitude": [],
-    "HasMargins": [],
+    "HasMargins": [
+        bool,
+        getset,
+        "@description Specifies whether the label should have margins. This margin value is not well coordinated with the designer, where the margins are defined for the arrangement, not just for individual labels.",
+        true
+    ],
     "Heading": [],
     "Height": [
         "@type (number | 'parent' | number%)",
@@ -670,6 +685,7 @@ function setAttribute(key, value, name, descriptor, useQuotes = true) {
         case "Hint":
         case "HolePointsFromString":
         case "HomeUrl":
+        case "HTMLContent":
         case "Icon":
         case "Image":
         case "ImageAsset":
