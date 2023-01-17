@@ -172,7 +172,14 @@ const METHODS = {
     },
     "createElement": {
         description: "Creates an element in a listview.",
-        params: [{ type: "string", name: "mainText", info: "" }, { type: "string", name: "detailText", info: "" }, { type: "string", name: "imageName", info: "" }]
+        params: [
+            { type: "string", name: "mainText", info: "" }, 
+            { type: "string", name: "detailText", info: "" }, 
+            { type: "string", name: "imageName", info: "" }
+        ],
+        tests:[
+            "mainText", "detailText", "cat.png"
+        ]
     },
     "createMarker": {
         description: "",
@@ -303,21 +310,26 @@ const METHODS = {
         params: []
     },
     "getDetailText": {
-        description: "",
-        params: []
+        description: "Get the Detail Text of a ListView element. @returns {string}",
+        params: [
+            { type: "number", name: "ListElementIndex", info: "" }
+        ]
     },
     "getDuration": {
         description: "",
         params: []
     },
     "getImageName": {
-        description: "",
-        params: []
+        description: "Get the filename of the image of a ListView element that has been uploaded to Media. @returns {string}",
+        params: [
+            { type: "number", name: "ListElementIndex", info: "" }
+        ]
     },
     "getMainText": {
-        description: "",
-        params: []
-    },
+        description: "Get the Main Text of a ListView element. @returns {string}",
+        params: [
+            { type: "number", name: "ListElementIndex", info: "" }
+        ]    },
     "getMillis": {
         description: "",
         params: []
@@ -651,7 +663,7 @@ const METHODS = {
         params: []
     },
     "refresh": {
-        description: "",
+        description: "Reload the ListView to reflect any changes in the data.",
         params: []
     },
     "reload": {
@@ -1041,6 +1053,17 @@ const METHODS = {
                 `
                 listPicker.addEventListener(
                     "eventName",
+                    function () {
+                        //Your code here
+                    }
+                )
+                `
+            },
+            "listview":{
+                "Listviews have one events: afterPicking. Simple event to be raised after the an element has been chosen in the list. The selected element is available in the Selection property.":
+                `
+                listview.addEventListener(
+                    "afterPicking",
                     function () {
                         //Your code here
                     }

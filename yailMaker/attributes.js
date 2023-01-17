@@ -1,3 +1,4 @@
+const fs = require('fs')
 
 //Attributes and their synonyms
 //the key is the value that the YAIL code requires (it is not case sensitive for the XML designs)
@@ -173,14 +174,23 @@ const ATTRIBUTES = {
     "Elements": [
         list,
         set,
-        "@description Specifies the list of choices to display.",
-        `["test choice 1", "test choice 2"]`
+        "@description Specifies the list of choices to display. This is an array of elements.",
+        `@example 
+            listview.elements = [
+                {
+                    Text1: "mainText",
+                    Text2: "detailText",
+                    Image:" Image file name"
+                }
+            ]
+        `,
+        `"[{\"Text1\":\"cat\", \"$H\":41001, \"Text2\":\"detail test\", \"Image\":\"cat.png\"}]"`
     ],
     "ElementsFromString": [
         string,
         set,
         "@description Set the list of choices from a string of comma-separated values.",
-        `"test choice 1, test choice 2"`
+        `"'test choice 1', 'cat.png'"`
     ],
     "EmailAddress": [],
     "EmailAddressList": [],
@@ -220,13 +230,22 @@ const ATTRIBUTES = {
         "@description Specifies the text font size of the component, measured in sp(scale-independent pixels).",
         24
     ],
-    "FontSizeDetail": [],
+    "FontSizeDetail": [
+        number,
+        getset,
+        "@description Specifies the ListView item’s text font size",
+        18
+    ],
     "FontTypeface": [
         number, designer,
         "@description Specifies the text font face of the component as 'serif', 'sans serif' or 'monospace' if the default is not appropriate.",
         `"monospace"`
     ],
-    "FontTypefaceDetail": [],
+    "FontTypefaceDetail": [
+        number, designer,
+        "@description Specifies the text font face of the component as 'serif', 'sans serif' or 'monospace' if the default is not appropriate.",
+        `"monospace"`
+    ],
     "FriendTimeline": [],
     "FullScreen": [],
     "GoogleVoiceEnabled": [],
@@ -297,8 +316,18 @@ const ATTRIBUTES = {
         `"cat.png"`
     ],
     "ImageAsset": ["Text value."],
-    "ImageHeight": [],
-    "ImageWidth": [],
+    "ImageHeight": [
+        number,
+        getset,
+        "@description Specifies the image height of ListView layouts containing images.",
+        50
+    ],
+    "ImageWidth": [
+        number,
+        getset,
+        "@description Specifies the image width of ListView layouts containing images.",
+        50
+    ],
     "Instant": [
         instant,
         get,
@@ -329,8 +358,18 @@ const ATTRIBUTES = {
     "Latitude": [],
     "LegacyMode": [],
     "LineWidth": [],
-    "ListData": [],
-    "ListViewLayout": [],
+    "ListData": [
+        string,
+        designer,
+        "@description Specifies data to be displayed in the ListView elements. This property sets the elements specified in ListViewLayout. For example, if the chosen layout is Image,MainText this property will allow any number of elements to be defined, each containing a filename for Image and a string for MainText. Designer only property.",
+        `"[{\"Text1\":\"cat\", \"$H\":41001, \"Text2\":\"detail test\", \"Image\":\"cat.png\"}]"`
+    ],
+    "ListViewLayout": [
+        string,
+        designer,
+        "@description Specifies type of layout for ListView row. Designer only property. Options are 'text', 'text_detail', 'text_detail_horz', 'image_text', 'image_text_detail'.",
+        `"image_text"`
+    ],
     "LocationSensor": [],
     "Longitude": [],
     "Loop": [],
@@ -372,7 +411,12 @@ const ATTRIBUTES = {
         "@description Sets the animation type for this transition of the form. One of 'default', 'fade', 'zoom', 'slidehorizontal', 'slidevertical', 'none'.",
         `"fade"`
     ],
-    "Orientation": [],
+    "Orientation": [
+        string,
+        getset,
+        "@description Specifies the component's orientation. This may be: Vertical, which displays elements in rows one after the other; or Horizontal, which displays one element at a time and allows the user to swipe left or right to brows the elements.",
+        `"vertical"`
+    ],
     "OriginAtCenter": [],
     "PaintColor": [],
     "Passwordvisible": [],
@@ -485,16 +529,26 @@ const ATTRIBUTES = {
     "Secure": [],
     "Selection": [
         string,
-        getset,
-        "@description The selected item. When directly changed by the programmer, the SelectionIndex property is also changed to the first item in the ListPicker with the given value. If the value is not in Elements, SelectionIndex will be set to 0.",
+        get,
+        "@description The selected item. When directly changed by the programmer, the SelectionIndex property is also changed to the first item in the ListPicker with the given value. If the value is not in Elements, SelectionIndex will be set to 0. WARNING: This cannot be used until the screen is initialised. This cannot be set.",
         `"test choice 1"`
     ],
-    "SelectionColor": [],
-    "SelectionDetailText": ["@returns {string} Returns the Secondary or Detail text in the ListView at the position set by SelectionIndex."],
+    "SelectionColor": [
+        color,
+        getset,
+        "@description he color of the item when it is selected.",
+        `"DDAA2288"`
+    ],
+    "SelectionDetailText": [
+        string,
+        get,
+        "@description Returns the Secondary or Detail text in the ListView at the position set by SelectionIndex. WARNING: This cannot be used until the screen is initialised. It cannot be set.",
+        `"Test selection detail text"`
+    ],
     "SelectionIndex": [
         number,
         getset,
-        "@description Selection index property setter method.",
+        "@description Selection index property setter method. WARNING: This cannot be used in code until after the screen is initialised, except if it is used in the XML screen file.",
         0
     ],
     "Sensitivity": [],
@@ -575,9 +629,19 @@ const ATTRIBUTES = {
         "@description Specifies the text color of the component as an alpha-red-green-blue integer.",
         `"AA00FFFF"`
     ],
-    "TextColorDetail": [],
+    "TextColorDetail": [
+        color,
+        getset,
+        "@description Specifies the color of the secondary text in a ListView layout.",
+        `"AA22FF44"`
+    ],
     "TextToWrite": [],
-    "Textsize": [],
+    "TextSize": [
+        number,
+        getset,
+        "@description Specifies the ListView item’s text font size.",
+        18
+    ],
     "Theme": [
         string,
         designer,
@@ -950,7 +1014,7 @@ function setAttribute(key, value, name, descriptor, useQuotes = true) {
             return fromList(key, value, name, ['left', 'center', 'right'], "TextAlignment")
             break;
         case "Orientation":
-            return fromList(key, value, name, ['vertical', 'horizontal'], "Orientation")
+            return fromList(key, value, name, [ 'horizontal','vertical'], "Orientation")
             break;
         case "NotifierLength":
             return fromList(key, value, name, ['short', 'long'], "NotifierLength")
@@ -983,6 +1047,10 @@ function setAttribute(key, value, name, descriptor, useQuotes = true) {
 
         case "Instant":
             return setInstant(key, value, name, descriptor)
+
+        case "Elements":
+            return setFromObject(key, value, name, descriptor)
+
 
         ///These are the get only methods
         case "SelectionDetailText":
@@ -1109,7 +1177,15 @@ function setInteger(key, value, name, descriptor) {
         }
     }
 
+
     value = parseInt(value)
+
+    if (descriptor === "SelectionIndex") {
+        value = value +1 
+    }
+
+
+
     if (!isNaN(value)) {
         return `\n\t(set-and-coerce-property! '${name} '${descriptor} ${value} 'number)`
     } else {
@@ -1143,10 +1219,10 @@ function fromList(key, value, name, options, descriptor) {
 
         //special case
         if (descriptor === "TextAlignment" || descriptor === "ListViewLayout") { index-- }
-        if (descriptor === "Orientation") { if (index !== 1) { return } } //only send through request for horizonatal, vertical is default
-        if (descriptor === "NotifierLength") { if (index !== 0) { return } } //only send through request for short, long is default
-        if (descriptor === "MapType" || descriptor === "ScaleUnits") { if (index === 0) { return } }
-        if (descriptor === "Sensitivity") { if (index === 2) { } return }
+       // if (descriptor === "Orientation") { if (index !== 1) { return ""} } //only send through request for horizonatal, vertical is default
+        if (descriptor === "NotifierLength") { if (index !== 0) { return ""} } //only send through request for short, long is default
+        if (descriptor === "MapType" || descriptor === "ScaleUnits") { if (index === 0) { return ""} }
+        if (descriptor === "Sensitivity") { if (index === 2) { } return ""}
 
         return `\n\t(set-and-coerce-property! '${name} '${descriptor} ${index} 'number)`
     }
@@ -1343,6 +1419,17 @@ function setGeoJSONData(key, value, name, descriptor) {
 function setInstant(key, value, name, descriptor) {
     return `(call-component-method '${name} 'SetDateToDisplayFromInstant (*list-for-runtime* ${value}) '(InstantInTime))`
 }
+
+
+function setFromObject(key, value, name, descriptor) {
+
+   // value = JSON.stringify(value)
+    
+    return `\n\t(set-and-coerce-property! '${name} '${descriptor} ${value} 'list)`
+
+}
+
+
 
 
 exports.setAttribute = setAttribute

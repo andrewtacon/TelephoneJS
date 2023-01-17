@@ -140,6 +140,7 @@ function buildTest(el) {
         let attCase = att[0].toUpperCase() + att.substring(1, att.length)
         let attInfo = ATTRIBUTES[`${attCase}`]
 
+        console.log(att)
       //  let test = attInfo
 
    /*     if (!Array.isArray(attInfo)) {
@@ -216,11 +217,12 @@ function buildTest(el) {
 
     for (let a = 0; a < element.methods.length; a++) {
         let method = element.methods[a]
-        if (method === "addEventListener") { continue }    
+        if (method === "addEventListener" || el==="listview") { continue }    
         let detail = METHODS[method]
         if (detail.params.length === 0) { //no input parameters
             tests += `${el}1.${method}()\n`
         } else {
+            console.log(detail)
             tests += `${el}1.${method}(${detail.tests.join(", ")})\n`
         }
 

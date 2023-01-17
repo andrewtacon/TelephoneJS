@@ -491,3 +491,68 @@ exports.listAppend =
 `
 
 
+exports.getDetailText =
+`
+(define 
+    (getDetailText component index)
+    (call-component-method 
+        component
+        'GetDetailText 
+        (*list-for-runtime* 
+            (call-yail-primitive yail-list-get-item 
+                (*list-for-runtime* 
+                    (get-property component 'Elements) 
+                    (+ index 1)
+                ) 
+                '(list number) 
+                "select list item"
+            )
+        ) 
+        '(dictionary)
+    )
+)
+`
+
+exports.getMainText =
+`
+(define 
+    (getMainText component index)
+    (call-component-method 
+        component 
+        'GetMainText 
+        (*list-for-runtime* 
+            (call-yail-primitive yail-list-get-item 
+                (*list-for-runtime* 
+                    (get-property component 'Elements) 
+                    (+ index 1)
+                ) 
+                '(list number) 
+                "select list item"
+            )
+        ) 
+        '(dictionary)
+    )
+)
+`
+
+exports.getImageName =
+`
+(define 
+    (getImageName component index)
+    (call-component-method 
+        component 
+        'GetImageName 
+        (*list-for-runtime* 
+            (call-yail-primitive yail-list-get-item 
+                (*list-for-runtime* 
+                    (get-property component 'Elements) 
+                    (+ index 1)
+                ) 
+                '(list number) 
+                "select list item"
+            )
+        ) 
+        '(dictionary)
+    )
+)
+`

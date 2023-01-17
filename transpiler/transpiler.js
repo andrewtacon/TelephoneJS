@@ -683,7 +683,21 @@ function transpileDeclarations(node) {
                                     case "showChooseDialog":
                                         return (`(call-component-method '${elementName} '${uppercaseFirstLetter(methodCalled)} (*list-for-runtime* ${transpileDeclarations(args[0])} ${transpileDeclarations(args[1])} ${transpileDeclarations(args[2])} ${transpileDeclarations(args[3])} ${transpileDeclarations(args[4])}) '(text text text text boolean))`)
 
+                                    //listView Methods
+                                    case "getDetailText":
+                                        proceduresUsed.add(procedures.getDetailText)
+                                        return (`(getDetailText '${elementName} ${transpileDeclarations(args[0])})`)
+                                    case "getMainText":
+                                        proceduresUsed.add(procedures.getMainText)
+                                        return (`(getMainText '${elementName} ${transpileDeclarations(args[0])})`)
+                                    case "getImageName":
+                                        proceduresUsed.add(procedures.getImageName)
+                                        return (`(getImageName '${elementName} ${transpileDeclarations(args[0])})`)
+                                    case "refresh":
+                                        return `(call-component-method '${elementName} 'Refresh (*list-for-runtime*) '())`
+
                                     default:
+                                        console.log(`Method "${methodCalled}" not defined in transpiler for component of type "${isVariableOfType}"`)
                                 }
                             } // case "component"
 
@@ -1122,9 +1136,11 @@ function transpileDeclarations(node) {
                     //valid for
                     //textbox text
                     //listview selectionDetailText
-
-                    if (uppercaseFirstLetter(MemberExpressionProperty) === "Instant") {
+                    let propertyRequested = uppercaseFirstLetter(MemberExpressionProperty)
+                    if (propertyRequested === "Instant") {
                         return `(com.google.appinventor.components.runtime.Clock:GetMillis (get-property '${MEelementName} '${uppercaseFirstLetter(MemberExpressionProperty)}) )`
+                    } else if (propertyRequested === "SelectionIndex") {
+                        return `(- (get-property '${MEelementName} '${uppercaseFirstLetter(MemberExpressionProperty)}) 1)`  //subtract 1 to keep zero indexes in JS
                     } else {
                         return `(get-property '${MEelementName} '${uppercaseFirstLetter(MemberExpressionProperty)})`
                     }
