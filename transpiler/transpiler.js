@@ -661,6 +661,12 @@ function transpileDeclarations(node) {
                                     case "logError":
                                         return (`\n(call-component-method '${elementName} '${uppercaseFirstLetter(methodCalled)}  (*list-for-runtime*  ${transpileDeclarations(args[0])} )  '(text))`)
 
+                                    //methods with two text input - no return value
+                                    case "showProgressDialog":
+                                        return (`\n(call-component-method '${elementName} '${uppercaseFirstLetter(methodCalled)}  (*list-for-runtime*  ${transpileDeclarations(args[0])}  ${transpileDeclarations(args[1])})  '(text text))`)
+
+
+
                                     //methods with 2 text and an optional true/false (default true) - no return value
                                     case "showPasswordDialog":
                                     case "showTextDialog":

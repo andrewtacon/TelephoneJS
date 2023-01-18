@@ -361,8 +361,8 @@ const ATTRIBUTES = {
     "ListData": [
         string,
         designer,
-        "@description Specifies data to be displayed in the ListView elements. This property sets the elements specified in ListViewLayout. For example, if the chosen layout is Image,MainText this property will allow any number of elements to be defined, each containing a filename for Image and a string for MainText. Designer only property.",
-        `"[{\"Text1\":\"cat\", \"$H\":41001, \"Text2\":\"detail test\", \"Image\":\"cat.png\"}]"`
+        "@description Specifies filename for data to be displayed in the ListView elements. File is a text file with mainText, detailText, imageName for each element in the list on seperate lines.",
+        `"data.csv"`
     ],
     "ListViewLayout": [
         string,
@@ -403,7 +403,12 @@ const ATTRIBUTES = {
     ],
     "Namespace": ["Text value."],
     "NorthLatitude": [],
-    "NotifierLength": [],
+    "NotifierLength": [
+        string,
+        designer,
+        `@description Specifies the length of time that the alert is shown either “short” or “long”.`,
+        '"short"'
+    ],
     "NumbersOnly": [],
     "On": [],
     "OpenScreenAnimation": [

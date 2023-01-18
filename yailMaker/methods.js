@@ -173,11 +173,11 @@ const METHODS = {
     "createElement": {
         description: "Creates an element in a listview.",
         params: [
-            { type: "string", name: "mainText", info: "" }, 
-            { type: "string", name: "detailText", info: "" }, 
+            { type: "string", name: "mainText", info: "" },
+            { type: "string", name: "detailText", info: "" },
             { type: "string", name: "imageName", info: "" }
         ],
-        tests:[
+        tests: [
             "mainText", "detailText", "cat.png"
         ]
     },
@@ -206,7 +206,7 @@ const METHODS = {
         params: []
     },
     "dismissProgressDialog": {
-        description: "",
+        description: "Dismisses the alert created by the ShowProgressDialog block",
         params: []
     },
     "distanceToFeature": {
@@ -329,7 +329,8 @@ const METHODS = {
         description: "Get the Main Text of a ListView element. @returns {string}",
         params: [
             { type: "number", name: "ListElementIndex", info: "" }
-        ]    },
+        ]
+    },
     "getMillis": {
         description: "",
         params: []
@@ -431,16 +432,31 @@ const METHODS = {
         params: []
     },
     "logError": {
-        description: "",
-        params: []
+        description: "Writes an error message to the Android system log. See the Google Android documentation for how to access the log.",
+        params: [
+            { type: "string", name: "errorMessage", info: "" }
+        ],
+        tests: [
+            `"Test Error Message"`
+        ]
     },
     "logInfo": {
-        description: "",
-        params: []
+        description: "Writes an information message to the Android log.",
+        params: [
+            { type: "string", name: "logMessage", info: "" }
+        ],
+        tests: [
+            `"Test Log Message"`
+        ]
     },
     "logWarning": {
-        description: "",
-        params: []
+        description: "Writes a warning message to the Android log. See the Google Android documentation for how to access the log.",
+        params: [
+            { type: "string", name: "warningMessage", info: "" }
+        ],
+        tests: [
+            `"Test Warning Message"`
+        ]
     },
     "longitudeFromAddress": {
         description: "",
@@ -793,12 +809,12 @@ const METHODS = {
     "setDateToDisplay": {
         description: "Allows the user to set the date to be displayed when the date picker opens. Valid values for the month field are 1-12 and 1-31 for the day field.",
         params: [{ type: "number", name: "year", info: "Valid year number." }, { type: "number", name: "month", info: "Numerical value from 1 to 12. 1-Jan, 2-Feb..." }, { type: "number", name: "day", info: "Day of month between 1 and 31 inclusive." }],
-        tests: [1980, 2,8]
+        tests: [1980, 2, 8]
     },
     "setDateToDisplayFromInstant": {
         description: "Allows the user to set the date from the instant to be displayed when the date picker opens.",
         params: [{ type: "instant", name: "instant", info: "" }],
-        tests:[]
+        tests: []
     },
     "setLocation": {
         description: "",
@@ -824,37 +840,78 @@ const METHODS = {
         description: "",
         params: []
     },
-    "shoInfobox": {
+    "showInfobox": {
         description: "",
         params: []
     },
     "showAlert": {
-        description: "",
-        params: []
+        description: "Display a temporary notification.",
+        params: [
+            { type: "string", name: "notice", info: "" }
+        ],
+        tests: [
+            `"Test Notice"`
+        ]
     },
     "showChooseDialog": {
-        description: "",
-        params: []
+        description: "Shows a dialog box with two buttons, from which the user can choose. If cancelable is true there will be an additional CANCEL button. Pressing a button will raise the AfterChoosing event. The “choice” parameter to AfterChoosing will be the text on the button that was pressed, or “Cancel” if the CANCEL button was pressed. If canceled, the TextInputCanceled event will also run.",
+        params: [
+            { type: "string", name: "message", info: "" },
+            { type: "string", name: "title", info: "" },
+            { type: "string", name: "button1Text", info: "" },
+            { type: "string", name: "button2Text", info: "" },
+            { type: "boolean", name: "cancelable", info: "" }
+        ],
+        tests: [
+            `"Choose Message"`, `"Choose Title"`, `"Button 1"`, `"Button 2"`, true
+        ]    
     },
     "showInfobox": {
         description: "",
         params: []
     },
     "showMessageDialog": {
-        description: "",
-        params: []
+        description: "Display an alert dialog with a single button that dismisses the alert.",
+        params: [
+            { type: "string", name: "message", info: "" },
+            { type: "string", name: "title", info: "" },
+            { type: "string", name: "buttonText", info: "" }
+        ],
+        tests: [
+            `"Message"`, `"Title"`, `"Button Text"`
+        ]    
     },
     "showPasswordDialog": {
-        description: "",
-        params: []
+        description: "Shows a dialog box where the user can enter password (input is masked), after which the AfterTextInput event will be raised. If cancelable is true there will be an additional CANCEL button. The AfterTextInput and TextInputCanceled events behave the same way as described in ShowTextDialog.",
+        params: [
+            { type: "string", name: "message", info: "" },
+            { type: "string", name: "title", info: "" },
+            { type: "boolean", name: "cancelable", info: "" }
+        ],
+        tests: [
+            `"Message"`, `"Title"`, true
+        ]    
     },
     "showProgressDialog": {
-        description: "",
-        params: []
+        description: "Shows a dialog box with an optional title and message (use empty strings if they are not wanted). This dialog box contains a spinning artifact to indicate that the program is working. It cannot be canceled by the user but must be dismissed by the App Inventor Program by using the DismissProgressDialog method.",
+        params: [
+            { type: "string", name: "message", info: "" },
+            { type: "string", name: "title", info: "" }
+        ],
+        tests: [
+            `"Message"`, `"Title"`
+        ]   
     },
     "showTextDialog": {
-        description: "",
-        params: []
+        description: "Shows a dialog box where the user can enter text, after which the AfterTextInput event will be raised. If cancelable is true there will be an additional CANCEL button. Entering text will raise the AfterTextInput event. The “response” parameter to AfterTextInput will be the text that was entered, or “Cancel” if the CANCEL button was pressed. If canceled, the TextInputCanceled event will also run.",
+        params: [
+            { type: "string", name: "message", info: "" },
+            { type: "string", name: "title", info: "" },
+            { type: "boolean", name: "cancelable", info: "" }
+        ],
+        tests: [
+            `"Message"`, `"Title"`, true
+        ]    
     },
     "speak": {
         description: "",
@@ -1003,9 +1060,9 @@ const METHODS = {
                     }
                 )`
             },
-            "button":{
+            "button": {
                 "Button have six events: click, gotFocus, longClick, lostFocus, touchDown, touchUp. All are accessed in the same manner.":
-                `
+                    `
                 button.addEventListener(
                     "eventName",
                     function () {
@@ -1015,9 +1072,9 @@ const METHODS = {
                 `
 
             },
-            "checkbox":{
+            "checkbox": {
                 "Checkboxes have three events: changed, gotFocus, lostFocus. All are accessed in the same manner.":
-                `
+                    `
                 button.addEventListener(
                     "eventName",
                     function () {
@@ -1026,9 +1083,9 @@ const METHODS = {
                 )
                 `
             },
-            "datepicker":{
+            "datepicker": {
                 "Datepickers have five events: afterDateSet, gotFocus, lostFocus, touchDown, touchUp All are accessed in the same manner.":
-                `
+                    `
                 datePicker.addEventListener(
                     "eventName",
                     function () {
@@ -1037,9 +1094,9 @@ const METHODS = {
                 )
                 `
             },
-            "image" :{
+            "image": {
                 "Images have one event: click.":
-                `
+                    `
                 image.addEventListener(
                     "click",
                     function () {
@@ -1048,9 +1105,9 @@ const METHODS = {
                 )
                 `
             },
-            "listpicker":{
+            "listpicker": {
                 "Listpickers have six events: afterPicking, beforePicking, gotFocus, lostFocus, touchDown, touchUp. All are accessed in the same manner.":
-                `
+                    `
                 listPicker.addEventListener(
                     "eventName",
                     function () {
@@ -1059,9 +1116,9 @@ const METHODS = {
                 )
                 `
             },
-            "listview":{
+            "listview": {
                 "Listviews have one events: afterPicking. Simple event to be raised after the an element has been chosen in the list. The selected element is available in the Selection property.":
-                `
+                    `
                 listview.addEventListener(
                     "afterPicking",
                     function () {
@@ -1070,7 +1127,36 @@ const METHODS = {
                 )
                 `
             },
-
+            "notifier": {
+                "afterChoosing: Event after the user has made a selection for ShowChooseDialog.": `
+                notifier.addEventListener(
+                    "afterChoosing",
+                    function(choice){
+                        //Your code
+                    }
+                )`,
+                "afterTextInput: Event raised after the user has responded to ShowTextDialog.": `
+                notifier.addEventListener(
+                    "afterTextInput",
+                    function(response){
+                        //Your code
+                    }
+                )`,
+                "choosingCanceled: Event raised when the user cancels choosing an option. ShowChooseDialog.": `
+                notifier.addEventListener(
+                    "choosingCanceled",
+                    function(){
+                        //Your code
+                    }
+                )`,
+                "textInputCanceled: Event raised when the user cancels ShowPasswordDialog, or ShowTextDialog.": `
+                notifier.addEventListener(
+                    "textInputCanceled",
+                    function(){
+                        //Your code
+                    }
+                )`
+            },
         }
     }
 }
