@@ -1,4 +1,5 @@
 const fs = require('fs')
+const { getSystemErrorMap } = require('util')
 
 //Attributes and their synonyms
 //the key is the value that the YAIL code requires (it is not case sensitive for the XML designs)
@@ -127,8 +128,19 @@ const ATTRIBUTES = {
         "@description Sets the animation type for this transition of the form. One of 'default', 'fade', 'zoom', 'slidehorizontal', 'slidevertical', 'none'.",
         `"slidevertical"` //testcase
     ],
-    "ColorLeft": [],
-    "ColorRight": [],
+    "ColorLeft": [
+        color,
+        getset,
+        "@description Specifies the color of the slider bar to the left of the thumb as an alpha-red-green-blue integer, i.e., AARRGGBB. An alpha of 00 indicates fully transparent and FF means opaque.",
+        `"DDDDEEDD"`
+    ],
+    "ColorRight": [
+        color,
+        getset,
+        "@description Specifies the color of the slider bar to the right of the thumb as an alpha-red-green-blue integer, i.e., AARRGGBB. An alpha of 00 indicates fully transparent and FF means opaque.",
+        `"DDDD11DD"`
+
+    ],
     "Column": [
         number,
         designer,
@@ -290,7 +302,12 @@ const ATTRIBUTES = {
         "@description When true, there will be high contrast mode turned on.",
         true
     ],
-    "Hint": ["Text value."],
+    "Hint": [
+        string,
+        getset,
+        "@description Textbox or Password hint for the user.",
+        `"Password hint test"`
+    ],
     "HolePoints": [],
     "HolePointsFromString": ["Text value."],
     "HomeUrl": ["Text value."],
@@ -376,11 +393,21 @@ const ATTRIBUTES = {
     "Lux": [],
     "Magnitude": [],
     "MapType": [],
-    "MaxValue": [],
+    "MaxValue": [
+        number,
+        getset,
+        "@description Sets the maximum value of slider. If the new maximum is less than the current minimum, then minimum and maximum will both be set to this value. Setting MaxValue resets the thumb position to halfway between MinValue and MaxValue and signals the PositionChanged` event.",
+        275
+    ],
     "MaximumRange": [],
     "Mentions": [],
     "Message": ["Text value."],
-    "MinValue": [],
+    "MinValue": [
+        number,
+        getset,
+        "@description Sets the minimum value of slider. If the new minimum is greater than the current maximum, then minimum and maximum will both be set to this value. Setting MinValue resets the thumb position to halfway between MinValue and MaxValue and signals the PositionChanged` event.",
+        125
+    ],
     "MinimumInterval": [],
     "Minute": [],
     "Month": [
@@ -395,7 +422,12 @@ const ATTRIBUTES = {
         "@description Returns the name of the Month that was last picked using the DatePicker.",
         `"May"`
     ],
-    "MultiLine": [],
+    "MultiLine": [
+        bool,
+        getset,
+        "@description If true, then this TextBox accepts multiple lines of input, which are entered using the return key. For single line text boxes there is a Done key instead of a return key, and pressing Done hides the keyboard. The app should call the HideKeyboard method to hide the keyboard for a mutiline text box.",
+        true
+    ],
     "Name": [
         string,
         designer,
@@ -409,8 +441,18 @@ const ATTRIBUTES = {
         `@description Specifies the length of time that the alert is shown either “short” or “long”.`,
         '"short"'
     ],
-    "NumbersOnly": [],
-    "On": [],
+    "NumbersOnly": [
+        bool,
+        getset,
+        "@description If true, then this TextBox or PasswordTextBox accepts only numbers as keyboard input. Numbers can include a decimal point and an optional leading minus sign. This applies to keyboard input only. Even if NumbersOnly is true, you can set the text to anything at all using the [Text`](#PasswordTextBox.Text) property.",
+        true
+    ],
+    "On": [
+        bool,
+        getset,
+        "@description True if the switch is in the On state, false otherwise.",
+        true
+    ],
     "OpenScreenAnimation": [
         string, getset,
         "@description Sets the animation type for this transition of the form. One of 'default', 'fade', 'zoom', 'slidehorizontal', 'slidevertical', 'none'.",
@@ -424,7 +466,12 @@ const ATTRIBUTES = {
     ],
     "OriginAtCenter": [],
     "PaintColor": [],
-    "Passwordvisible": [],
+    "PasswordVisible": [
+        bool,
+        set,
+        "@description Specifies whether the password is hidden (default) or shown.",
+        true
+    ],
     "PhoneNumber": ["Text value."],
     "PhoneNumberList": [],
     "Picture": [
@@ -463,13 +510,23 @@ const ATTRIBUTES = {
         `"AAFFFF00"`
     ],
     "ProjectID": ["Text value."],
-    "Prompt": ["Text value."],
+    "Prompt": [
+        string,
+        getset,
+        "@description Specifies the text used for the title of the Spinner window."    ,
+        `"Spinner Prompt Test"`
+    ],
     "PromptForPermission": [],
     "ProviderLocked": [],
     "ProviderName": [],
     "Radius": [],
     "ReadMode": [],
-    "ReadOnly": [],
+    "ReadOnly": [
+        bool,
+        getset,
+        "@description Whether the TextBox is read-only. By default, this is true.",
+        false
+    ],
     "ReadPermission": [],
     "ReceivingEnabled": [],
     "RedisPort": [],
@@ -652,10 +709,30 @@ const ATTRIBUTES = {
         designer,
         "@designer Selects the theme for the application. Theme can only be set at compile time and the Companion will approximate changes during live development. Possible options are:<ul><li><code >Classic</code>, which is the same as older versions of App Inventor;</li><li><code >Device Default</code>, which gives the same theme as the version of Android running on thedevice and uses PrimaryColor for the Action Bar and has light buttons;</li><li><code >Black Title Text</code>, which is the <code >Device Default</code> theme but with black title text; and</li><li><code >Dark</code>, which is a dark version of the <code >Device Default</code> theme using <code >PrimaryColorDark</code> and having dark grey components.</li></ul>"
     ],
-    "ThumbColorActive": [],
-    "ThumbColorInactive": [],
-    "Thumbenabled": [],
-    "Thumbposition": [],
+    "ThumbColorActive": [
+        color,
+        set,
+        "@description Specifies the Switch’s thumb color when switch is in the On state.",
+        `"AA117799"`
+    ],
+    "ThumbColorInactive": [
+        color,
+        set,
+        "@description Specifies the Switch’s thumb color when switch is in the Off state.",
+        `"AA119911"`
+    ],
+    "ThumbEnabled": [
+        bool,
+        getset,
+        "@description Whether or not the slider thumb is being be shown.",
+        true
+    ],
+    "ThumbPosition": [
+        number,
+        getset,
+        "@description Sets the position of the slider thumb. If this value is greater than MaxValue, then it will be set to same value as MaxValue. If this value is less than MinValue, then it will be set to same value as MinValue.",
+        157
+    ],
     "TimeInterval": [],
     "Timeout": [],
     "TimerAlwaysFires": [],
@@ -675,8 +752,18 @@ const ATTRIBUTES = {
         true
     ],
     "Token": ["Text value."],
-    "TrackColorActive": [],
-    "TrackColorInactive": [],
+    "TrackColorActive": [
+        color,
+        getset,
+        "@description Specifies the Switch’s track color when in the On state.",
+        `"55EE55EE"`
+    ],
+    "TrackColorInactive": [
+        color,
+        getset,
+        "@description Specifies the Switch’s track color when in the Off state.",
+        `"55555511"`
+    ],
     "TransportationMethod": [],
     "TutorialURL": [
         string,

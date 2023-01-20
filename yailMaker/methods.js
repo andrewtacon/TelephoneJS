@@ -209,6 +209,10 @@ const METHODS = {
         description: "Dismisses the alert created by the ShowProgressDialog block",
         params: []
     },
+    "displayDropdown": {
+        description: "Displays the dropdown list for selection, same action as when the user clicks on the spinner.",
+        params: []
+    },
     "distanceToFeature": {
         description: "",
         params: []
@@ -711,7 +715,7 @@ const METHODS = {
         params: []
     },
     "requestFocus": {
-        description: "",
+        description: "Request focus to current PasswordTextBox.",
         params: []
     },
     "requestFollowers": {
@@ -1156,6 +1160,66 @@ const METHODS = {
                         //Your code
                     }
                 )`
+            },
+            "password": {
+                "Password Text Boxes have two events: gotFocus & lostFocus. All are accessed in the same manner.":
+                    `
+                password.addEventListener(
+                    "eventName",
+                    function () {
+                        //Your code here
+                    }
+                )
+                `
+
+            },
+            "slider": {
+                "Sliders have one event: positionChanged":
+                    `
+                slider.addEventListener(
+                    "positionChanged",
+                    function (thumbPosition) {
+                        //Your code here
+                    }
+                )
+                `
+
+            },
+            "spinner": {
+                "Spinners have one event: afterSelecting":
+                    `
+                spinner.addEventListener(
+                    "afterSelecting",
+                    function (selection) {
+                        //Your code here
+                    }
+                )
+                `
+
+            },
+            "switch": {
+                "Swicthes have three events: changed, gotFocus, lostFocus. They are all accessed the same way.":
+                    `
+                switch.addEventListener(
+                    "eventName",
+                    function () {
+                        //Your code here
+                    }
+                )
+                `
+
+            },
+            "textbox": {
+                "Textboxes have two events: gotFocus & lostFocus. They are all accessed the same way.":
+                    `
+                textbox.addEventListener(
+                    "eventName",
+                    function () {
+                        //Your code here
+                    }
+                )
+                `
+
             },
         }
     }
