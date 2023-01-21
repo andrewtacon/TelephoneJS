@@ -148,7 +148,13 @@ const ATTRIBUTES = {
         0
     ],
     "ColumnNames": [],
-    "Columns": [],
+    "Columns": [
+        number,
+        designer,
+        "@description Determines the number of columns in the table.",
+        3
+
+    ],
     "ConsumerKey": ["Text value."],
     "ConsumerSecret": ["Text value."],
     "ContactName": [],
@@ -600,7 +606,12 @@ const ATTRIBUTES = {
         "@description Sets the row position of the component in a table arrangement.",
         0
     ],
-    "Rows": [],
+    "Rows": [
+        number,
+        designer,
+        "@description Determines the number of rows in the table.",
+        4
+    ],
     "SaveResponse": [],
     "SavedRecording": ["Text value."],
     "ScalePictureToFit": [
