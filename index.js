@@ -22,7 +22,7 @@ let log = console.log
 //////////////////////////
 
 const helperMaker = require("./helpMaker/help")
-let buildTest = helperMaker.buildTest("textbox")
+//let buildTest = helperMaker.buildTest("webview")
 
 /////////////////////////
 // END TEST /////////////

@@ -103,11 +103,11 @@ const METHODS = {
         params: []
     },
     "canGoBack": {
-        description: "",
+        description: "Returns true if the WebViewer can go back in the history list.",
         params: []
     },
     "canGoForward": {
-        description: "",
+        description: "Returns true if the WebViewer can go forward in the history list.",
         params: []
     },
     "center": {
@@ -130,16 +130,16 @@ const METHODS = {
         description: "",
         params: []
     },
-    "clearCache": {
-        description: "",
+    "clearCaches": {
+        description: "Clear the internal webview cache, both ram and disk. This is useful when using the WebViewer to poll a page that may not be sending appropriate cache control headers.",
         params: []
     },
     "clearCookies": {
-        description: "",
+        description: "Clear the webview’s cookies. This is useful if you want to sign the user out of a website that uses them to store logins.",
         params: []
     },
     "clearLocations": {
-        description: "",
+        description: "Clear Stored Location permissions. When the geolocation API is used in the WebViewer, the end user is prompted on a per URL basis for whether or not permission should be granted to access their location. This function clears this information for all locations. As the permissions interface is not available on phones older then Eclair, this function is a no-op on older phones.",
         params: []
     },
     "clearRange": {
@@ -364,20 +364,27 @@ const METHODS = {
         params: []
     },
     "goBack": {
-        description: "",
+        description: "Go back to the previous page in the history list. Does nothing if there is no previous page.",
         params: []
     },
     "goForward": {
-        description: "",
+        description: "Go forward to the next page in the history list. Does nothing if there is no next page.",
         params: []
     },
     "goHome": {
-        description: "",
+        description: "Loads the page from the home URL. This happens automatically when home URL is changed.",
         params: []
     },
     "goToUrl": {
-        description: "",
-        params: []
+        description: "Load the page at the given URL.",
+        params: [
+            {
+                type:"{string}",
+                name: "url",
+                info: "Address of page to load."
+            }
+        ],
+        tests: [`"http://www.google.com"`]
     },
     "hideInfobox": {
         description: "",
@@ -424,7 +431,7 @@ const METHODS = {
         params: []
     },
     "launchPicker": {
-        description: "Launches the DatePicker dialog. The AfterDateSet event will be run after the user confirms their selection.",
+        description: "Launches the DatePicker or TimePicker dialog. The AfterDateSet/AfterTimeSet event will be run after the user confirms their selection.",
         params: []
     },
     "listDirectory": {
@@ -687,7 +694,7 @@ const METHODS = {
         params: []
     },
     "reload": {
-        description: "",
+        description: "Reload the current page.",
         params: []
     },
     "removeCol": {
@@ -747,8 +754,14 @@ const METHODS = {
         params: []
     },
     "runJavascript": {
-        description: "",
-        params: []
+        description: "Run JavaScript in the current page.",
+        params: [{
+            type: "{string}",
+            name: "Javascript code",
+            info: "The JavaScript code to run."
+        }],
+        tests: [`"alert('hello JS');"`]
+
     },
     "save": {
         description: "",
@@ -825,12 +838,19 @@ const METHODS = {
         params: []
     },
     "setTimeToDisplay": {
-        description: "",
-        params: []
+        description: "Allows the user to set the time to be displayed when the TimePicker opens. Valid values for the hour field are 0-23 and 0-59 for the second field.",
+        params: [
+            { type: "number", name: "hour", info: "Hour number in 24 hour time (0 to 23)." },
+            { type: "number", name: "minute", info: "Minute number (0-59 inclusive)." }
+        ],
+        tests: [
+           15,16
+        ]
     },
-    "setTimeToDisplayForInstant": {
-        description: "",
-        params: []
+    "setTimeToDisplayFromInstant": {
+        description: "Allows the instant to set the hour and minute to be displayed when the TimePicker opens. Instants are used in Clock, DatePicker, and TimePicker components.",
+        params: [{ type: "instant", name: "instant", info: "" }],
+        tests:[]
     },
     "shareFile": {
         description: "",
@@ -868,7 +888,7 @@ const METHODS = {
         ],
         tests: [
             `"Choose Message"`, `"Choose Title"`, `"Button 1"`, `"Button 2"`, true
-        ]    
+        ]
     },
     "showInfobox": {
         description: "",
@@ -883,7 +903,7 @@ const METHODS = {
         ],
         tests: [
             `"Message"`, `"Title"`, `"Button Text"`
-        ]    
+        ]
     },
     "showPasswordDialog": {
         description: "Shows a dialog box where the user can enter password (input is masked), after which the AfterTextInput event will be raised. If cancelable is true there will be an additional CANCEL button. The AfterTextInput and TextInputCanceled events behave the same way as described in ShowTextDialog.",
@@ -894,7 +914,7 @@ const METHODS = {
         ],
         tests: [
             `"Message"`, `"Title"`, true
-        ]    
+        ]
     },
     "showProgressDialog": {
         description: "Shows a dialog box with an optional title and message (use empty strings if they are not wanted). This dialog box contains a spinning artifact to indicate that the program is working. It cannot be canceled by the user but must be dismissed by the App Inventor Program by using the DismissProgressDialog method.",
@@ -904,7 +924,7 @@ const METHODS = {
         ],
         tests: [
             `"Message"`, `"Title"`
-        ]   
+        ]
     },
     "showTextDialog": {
         description: "Shows a dialog box where the user can enter text, after which the AfterTextInput event will be raised. If cancelable is true there will be an additional CANCEL button. Entering text will raise the AfterTextInput event. The “response” parameter to AfterTextInput will be the text that was entered, or “Cancel” if the CANCEL button was pressed. If canceled, the TextInputCanceled event will also run.",
@@ -915,7 +935,7 @@ const METHODS = {
         ],
         tests: [
             `"Message"`, `"Title"`, true
-        ]    
+        ]
     },
     "speak": {
         description: "",
@@ -938,7 +958,7 @@ const METHODS = {
         params: []
     },
     "stopLoading": {
-        description: "",
+        description: "Stop loading a page.",
         params: []
     },
     "storeValue": {
@@ -1220,6 +1240,47 @@ const METHODS = {
                 )
                 `
 
+            },
+            "timepicker": {
+                "Timepickers have five events: afterTimeSet, gotFocus, lostFocus, touchDown, touchUp All are accessed in the same manner.":
+                    `
+                timePicker.addEventListener(
+                    "eventName",
+                    function () {
+                        //Your code here
+                    }
+                )
+                `
+            },
+            "webviewer": {
+                "beforePageLoad - When a page is about to load this event is run.": `
+                webviewer.addEventListener(
+                    "beforePageLoad",
+                    function(url){
+                        //Your code
+                    }
+                )`,
+                "errorOccured - When an error occurs this event is run.": `
+                webviewer.addEventListener(
+                    "errorOccured",
+                    function(errorCode, description, failingUrl){
+                        //Your code
+                    }
+                )`,
+                "pageLoaded - When a page is finished loading this event is run.": `
+                webviewer.addEventListener(
+                    "pageLoaded",
+                    function(url){
+                        //Your code
+                    }
+                )`,
+                "webViewStringChanged - Event that runs when the AppInventor.setWebViewString method is called from JavaScript. The new WebViewString is given by the value parameter.": `
+                webviewer.addEventListener(
+                    "webViewStringChanged",
+                    function(value){
+                        //Your code
+                    }
+                )`
             },
         }
     }

@@ -156,8 +156,18 @@ const ATTRIBUTES = {
     "Country": ["Text value."],
     "CredentialsJSON": ["Text value."],
     "CurrentAddress": [],
-    "CurrentPageTitle": [],
-    "CurrentUrl": [],
+    "CurrentPageTitle": [
+        string,
+        get,
+        "@description Returns the title of the page currently being viewed.",
+        `"Test Title"`
+    ],
+    "CurrentUrl": [
+        string,
+        get,
+        "@description Returns the URL currently being viewed. This could be different from the HomeUrl if new pages were visited by following links.",
+        `"Test current URL"`
+    ],
     "DataType": ["Text value."],
     "DataUri": ["Text value."],
     "Day": [
@@ -225,7 +235,12 @@ const ATTRIBUTES = {
     "Features": [],
     "FillColor": [],
     "FillOpacity": [],
-    "FollowLinks": [],
+    "FollowLinks": [
+        bool,
+        getset,
+        "@description Determines whether to follow links when they are tapped in the WebViewer. If you follow links, you can use GoBack and GoForward to navigate the browser history.",
+        true
+    ],
     "Followers": [],
     "FontBold": [
         bool, getset,
@@ -310,8 +325,18 @@ const ATTRIBUTES = {
     ],
     "HolePoints": [],
     "HolePointsFromString": ["Text value."],
-    "HomeUrl": ["Text value."],
-    "Hour": [],
+    "HomeUrl": [
+        string,
+        getset,
+        "@description Specifies the URL of the page the WebViewer should initially open to. Setting this will load the page.",
+        `"http://www.google.com"`
+    ],
+    "Hour": [
+        number,
+        get,
+        "@description Returns the hour of the time that was last picked using the TimePicker`. The time returned is always in the 24hour format.",
+        15
+    ],
     "Humidity": [],
     "Icon": [
         string,
@@ -325,7 +350,12 @@ const ATTRIBUTES = {
         "@description Sets the id for an component in a CSS file.",
         `"TestId"`
     ],
-    "IgnoreSslErrors": [],
+    "IgnoreSslErrors": [
+        bool,
+        getset,
+        "@description Determine whether or not to ignore SSL errors. Set to true to ignore errors. Use this to accept self signed certificates from websites.",
+        true
+    ],
     "Image": [
         string,
         getset,
@@ -349,6 +379,12 @@ const ATTRIBUTES = {
         instant,
         get,
         "@description Returns instant of the date that was last picked using the DatePicker in milliseconds since January 1, 1970.",
+        0
+    ],
+    "InstantInTime": [
+        instant,
+        get,
+        "@description Returns instant of the time that was last picked using the TimePicker in milliseconds since January 1, 1970.",
         0
     ],
     "Interval": [],
@@ -409,7 +445,12 @@ const ATTRIBUTES = {
         125
     ],
     "MinimumInterval": [],
-    "Minute": [],
+    "Minute": [
+        number,
+        get,
+        "@description Returns the hour of the time that was last picked using the TimePicker. The time returned is always in the 24hour format.",
+        16
+    ],
     "Month": [
         number,
         get,
@@ -513,10 +554,15 @@ const ATTRIBUTES = {
     "Prompt": [
         string,
         getset,
-        "@description Specifies the text used for the title of the Spinner window."    ,
+        "@description Specifies the text used for the title of the Spinner window.",
         `"Spinner Prompt Test"`
     ],
-    "PromptForPermission": [],
+    "PromptForPermission": [
+        bool,
+        getset,
+        "@description Determine if the user should be prompted for permission to use the geolocation API while in the WebViewer. If true, prompt the user of the WebViewer to give permission to access the geolocation API. If false, assume permission is granted.",
+        false
+    ],
     "ProviderLocked": [],
     "ProviderName": [],
     "Radius": [],
@@ -779,7 +825,12 @@ const ATTRIBUTES = {
     "UserLatitude": [],
     "UserLongitude": [],
     "Username": [],
-    "UsesLocation": [],
+    "UsesLocation": [
+        bool,
+        set,
+        "@description Specifies whether or not this WebViewer can access the JavaScript geolocation API.",
+        true
+    ],
     "VersionCode": [
         number,
         designer,
@@ -800,7 +851,12 @@ const ATTRIBUTES = {
     ],
     "Volume": [],
     "WalkSteps": [],
-    "WebViewString": [],
+    "WebViewString": [
+        string,
+        getset,
+        "@description Gets the WebView’s String, which is viewable through Javascript in the WebView as the window.AppInventor object.",
+        `"Test webviewstring"`
+    ],
     "WestLongitude": [],
     "Width": [
         "@type (number | 'parent' | number%)",
@@ -868,6 +924,8 @@ function setAttribute(key, value, name, descriptor, useQuotes = true) {
         case "ConsumerSecret":
         case "Country":
         case "CredentialsJSON":
+        case "CurrentUrl":
+        case "CurrentPageTitle":
         case "DataType":
         case "DataUri":
         case "Description":
@@ -906,6 +964,7 @@ function setAttribute(key, value, name, descriptor, useQuotes = true) {
         case "TutorialURL":
         case "Url":
         case "VersionName":
+        case "WebViewString":
             return setText(key, value, name, descriptor)
             break;
         //start of default false cases for true/false
@@ -1034,10 +1093,12 @@ function setAttribute(key, value, name, descriptor, useQuotes = true) {
         case "Day":
         case "DelimiterByte":
         case "DistanceInterval": ///limit to 0, 1, 10, 100
+        case "Hour":
         case "ImageHeight":
         case "ImageWidth":
         case "Interval":
         case "MinimumInterval":
+        case "Minute":
         case "Month":
         case "RedisPort":
         case "RefreshTime":
@@ -1106,7 +1167,7 @@ function setAttribute(key, value, name, descriptor, useQuotes = true) {
             return fromList(key, value, name, ['left', 'center', 'right'], "TextAlignment")
             break;
         case "Orientation":
-            return fromList(key, value, name, [ 'horizontal','vertical'], "Orientation")
+            return fromList(key, value, name, ['horizontal', 'vertical'], "Orientation")
             break;
         case "NotifierLength":
             return fromList(key, value, name, ['short', 'long'], "NotifierLength")
@@ -1139,6 +1200,8 @@ function setAttribute(key, value, name, descriptor, useQuotes = true) {
 
         case "Instant":
             return setInstant(key, value, name, descriptor)
+        case "InstantInTime":
+            return setInstantinTime(key, value, name, descriptor)
 
         case "Elements":
             return setFromObject(key, value, name, descriptor)
@@ -1273,7 +1336,7 @@ function setInteger(key, value, name, descriptor) {
     value = parseInt(value)
 
     if (descriptor === "SelectionIndex") {
-        value = value +1 
+        value = value + 1
     }
 
 
@@ -1311,10 +1374,10 @@ function fromList(key, value, name, options, descriptor) {
 
         //special case
         if (descriptor === "TextAlignment" || descriptor === "ListViewLayout") { index-- }
-       // if (descriptor === "Orientation") { if (index !== 1) { return ""} } //only send through request for horizonatal, vertical is default
-        if (descriptor === "NotifierLength") { if (index !== 0) { return ""} } //only send through request for short, long is default
-        if (descriptor === "MapType" || descriptor === "ScaleUnits") { if (index === 0) { return ""} }
-        if (descriptor === "Sensitivity") { if (index === 2) { } return ""}
+        // if (descriptor === "Orientation") { if (index !== 1) { return ""} } //only send through request for horizonatal, vertical is default
+        if (descriptor === "NotifierLength") { if (index !== 0) { return "" } } //only send through request for short, long is default
+        if (descriptor === "MapType" || descriptor === "ScaleUnits") { if (index === 0) { return "" } }
+        if (descriptor === "Sensitivity") { if (index === 2) { } return "" }
 
         return `\n\t(set-and-coerce-property! '${name} '${descriptor} ${index} 'number)`
     }
@@ -1513,10 +1576,16 @@ function setInstant(key, value, name, descriptor) {
 }
 
 
+function setInstantinTime(key, value, name, descriptor) {
+    return `(call-component-method '${name} 'SetTimeToDisplayFromInstant (*list-for-runtime* ${value}) '(InstantInTime))`
+}
+
+
+
 function setFromObject(key, value, name, descriptor) {
 
-   // value = JSON.stringify(value)
-    
+    // value = JSON.stringify(value)
+
     return `\n\t(set-and-coerce-property! '${name} '${descriptor} ${value} 'list)`
 
 }

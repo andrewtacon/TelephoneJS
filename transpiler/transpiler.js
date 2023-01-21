@@ -582,7 +582,7 @@ function transpileDeclarations(node) {
                     //other variable types have different methods
 
                     //do a check for method is possible on componet
-                    //aslo check that the correct number of parameters are supplied for the method,
+                    //also check that the correct number of parameters are supplied for the method,
                     //otherwise throw error and print out documentation for the method
 
                     let isVariableOfType = undefined
@@ -617,6 +617,12 @@ function transpileDeclarations(node) {
 
                                 //check if the method that is called is a legal method for this particular element type (refer to supplied elements list)
                                 switch (methodCalled) {
+
+                                    /////////////////////////////////////////////////////////////////////////////////////
+                                    /// The AddEventListener exists to provide a hook to the events for the different ///
+                                    /// components //////////////////////////////////////////////////////////////////////
+                                    /////////////////////////////////////////////////////////////////////////////////////
+
                                     case "addEventListener":
                                         //TODO check element and type to make sure that the eventType is a legal event for that type of element/component
                                         //args[0] here is the event type
@@ -632,6 +638,63 @@ function transpileDeclarations(node) {
                                         }
 
                                         return (`(define-event ${transpileDeclarations(node.callee.object)} ${uppercaseFirstLetter(asString(args, 0))}(${params.trim()}) (set-this-form) ${transpileDeclarations(args[1])})`)
+
+                                    
+                                    ////////////////////////////////////////////////////////////////////////////////////////////
+                                    /// The following generic methods handle simple cases on no, one, two etc input arguments //
+                                    ////////////////////////////////////////////////////////////////////////////////////////////
+
+                                    //methods with no inputs 
+                                    case "canGoBack":           //webview   //returns true/false
+                                    case "canGoForward":        //webview   //returns true/false
+                                    case "clearCaches":         //webview
+                                    case "clearCookies":        //webview
+                                    case "clearLocations":      //webview
+                                    case "dismissProgressDialog":
+                                    case "hideKeyboard":        //screen
+                                    case "goBack":              //webview
+                                    case "goForward":           //webview
+                                    case "goHome":              //webview
+                                    case "launchPicker":        //datepicker
+                                    case "open":                //listpicker
+                                    case "refresh":
+                                    case "reload":              //webview
+                                    case "stopLoading":         //webview
+                                        return (`(call-component-method '${elementName} '${uppercaseFirstLetter(methodCalled)} (*list-for-runtime*) '() )`)
+
+
+                                    //methods with one text input 
+                                    case "goToUrl":             //webview
+                                    case "showAlert":
+                                    case "logInfo":
+                                    case "logWarning":
+                                    case "logError":
+                                    case "runJavaScript":      //webview
+                                        return (`\n(call-component-method '${elementName} '${uppercaseFirstLetter(methodCalled)}  (*list-for-runtime*  ${transpileDeclarations(args[0])} )  '(text))`)
+
+                                    //methods with two text input 
+                                    case "showProgressDialog":
+                                        return (`\n(call-component-method '${elementName} '${uppercaseFirstLetter(methodCalled)}  (*list-for-runtime*  ${transpileDeclarations(args[0])}  ${transpileDeclarations(args[1])})  '(text text))`)
+
+                                    //methods with 2 text and an optional true/false (default true) 
+                                    case "showPasswordDialog":
+                                    case "showTextDialog":
+                                        return (`(call-component-method '${elementName} '${uppercaseFirstLetter(methodCalled)} (*list-for-runtime* ${transpileDeclarations(args[0])} ${transpileDeclarations(args[1])} ${transpileDeclarations(args[2])}) '(text text boolean))`)
+
+                                    //methods with 3 text inputs - no return value
+                                    case "showMessageDialog":
+                                    case "createElement":       //listview
+                                        return (`(call-component-method '${elementName} '${uppercaseFirstLetter(methodCalled)} (*list-for-runtime* ${transpileDeclarations(args[0])} ${transpileDeclarations(args[1])} ${transpileDeclarations(args[2])}) '(text text text))`)
+
+                                    //methods with 4 text and an optional true/false (default true) 
+                                    case "showChooseDialog":
+                                        return (`(call-component-method '${elementName} '${uppercaseFirstLetter(methodCalled)} (*list-for-runtime* ${transpileDeclarations(args[0])} ${transpileDeclarations(args[1])} ${transpileDeclarations(args[2])} ${transpileDeclarations(args[3])} ${transpileDeclarations(args[4])}) '(text text text text boolean))`)
+
+                                    /////////////////////////////////////////////////////////////////////////////////////////////////
+                                    ///// The below component methods don't fit any simple generic pattern like the above ones do ///
+                                    /////////////////////////////////////////////////////////////////////////////////////////////////
+
+                                    //////Special Screen methods
                                     case "askForPermission":
                                         //Screen - One of CourseLocation, FineLocation, MockLocation, LocationExtraCommands, ReadExternalStorage, WriteExternalStorage, Camera, Audio, Vibrate, Internet, NearFieldCommunication, Bluetooth, BluetoothAdmin, WifiState, NetworkState, AccountManager, ManageAccounts, GetAccounts, ReadContacts, UseCredentials
                                         let legalPermissions = ["CoarseLocation", "FineLocation", "MockLocation", "LocationExtraCommands", "ReadExternalStorage", "WriteExternalStorage", "Camera", "Audio", "Vibrate", "Internet", "NearFieldCommunication", "Bluetooth", "BluetoothAdmin", "WifiState", "NetworkState", "AccountManager", "ManageAccounts", "GetAccounts", "ReadContacts", "UseCredentials"]
@@ -641,55 +704,31 @@ function transpileDeclarations(node) {
                                         }
                                         return `(call-component-method '${elementName} 'AskForPermission (*list-for-runtime* (static-field com.google.appinventor.components.common.Permission "${args[0].value}")) '(text))`
 
-                                    //methods with no inputs - no return value
-                                    case "dismissProgressDialog":
-                                    case "hideKeyboard": //screen
-                                    case "launchPicker": //datepicker
-                                    case "open": //listpicker
-                                    case "refresh":
-                                        return (`(call-component-method '${elementName} '${uppercaseFirstLetter(methodCalled)} (*list-for-runtime*) '() )`)
+                                    /////////////Special Date Picker and Time Picker Methods
+                                    //methods with 3 numerical inputs 
+                                    //TO CHECK AT END - if this is only date picker then check the ranges of the acceptable values.
+                                    case "setDateToDisplay":    //datepicker
+                                        if (args.length !== 3) {
+                                            console.log(`"${elementName}" of type "${isVariableOfType}" requires three numerical arguments.`)
+                                        }
+                                        return (`(call-component-method '${elementName} '${uppercaseFirstLetter(methodCalled)} (*list-for-runtime* ${transpileDeclarations(args[0])} ${transpileDeclarations(args[1])} ${transpileDeclarations(args[2])}) '(number number number))`)
 
                                     //methods with one instant in time input - no return value
                                     //TO DO -> make instants in time 
                                     case "setDateToDisplayFromInstant": //datepicker
                                         return (`(call-component-method '${elementName} '${uppercaseFirstLetter(methodCalled)} (*list-for-runtime* ${transpileDeclarations(args[0])}) '(InstantInTime))`)
 
-                                    //methods with one text input - no return value
-                                    case "showAlert":
-                                    case "logInfo":
-                                    case "logWarning":
-                                    case "logError":
-                                        return (`\n(call-component-method '${elementName} '${uppercaseFirstLetter(methodCalled)}  (*list-for-runtime*  ${transpileDeclarations(args[0])} )  '(text))`)
-
-                                    //methods with two text input - no return value
-                                    case "showProgressDialog":
-                                        return (`\n(call-component-method '${elementName} '${uppercaseFirstLetter(methodCalled)}  (*list-for-runtime*  ${transpileDeclarations(args[0])}  ${transpileDeclarations(args[1])})  '(text text))`)
-
-
-
-                                    //methods with 2 text and an optional true/false (default true) - no return value
-                                    case "showPasswordDialog":
-                                    case "showTextDialog":
-                                        return (`(call-component-method '${elementName} '${uppercaseFirstLetter(methodCalled)} (*list-for-runtime* ${transpileDeclarations(args[0])} ${transpileDeclarations(args[1])} ${transpileDeclarations(args[2])}) '(text text boolean))`)
-
-                                    //methods with 3 text inputs - no return value
-                                    case "showMessageDialog":
-                                    case "createElement": //listview
-                                        return (`(call-component-method '${elementName} '${uppercaseFirstLetter(methodCalled)} (*list-for-runtime* ${transpileDeclarations(args[0])} ${transpileDeclarations(args[1])} ${transpileDeclarations(args[2])}) '(text text text))`)
-
-                                    //methods with 3 numerical inputs - no return value
-                                    //TO CHECK AT END - if this is only date picker then check the ranges of the acceptable values.
-                                    case "setDateToDisplay": //datepicker
-                                        if (args.length !== 3) {
-                                            console.log(`"${elementName}" of type "${isVariableOfType}" requires three numerical arguments.`)
+                                    case "setTimeToDisplay":    //timepicker
+                                        if (args.length !== 2) {
+                                            console.log(`"${elementName}" of type "${isVariableOfType}" requires two numerical arguments.`)
                                         }
-                                        return (`(call-component-method '${elementName} '${uppercaseFirstLetter(methodCalled)} (*list-for-runtime* ${transpileDeclarations(args[0])} ${transpileDeclarations(args[1])} ${transpileDeclarations(args[2])}) '(number number number))`)
+                                        return (`(call-component-method '${elementName} '${uppercaseFirstLetter(methodCalled)} (*list-for-runtime* ${transpileDeclarations(args[0])} ${transpileDeclarations(args[1])}) '(number number))`)
 
-                                    //methods with 4 text and an optional true/false (default true) - no return value
-                                    case "showChooseDialog":
-                                        return (`(call-component-method '${elementName} '${uppercaseFirstLetter(methodCalled)} (*list-for-runtime* ${transpileDeclarations(args[0])} ${transpileDeclarations(args[1])} ${transpileDeclarations(args[2])} ${transpileDeclarations(args[3])} ${transpileDeclarations(args[4])}) '(text text text text boolean))`)
+                                    case "setTimeToDisplayFromInstant": //timepicker
+                                        return (`(call-component-method '${elementName} '${uppercaseFirstLetter(methodCalled)} (*list-for-runtime* ${transpileDeclarations(args[0])} ) '(InstantInTime))`)
 
-                                    //listView Methods
+
+                                    ////////// Special Listview Methods
                                     case "getDetailText":
                                         proceduresUsed.add(procedures.getDetailText)
                                         return (`(getDetailText '${elementName} ${transpileDeclarations(args[0])})`)
