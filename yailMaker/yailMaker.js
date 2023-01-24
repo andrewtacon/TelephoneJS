@@ -439,7 +439,10 @@ function createElement(element, attributes, parent, elements) {
         //convert key (the attribute to lowercase)
         key = key.toLowerCase()
         //determine if the key is in the list for this element
-        let legalAttributes = [].concat(ELEMENTS[element].properties)
+        //let legalAttributes = [].concat(ELEMENTS[element].properties)   //CHANGED FOR NEW ELEMENTS 
+        let legalAttributes = [].concat(Object.keys(ELEMENTS[element].properties))
+
+
         let legalAttributesLowerCase = legalAttributes.map(element => {
             return element.toLowerCase().trim()
         })

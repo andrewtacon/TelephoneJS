@@ -608,7 +608,9 @@ function transpileDeclarations(node) {
 
                                 //get legal methods for each component and check that this is one of them
 
-                                let legalMethods = ELEMENTS[isVariableOfType].methods
+                                //let legalMethods = ELEMENTS[isVariableOfType].methods  CHANGED FOR NEW ELEMENTS
+                                let legalMethods = Object.keys(ELEMENTS[isVariableOfType].methods)
+                                
                                 legalMethods.push("addEventListener")
                                 if (!legalMethods.includes(methodCalled)) {
                                     console.log(`"${elementName}" is a ${isVariableOfType} and does not have a method "${methodCalled}". Ignoring.`)
@@ -626,7 +628,10 @@ function transpileDeclarations(node) {
                                     case "addEventListener":
                                         //TODO check element and type to make sure that the eventType is a legal event for that type of element/component
                                         //args[0] here is the event type
-                                        let legalEvents = ELEMENTS[isVariableOfType].events
+                                        //let legalEvents = ELEMENTS[isVariableOfType].events //CHANGE FOR NEW ELEMENTS
+
+                                        let legalEvents = Object.keys(ELEMENTS[isVariableOfType].events)
+
                                         if (!legalEvents.includes(args[0].value)) {
                                             console.log(`"${elementName}" is a ${isVariableOfType} and does not have an event "${args[0].value}". Perhaps check your capitalisation. Ignoring.`)
                                             return ""
@@ -656,10 +661,15 @@ function transpileDeclarations(node) {
                                     case "goForward":           //webview
                                     case "goHome":              //webview
                                     case "launchPicker":        //datepicker
-                                    case "open":                //listpicker
+                                    case "pause":               //player
+                                    case "open":                //listpicker, imagepicker
+                                    case "recordVideo":         //camcorder
                                     case "refresh":
                                     case "reload":              //webview
+                                    case "start":               //player, soundrecorder
+                                    case "stop":                //player, soundrecorder
                                     case "stopLoading":         //webview
+                                    case "takePicture":         //camera
                                         return (`(call-component-method '${elementName} '${uppercaseFirstLetter(methodCalled)} (*list-for-runtime*) '() )`)
 
 
@@ -671,6 +681,11 @@ function transpileDeclarations(node) {
                                     case "logError":
                                     case "runJavaScript":      //webview
                                         return (`\n(call-component-method '${elementName} '${uppercaseFirstLetter(methodCalled)}  (*list-for-runtime*  ${transpileDeclarations(args[0])} )  '(text))`)
+
+                                    //methods with one numerical input
+                                    case "vibrate":
+                                        return (`\n(call-component-method '${elementName} '${uppercaseFirstLetter(methodCalled)}  (*list-for-runtime*  ${transpileDeclarations(args[0])} )  '(number))`)
+
 
                                     //methods with two text input 
                                     case "showProgressDialog":
@@ -1275,7 +1290,7 @@ function transpileDeclarations(node) {
                     let elemInfo = ELEMENTS[MESisVariableOfType + ""]
 
                     //get the attributes that can be set (for now)
-                    let allowableAttributes = [].concat(elemInfo.properties)
+                    let allowableAttributes = [].concat(Object.keys(elemInfo.properties))  //updated for new ELEMENTS
                     if (!allowableAttributes.includes(MemberExpressionSetProperty)) {
                         console.log(`Cannot set the "${MemberExpressionSetProperty}" of a ${MESisVariableOfType}`)
                         console.log('Ignoring this instruction.')

@@ -398,7 +398,12 @@ const ATTRIBUTES = {
     "IsConnected": [],
     "IsInitialized": [],
     "IsOpen": [],
-    "IsPlaying": [],
+    "IsPlaying": [
+        bool,
+        get,
+        "@description Reports whether the media is playing.",
+        true
+    ],
     "ItemBackgroundColor": [
         color,
         getset,
@@ -431,7 +436,12 @@ const ATTRIBUTES = {
     ],
     "LocationSensor": [],
     "Longitude": [],
-    "Loop": [],
+    "Loop": [
+        bool,
+        getset,
+        "@description If true, the Player will loop when it plays. Setting Loop while the player is playing will affect the current playing.",
+        true
+    ],
     "Lux": [],
     "Magnitude": [],
     "MapType": [],
@@ -540,7 +550,12 @@ const ATTRIBUTES = {
         "@description Gets the version number of the platform running the app. This is typically a dotted version number, such as 10.0. Any value can be returned, however, so you should take care to handle unexpected data. If the platform version is unavailable, the empty text will be returned.",
         2
     ],
-    "PlayOnlyInForeground": [],
+    "PlayOnlyInForeground": [
+        bool,
+        getset,
+        "@description If true, the Player will pause playing when leaving the current screen; if false (default option), the Player continues playing whenever the current screen is displaying or not.",
+        true
+    ],
     "Points": [],
     "PointsFromString": ["Text value."],
     "PollingRate": [],
@@ -713,7 +728,12 @@ const ATTRIBUTES = {
         "@description If set to 'responsive' (the default), screen layouts will use the actual resolution of the device. If set to 'fixed', screen layouts will be created for a single fixed-size screen and autoscaled. Note: This property should be set on Screen1 only and controls the sizing for all screens in the app.",
         `"responsive"`
     ],
-    "Source": ["Text value."],
+    "Source": [
+        string,
+        getset,
+        "@description Sets the audio source.",
+        `"Test audio source"`
+    ],
     "SourceFile": ["Text value."],
     "SouthLatitude": [],
     "SpeechRate": [],
@@ -860,7 +880,12 @@ const ATTRIBUTES = {
         "@description Specifies whether the component should be visible on the screen. Value is true if the Button is showing and false if hidden.",
         true
     ],
-    "Volume": [],
+    "Volume": [
+        number,
+        set,
+        "@description Sets the volume property to a number between 0 and 100.",
+        56
+    ],
     "WalkSteps": [],
     "WebViewString": [
         string,

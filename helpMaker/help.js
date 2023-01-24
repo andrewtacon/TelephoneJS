@@ -5,6 +5,7 @@ const fs = require("fs")
 
 function main(filename, elementList) {
 
+    return
     let helperClasses = ""
     let helperVariables = ""
     let elementTypesUsed = []
@@ -113,7 +114,7 @@ function main(filename, elementList) {
 
 
 function buildTest(el) {
-
+return
     //Construct the XML document
 
     let head = `
