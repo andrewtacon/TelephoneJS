@@ -7,10 +7,25 @@
 
 [x] Make sure only valid nesting of items can occue (ignore/error out)
 [ ] CSS type external styling
-[ ] Programming language for functionality
+[ ] Programming language documentation for functionality
 [ ] Validate components for the 'setComponent' function 
 [ ] Complete this readme
 [ ] Compilation to android app (unlikely)
+
+
+### Missing Component Properties (For Setting)
+
+The code for these needs to be done in "attributes.js" in the "yailMaker" folder.
+
+    Component           Property
+    ActivityStarter     Extras
+    FeatureCollection   Features
+    LineString          Points
+    Map                 BoundingBox
+    Map                 Features
+    Polygon             HolePoints
+    Polygon             Points
+    Web                 RequestHeaders
 
 
 ### Component information *incomplete

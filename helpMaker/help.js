@@ -1,24 +1,129 @@
 const { ELEMENTS } = require("../yailMaker/elements")
 const { ATTRIBUTES } = require("../yailMaker/attributes")
-const { METHODS } = require("../yailMaker/methods")
 const fs = require("fs")
 
 function main(filename, elementList) {
 
-    return
+
     let helperClasses = ""
     let helperVariables = ""
     let elementTypesUsed = []
 
 
+
     for (let i = 0; i < elementList.length; i++) {
         let elementInstance = elementList[i]
 
+        helperVariables +=`const ${elementInstance.name} = new ${elementInstance.type.toUpperCase()}()\n`
+
         if (!elementTypesUsed.includes(elementInstance.type)) {
+            elementTypesUsed.push(elementInstance.type)
 
+
+            let elementDocs = `class ${elementInstance.type.toUpperCase()} {\n`
             let element = ELEMENTS[elementInstance.type]
-            let allAttributes = [].concat(element.properties)
 
+            //do properties first
+            for (const [property, information] of Object.entries(element.properties)) {
+                if (element.codeNoRead.includes(property) && element.codeNoWrite.includes(property)) {
+                    continue //skip anything that cannot be coded
+                }
+                let restriction = ""
+                if (element.codeNoRead.includes(property)) {
+                    restriction = "Write ONLY."
+                }
+                if (element.codeNoWrite.includes(property)) {
+                    restriction = "Read ONLY."
+                }
+
+                let propDoc = `\n/** \n`
+                propDoc += `* ${information.description}\n`
+
+                propDoc += `* @property {${information.type}}\n`
+                if (restriction !== "") { propDoc += `* ${restriction}\n` }
+                propDoc += "*/\n"
+
+                elementDocs += `${propDoc} ${property};\n`
+
+
+            }
+
+
+            //now do methods
+
+            let methods = element.methods
+            for (const [method, value] of Object.entries(methods)) {
+
+                let methodDoc = "/** \n"
+                methodDoc += `* ${value.description} \n`
+
+
+                let parameters = []
+                for (const [parameter, type] of Object.entries(value.parameters)) {
+                    if (type === "callback") {
+                        methodDoc += `* @param {function} eventCallbackFunction - runs after event has been triggered\n`
+                    } else if (parameter==="eventName") {
+                        
+                        methodDoc += `* @param {${type}} ${parameter} - Available event(s): ${Object.keys(element.events).join(", ")}\n`
+
+                    } else {
+                        methodDoc += `* @param {${type}} ${parameter}\n`
+                    }
+                    parameters.push(parameter)
+                }
+
+                if (method === "addEventListener") {
+                    methodDoc += `* \n`
+                    methodDoc += `* Events for ${elementInstance.type}s are: \n`
+                    methodDoc += `* \n`
+
+                    for (const [event, detail] of Object.entries(element.events)) {
+
+                        let eventParameters = Object.keys(detail.parameters)
+
+
+                        methodDoc += `* @example <caption>${event}: ${detail.description}</caption>\n`
+                        methodDoc += `*         ${elementInstance.type}.addEventListener(\n`
+                        methodDoc += `*                 "${event}",\n`
+                        methodDoc += `*                 function (${eventParameters.join(", ")}) {\n`
+
+                        for (const [p, t] of Object.entries(detail.parameters)) {
+                            methodDoc += `*                         //"${p}" is a returned value of type "${t}"\n`
+                        }
+
+                        //methodDoc += `*                         //Your code here\n`
+                        methodDoc += `*                 }\n`
+                        methodDoc += `*         )\n`
+                        methodDoc += `* \n`
+                    }
+                }
+
+
+
+                methodDoc += `*/\n`
+
+                methodDoc += `${method} (${parameters.join(", ")}){};\n\n`
+
+                elementDocs += methodDoc
+            }
+
+
+            elementDocs += `constructor(){};\n` 
+            elementDocs += "}\n\n"
+            helperClasses += elementDocs 
+        }
+    }
+
+    let finalHelperCode = helperClasses+ helperVariables
+
+    filename = filename.substring(0, filename.lastIndexOf("."))
+
+    fs.writeFileSync(`${filename}Helper.js`, finalHelperCode)
+
+}
+
+
+/*
             let attributes = ""
             let index = 0
             for (let a = 0; a < allAttributes.length; a++) {
@@ -34,87 +139,83 @@ function main(filename, elementList) {
                     if (!attInfo.startsWith("@")) { continue } //this is to skip test cases for the test compiler. The JSDoc has all lines starting with @.
                     attDoc += "* " + attInfo[a] + "\n"
                 }
-                attDoc += `*/\n`
-                attributes += `${attDoc}${att};`
-            }
+                attDoc += `*//*\n`
+attributes += `${attDoc}${att};`
+}
 
-            let methods = ""
-            for (let a = 0; a < element.methods.length; a++) {
-                let method = element.methods[a]
+let methods = ""
+for (let a = 0; a < element.methods.length; a++) {
+let method = element.methods[a]
 
-                let methodDocs = METHODS[method]
-                let methodDoc = ""
-                methodDoc += `\n/**\n`
-                let paramList = ""
-                if (methodDocs) {
-                    if (methodDocs.description) {
-                        methodDoc += `* ${methodDocs.description}\n`
-                    }
+let methodDocs = METHODS[method]
+let methodDoc = ""
+methodDoc += `\n/**\n`
+let paramList = ""
+if (methodDocs) {
+if (methodDocs.description) {
+methodDoc += `* ${methodDocs.description}\n`
+}
 
-                    if (methodDocs.params) {
-                        for (let k = 0; k < methodDocs.params.length; k++) {
-                            methodDoc += `* @param ${methodDocs.params[k].type} ${methodDocs.params[k].name} ${methodDocs.params[k].info}`
-                            paramList += ` ${methodDocs.params[k].name},`
-                        }
-                    }
+if (methodDocs.params) {
+for (let k = 0; k < methodDocs.params.length; k++) {
+methodDoc += `* @param ${methodDocs.params[k].type} ${methodDocs.params[k].name} ${methodDocs.params[k].info}`
+paramList += ` ${methodDocs.params[k].name},`
+}
+}
 
-                    if (methodDocs.events) {
-                        if (methodDocs.events[elementInstance.type]) {
-                            methodDoc += `\n`
-                            for (const [key, value] of Object.entries(methodDocs.events[elementInstance.type])) {
-                                methodDoc += `* @example <caption>${key}</caption>\n`
-                                methodDoc += `* ${value}`
-                                methodDoc += `\n`
-                            }
-                        }
-                    }
-
-                }
-
-                methodDoc += `*/\n`
-                paramList = paramList.substring(1).trim()
-
-                methods += `${methodDoc}${method}(${paramList}){};\n`
-            }
-
-            let newHelperClass = `class ${elementInstance.type.toUpperCase()} {${attributes}constructor(){};${methods}};`
-            helperClasses += newHelperClass
-
-        }
-
-        let newInstance = `const ${elementInstance.name} = new ${elementInstance.type.toUpperCase()}();`
-        helperVariables += newInstance
-
-    }
-
-    let constants =
-        `
-    const LEFT = 1;
-    const RIGHT = 2;
-    const CENTER = 3;
-    const TOP = 1;
-    const MIDDLE =2;
-    const BOTTOM = 3; 
-    const FONT= {
-        Default:0,
-        Serif: 2,
-        SansSerif:1,
-        Monospace:3
-    }
-    `
-
-
-    let finalHelperCode = helperClasses + helperVariables + constants
-
-    filename = filename.substring(0, filename.lastIndexOf("."))
-
-    fs.writeFileSync(`${filename}Helper.js`, finalHelperCode)
+if (methodDocs.events) {
+if (methodDocs.events[elementInstance.type]) {
+methodDoc += `\n`
+for (const [key, value] of Object.entries(methodDocs.events[elementInstance.type])) {
+methodDoc += `* @example <caption>${key}</caption>\n`
+methodDoc += `* ${value}`
+methodDoc += `\n`
+}
+}
+}
 
 }
 
+methodDoc += `*//*\n`
+paramList = paramList.substring(1).trim()
+
+methods += `${methodDoc}${method}(${paramList}){};\n`
+}
+
+let newHelperClass = `class ${elementInstance.type.toUpperCase()} {${attributes}constructor(){};${methods}};`
+helperClasses += newHelperClass
+
+}
+
+let newInstance = `const ${elementInstance.name} = new ${elementInstance.type.toUpperCase()}();`
+helperVariables += newInstance
+*/
+/*
+
+let constants =
+    `
+const LEFT = 1;
+const RIGHT = 2;
+const CENTER = 3;
+const TOP = 1;
+const MIDDLE =2;
+const BOTTOM = 3; 
+const FONT= {
+    Default:0,
+    Serif: 2,
+    SansSerif:1,
+    Monospace:3
+}
+`
+
+
+ 
+
+}
+*/
 
 function buildTest(el) {
-return
+    return
     //Construct the XML document
 
     let head = `
@@ -142,14 +243,14 @@ return
         let attInfo = ATTRIBUTES[`${attCase}`]
 
         console.log(att)
-      //  let test = attInfo
+        //  let test = attInfo
 
-   /*     if (!Array.isArray(attInfo)) {
-            continue
-        }
-        if (attInfo.length === 0) {
-            continue
-        }*/
+        /*     if (!Array.isArray(attInfo)) {
+                 continue
+             }
+             if (attInfo.length === 0) {
+                 continue
+             }*/
 
         if (typeof attInfo[attInfo.length - 1] === "string") {
             if (attInfo[attInfo.length - 1].startsWith("@")) {
@@ -214,11 +315,11 @@ return
 
 
     //METHODS
-    tests +="\n//METHOD TESTS\n\n"
+    tests += "\n//METHOD TESTS\n\n"
 
     for (let a = 0; a < element.methods.length; a++) {
         let method = element.methods[a]
-        if (method === "addEventListener" || el==="listview") { continue }    
+        if (method === "addEventListener" || el === "listview") { continue }
         let detail = METHODS[method]
         if (detail.params.length === 0) { //no input parameters
             tests += `${el}1.${method}()\n`
@@ -234,7 +335,7 @@ return
 
 
     //EVENTS
-    tests +="\n//EVENTS TESTS\n\n"
+    tests += "\n//EVENTS TESTS\n\n"
 
     for (let a = 0; a < element.events.length; a++) {
         let eventName = element.events[a]

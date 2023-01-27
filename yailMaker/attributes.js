@@ -1,948 +1,360 @@
 const fs = require('fs')
-const { getSystemErrorMap } = require('util')
 
-//Attributes and their synonyms
+//These are the properties that are associated with components
 //the key is the value that the YAIL code requires (it is not case sensitive for the XML designs)
 //the values are acceptable values for this particular element - they are used for the help file
 
-let string = "@type {string}"
-let color = "@type {string} An 8 character hexadecimal string using ARBG e.g. 'AARRGGBB'"
-let number = "@type {number}"
-let bool = "@type {boolean}"
-let instant = "@type {instant}"
-let list = "@type {array}"
 
-let getset = "@summary Gets or sets."
-let get = "@summary Read-only."
-let set = "@summary Write-only."
-let designer = "@summary Designer only attribute."
-let code = "@summary Code only attribute."
+const ATTRIBUTES = [
+    "AboutScreen",
+    "AbsoluteStrength",
+    "AccentColor",
+    "Accuracy",
+    "Action",
+    "ActivityClass",
+    "ActivityPackage",
+    "AddressesAndNames",
+    "AirPressure",
+    "AlignHorizontal",
+    "AlignVertical",
+    "AllowCookies",
+    "AlternateText",
+    "Altitude",
+    "AnchorHorizontal",
+    "AnchorVertical",
+    "Angle",
+    "Animation",
+    "ApiKey",
+    "AppName",
+    "ApplicationName",
+    "Available",
+    "AvailableCountries",
+    "AvailableLanguages",
+    "AvailableProviders",
+    "AverageLux",
+    "Azimuth",
+    "BackgroundColor",
+    "BackgroundImage",
+    "BackgroundImageinBase64",
+    "BaudRate",
+    "BigDefaultText",
+    "BlocksToolkit",
+    "BoundingBox",
+    "BufferSize",
+    "CenterFromString",
+    "CharacterEncoding",
+    "Checked",
+    "Class",
+    "Clickable",
+    "CloseScreenAnimation",
+    "ColorLeft",
+    "ColorRight",
+    "ColumnNames",
+    "Columns",
+    "ConsumerKey",
+    "ConsumerSecret",
+    "ContactName",
+    "ContactUri",
+    "Country",
+    "CredentialsJson",
+    "CurrentAddress",
+    "CurrentPageTitle",
+    "CurrentUrl",
+    "DataType",
+    "DataUri",
+    "Day",
+    "DefaultFileScope",
+    "DefaultScope",
+    "DelimiterByte",
+    "Description",
+    "DirectMessages",
+    "DisconnectOnError",
+    "Distance",
+    "DistanceInterval",
+    "Draggable",
+    "EastLongitude",
+    "ElapsedTime",
+    "Elements",
+    "ElementsFromString",
+    "EmailAddress",
+    "EmailAddressList",
+    "EnableInfobox",
+    "EnablePan",
+    "EnableRotation",
+    "EnableZoom",
+    "Enabled",
+    "EndLatitude",
+    "EndLocation",
+    "EndLongitude",
+    "ExtendMovesOutsideCanvas",
+    "ExtraKey",
+    "ExtraValue",
+    "Extras",
+    "Features",
+    "FeaturesFromGeoJSON",
+    "FillColor",
+    "FillOpacity",
+    "FollowLinks",
+    "Followers",
+    "FontBold",
+    "FontItalic",
+    "FontSize",
+    "FontSizeDetail",
+    "FontTypeface",
+    "FontTypefaceDetail",
+    "FriendTimeline",
+    "FullScreen",
+    "GoogleVoiceEnabled",
+    "HTMLContent",
+    "HTMLFormat",
+    "HasAccuracy",
+    "HasAltitude",
+    "HasLongitudeLatitude",
+    "HasMargins",
+    "Heading",
+    "Height",
+    "HeightPercent",
+    "HighByteFirst",
+    "HighContrast",
+    "Hint",
+    "HolePoints",
+    "HolePointsFromString",
+    "HomeUrl",
+    "Hour",
+    "Humidity",
+    "Icon",
+    "Id",
+    "IgnoreSslErrors",
+    "Image",
+    "ImageAsset",
+    "ImageHeight",
+    "ImageWidth",
+    "Instant",
+    "Interval",
+    "IsAccepting",
+    "IsConnected",
+    "IsInitialized",
+    "IsOpen",
+    "IsPlaying",
+    "ItemBackgroundColor",
+    "ItemTextColor",
+    "KeepRunningWhenOnPause",
+    "Language",
+    "LastMessage",
+    "Latitude",
+    "LegacyMode",
+    "LineWidth",
+    "ListData",
+    "ListViewLayout",
+    "LocationSensor",
+    "Longitude",
+    "Loop",
+    "Lux",
+    "Magnitude",
+    "MapType",
+    "MaxValue",
+    "MaximumRange",
+    "Mentions",
+    "Message",
+    "MinValue",
+    "MinimumInterval",
+    "Minute",
+    "Month",
+    "MonthInText",
+    "MultiLine",
+    "Name",
+    "Namespace",
+    "NorthLatitude",
+    "NotifierLength",
+    "NumbersOnly",
+    "On",
+    "OpenScreenAnimation",
+    "Orientation",
+    "OriginAtCenter",
+    "PaintColor",
+    "PasswordVisible",
+    "PhoneNumber",
+    "PhoneNumberList",
+    "Picture",
+    "Pitch",
+    "Platform",
+    "PlatformVersion",
+    "PlayOnlyInForeground",
+    "Points",
+    "PointsFromString",
+    "PollingRate",
+    "PrimaryColor",
+    "PrimaryColorDark",
+    "ProjectID",
+    "Prompt",
+    "PromptforPermission",
+    "ProviderLocked",
+    "ProviderName",
+    "Radius",
+    "ReadMode",
+    "ReadOnly",
+    "ReadPermission",
+    "ReceivingEnabled",
+    "RedisPort",
+    "RedisServer",
+    "RefreshTime",
+    "RequestHeaders",
+    "ResponseContent",
+    "ResponseFileName",
+    "Result",
+    "ResultName",
+    "ResultType",
+    "ResultUri",
+    "Roll",
+    "Rotates",
+    "Rotation",
+    "RotationAngle",
+    "Rows",
+    "SaveResponse",
+    "SavedRecording",
+    "ScalePictureToFit",
+    "ScaleUnits",
+    "Scaling",
+    "Scope",
+    "ScreenOrientation",
+    "Scrollable",
+    "SearchResults",
+    "Secure",
+    "Selection",
+    "SelectionColor",
+    "SelectionDetailText",
+    "SelectionIndex",
+    "Sensitivity",
+    "ServiceURL",
+    "Shape",
+    "ShowCompass",
+    "ShowFeedback",
+    "ShowFilterBar",
+    "ShowListsAsJson",
+    "ShowScale",
+    "ShowStatusBar",
+    "ShowUser",
+    "ShowZoom",
+    "SimpleSteps",
+    "Sizing",
+    "Source",
+    "SourceFile",
+    "SouthLatitude",
+    "SpeechRate",
+    "Speed",
+    "SpreadsheetID",
+    "StartLatitude",
+    "StartLocation",
+    "StartLongitude",
+    "StopDetectionTimeout",
+    "StrideLength",
+    "StrokeColor",
+    "StrokeOpacity",
+    "StrokeWidth",
+    "TapThreshold",
+    "Temperature",
+    "Text",
+    "TextAlignment",
+    "TextColor",
+    "TextColorDetail",
+    "TextSize",
+    "TextToWrite",
+    "Theme",
+    "ThumbColorActive",
+    "ThumbColorInactive",
+    "ThumbEnabled",
+    "ThumbPosition",
+    "TimeInterval",
+    "Timeout",
+    "TimerAlwaysFires",
+    "TimerEnabled",
+    "TimerInterval",
+    "Title",
+    "TitleVisible",
+    "Token",
+    "TrackColorActive",
+    "TrackColorInactive",
+    "TransportationMethod",
+    "TutorialURL",
+    "Type",
+    "Url",
+    "UseExternalScanner",
+    "UseLegacy",
+    "UseSSL",
+    "UserLatitude",
+    "UserLongitude",
+    "Username",
+    "UsesLocation",
+    "VersionCode",
+    "VersionName",
+    "Visible",
+    "Volume",
+    "WalkSteps",
+    "WebViewString",
+    "WestLongitude",
+    "Width",
+    "WidthPercent",
+    "WritePermission",
+    "WriteType",
+    "X",
+    "XAccel",
+    "XAngularVelocity",
+    "XStrength",
+    "Y",
+    "YAccel",
+    "YAngularVelocity",
+    "YStrength",
+    "Year",
+    "Z",
+    "ZAccel",
+    "ZAngularVelocity",
+    "ZStrength",
+    "ZoomLevel"
+]
 
-const ATTRIBUTES = {
-    "AboutScreen": [
-        string,
-        getset,
-        "@description Information about the screen. It appears when “About this Application” is selected from the system menu. Use it to tell users about your app. In multiple screen apps, each screen has its own AboutScreen info.",
-        `"Test case for the aboutSceen"`
-    ],
-    "AbsoluteStrength": [],
-    "AccentColor": [
-        color,
-        designer,
-        "@description This is the accent color used for highlights and other user interface accents in newer versions of Android. Components affected by this property include dialogs created by the Notifier, the DatePicker, and others.",
-        `"AAFF0000"` //test case colour red
-    ],
-    "Accuracy": [],
-    "Action": ["Text value."],
-    "ActivityClass": ["Text value."],
-    "ActivityPackage": ["Text value."],
-    "AddressesAndNames": [],
-    "AirPressure": [],
-    "AlignHorizontal": [
-        string,
-        getset,
-        "@description A number that encodes how contents of the screen are aligned horizontally. The choices are the constants LEFT, RIGHT, CENTER",
-        `"center"`  //center for test
-    ],
-    "AlignVertical": [
-        string, getset,
-        "@description A number that encodes how the contents of the arrangement are aligned vertically. The choices are the constants TOP, MIDDLE, BOTTOM. Vertical alignment has no effect if the screen is scrollable.",
-        `"center"` //center for test
-    ],
-    "AllowCookies": [],
-    "AlternateText": [
-        string,
-        set,
-        "@description A written description of what the image looks like.",
-        `"Text Alternate Text"`
-    ],
-    "Altitude": [],
-    "AnchorHorizontal": [],
-    "AnchorVertical": [],
-    "Angle": [],
-    "Animation": [
-        string,
-        set,
-        "@description This is a limited form of animation that can attach a small number of motion types to images. The allowable motions are 'ScrollRightSlow', 'ScrollRight', 'ScrollRightFast', 'ScrollLeftSlow', 'ScrollLeft', 'ScrollLeftFast', and 'Stop'.",
-        `"ScrollLeftSlow"`
-    ],
-    "ApiKey": ["Text value."],
-    "AppName": [
-        string, designer,
-        "@description This is the display name of the installed application in the phone. If the AppName is blank, it will be set to the name of the project when the project is built.",
-        `"Test App name"`
-    ],
-    "ApplicatioName": ["??????"],
-    "Available": [],
-    "AvailableCountries": [],
-    "AvailableLanguages": [],
-    "AvailableProviders": [],
-    "AverageLux": [],
-    "Azimuth": [],
-    "BackgroundColor": [
-        color, getset,
-        "@decription Specifies the background color as an alpha-red-green-blue integer. If an BackgroundImage is available for the component and it has been set, the color change will not be visible until the BackgroundImage is removed.",
-        `"AA00FF00"`
-    ],
-    "BackgroundImage": [
-        string, getset,
-        "@description Specifies the path of the background image. If there is both an BackgroundImage and a BackgroundColor specified, only the BackgroundImage will be visible.",
-        `"cat.png"` //test case
-    ],
-    "BackgroundImageinBase64": [],
-    "BaudRate": [],
-    "BigDefaultText": [
-        bool, getset,
-        "@description When true, all default size text will be increased in size.",
-        false //turn it on for tests
-    ],
-    //TO ADD PROCESSING FOR
-    "BlocksToolkit": [
-        string, designer,
-        "@description A JSON string representing the subset for the screen. Authors of template apps can use this to control what components, designer properties, and blocks are available in the project."
-    ],
-    "BoundingBox": [],
-    "BufferSize": [],
-    "Center": [],
-    "CenterFromString": ["Text value."],
-    "CharacterEncoding": ["Text value."],
-    "Checked": [
-        bool,
-        getset,
-        "@description Specifies whether the CheckBox should be active and clickable."
-    ],
-    "Class": [
-        string,
-        designer,
-        "@description Sets the design class to apply property settings from a CSS file.",
-        `"TestClass"`
-    ],
-    "Clickable": [
-        bool,
-        getset,
-        "@description Specifies whether the image should be clickable or not.",
-        true
-    ],
-    "CloseScreenAnimation": [
-        string, getset,
-        "@description Sets the animation type for this transition of the form. One of 'default', 'fade', 'zoom', 'slidehorizontal', 'slidevertical', 'none'.",
-        `"slidevertical"` //testcase
-    ],
-    "ColorLeft": [
-        color,
-        getset,
-        "@description Specifies the color of the slider bar to the left of the thumb as an alpha-red-green-blue integer, i.e., AARRGGBB. An alpha of 00 indicates fully transparent and FF means opaque.",
-        `"DDDDEEDD"`
-    ],
-    "ColorRight": [
-        color,
-        getset,
-        "@description Specifies the color of the slider bar to the right of the thumb as an alpha-red-green-blue integer, i.e., AARRGGBB. An alpha of 00 indicates fully transparent and FF means opaque.",
-        `"DDDD11DD"`
-
-    ],
-    "Column": [
-        number,
-        designer,
-        "@description Sets the column position of the component in a table arrangement.",
-        0
-    ],
-    "ColumnNames": [],
-    "Columns": [
-        number,
-        designer,
-        "@description Determines the number of columns in the table.",
-        3
-
-    ],
-    "ConsumerKey": ["Text value."],
-    "ConsumerSecret": ["Text value."],
-    "ContactName": [],
-    "ContactUri": [],
-    "Country": ["Text value."],
-    "CredentialsJSON": ["Text value."],
-    "CurrentAddress": [],
-    "CurrentPageTitle": [
-        string,
-        get,
-        "@description Returns the title of the page currently being viewed.",
-        `"Test Title"`
-    ],
-    "CurrentUrl": [
-        string,
-        get,
-        "@description Returns the URL currently being viewed. This could be different from the HomeUrl if new pages were visited by following links.",
-        `"Test current URL"`
-    ],
-    "DataType": ["Text value."],
-    "DataUri": ["Text value."],
-    "Day": [
-        number,
-        get,
-        "@description Returns the Day of the month that was last picked using the DatePicker.",
-        3
-    ],
-    "DefaultFileScope": [
-        string,
-        "@summary Designer only for screens.",
-        "@description Specifies the default scope used when components access files. One of 'app', 'asset', 'cache', 'legacy', 'private', 'shared'.",
-        `"App"` //test (it is default case)
-    ],
-    "DefaultScope": [],
-    "Delimiter": [],
-    "DelimiterByte": [],
-    "Description": ["Text value."],
-    "DirectMessages": [],
-    "DisconnectOnError": [],
-    "Distance": [],
-    "DistanceInterval": [],
-    "Draggable": [],
-    "EastLongitude": [],
-    "ElapsedTime": [],
-    "Elements": [
-        list,
-        set,
-        "@description Specifies the list of choices to display. This is an array of elements.",
-        `@example 
-            listview.elements = [
-                {
-                    Text1: "mainText",
-                    Text2: "detailText",
-                    Image:" Image file name"
-                }
-            ]
-        `,
-        `"[{\"Text1\":\"cat\", \"$H\":41001, \"Text2\":\"detail test\", \"Image\":\"cat.png\"}]"`
-    ],
-    "ElementsFromString": [
-        string,
-        set,
-        "@description Set the list of choices from a string of comma-separated values.",
-        `"'test choice 1', 'cat.png'"`
-    ],
-    "EmailAddress": [],
-    "EmailAddressList": [],
-    "EnableInfoBox": [],
-    "EnablePan": [],
-    "EnableRotation": [],
-    "EnableZoom": [],
-    "Enabled": [
-        bool, getset,
-        "@descriptor Specifies whether the component should be active and clickable.",
-        true //have to set as true for tests of won't work
-    ],
-    "EndLatitude": [],
-    "EndLocation": [],
-    "EndLongitude": [],
-    "ExtendMovesOutsideCanvas": [],
-    "ExtraKey": ["Text value."],
-    "ExtraValue": ["Text value."],
-    "Extras": [],
-    "Features": [],
-    "FillColor": [],
-    "FillOpacity": [],
-    "FollowLinks": [
-        bool,
-        getset,
-        "@description Determines whether to follow links when they are tapped in the WebViewer. If you follow links, you can use GoBack and GoForward to navigate the browser history.",
-        true
-    ],
-    "Followers": [],
-    "FontBold": [
-        bool, getset,
-        "@description Specifies whether the text of the component should be bold. Some fonts do not support bold.",
-        true
-    ],
-    "FontItalic": [
-        bool, getset,
-        "@description Specifies whether the text of the component should be italic. Some fonts do not support italic.",
-        true
-    ],
-    "FontSize": [
-        number, getset,
-        "@description Specifies the text font size of the component, measured in sp(scale-independent pixels).",
-        24
-    ],
-    "FontSizeDetail": [
-        number,
-        getset,
-        "@description Specifies the ListView item’s text font size",
-        18
-    ],
-    "FontTypeface": [
-        number, designer,
-        "@description Specifies the text font face of the component as 'serif', 'sans serif' or 'monospace' if the default is not appropriate.",
-        `"monospace"`
-    ],
-    "FontTypefaceDetail": [
-        number, designer,
-        "@description Specifies the text font face of the component as 'serif', 'sans serif' or 'monospace' if the default is not appropriate.",
-        `"monospace"`
-    ],
-    "FriendTimeline": [],
-    "FullScreen": [],
-    "GoogleVoiceEnabled": [],
-    "HTMLContent": [
-        string,
-        get,
-        "@decription Returns the content of the Label as HTML. This is only useful if the HTMLFormat property is true.",
-        `"Test HTML Content"`
-    ],
-    "HTMLFormat": [
-        bool,
-        designer,
-        "@description Specifies the label’s text’s format.",
-        true
-    ],
-    "HasAccuracy": [],
-    "HasAltitude": [],
-    "HasLongitudeLatitude": [],
-    "HasMargins": [
-        bool,
-        getset,
-        "@description Specifies whether the label should have margins. This margin value is not well coordinated with the designer, where the margins are defined for the arrangement, not just for individual labels.",
-        true
-    ],
-    "Heading": [],
-    "Height": [
-        "@type (number | 'parent' | number%)",
-        "@summary Usage depends on component type.",
-        `@description For Screens (read only in code): Returns the Screen height in pixels (y-size).
-        @description For other components (read/write code only): Specifies the Button’s vertical height, measured in pixels.`,
-        200
-    ],
-    "HeightPercent": [
-        number, set,
-        "@description Specifies the component's vertical height as a percentage of the Screen's Height.",
-        50
-    ],
-    "HighByteFirst": [],
-    "HighContrast": [
-        bool,
-        getset,
-        "@description When true, there will be high contrast mode turned on.",
-        true
-    ],
-    "Hint": [
-        string,
-        getset,
-        "@description Textbox or Password hint for the user.",
-        `"Password hint test"`
-    ],
-    "HolePoints": [],
-    "HolePointsFromString": ["Text value."],
-    "HomeUrl": [
-        string,
-        getset,
-        "@description Specifies the URL of the page the WebViewer should initially open to. Setting this will load the page.",
-        `"http://www.google.com"`
-    ],
-    "Hour": [
-        number,
-        get,
-        "@description Returns the hour of the time that was last picked using the TimePicker`. The time returned is always in the 24hour format.",
-        15
-    ],
-    "Humidity": [],
-    "Icon": [
-        string,
-        designer,
-        "@description The image used for your App’s display icon should be a square png or jpeg image with dimensions up to 1024x1024 pixels. Larger images may cause compiling or installing the app to fail. The build server will generate images of standard dimensions for Android devices.",
-        `"cat.png"`
-    ],
-    "Id": [
-        string,
-        designer,
-        "@description Sets the id for an component in a CSS file.",
-        `"TestId"`
-    ],
-    "IgnoreSslErrors": [
-        bool,
-        getset,
-        "@description Determine whether or not to ignore SSL errors. Set to true to ignore errors. Use this to accept self signed certificates from websites.",
-        true
-    ],
-    "Image": [
-        string,
-        getset,
-        "@description Specifies the path of the component's image. If there is both an Image and a BackgroundColor specified, only the Image will be visible.",
-        `"cat.png"`
-    ],
-    "ImageAsset": ["Text value."],
-    "ImageHeight": [
-        number,
-        getset,
-        "@description Specifies the image height of ListView layouts containing images.",
-        50
-    ],
-    "ImageWidth": [
-        number,
-        getset,
-        "@description Specifies the image width of ListView layouts containing images.",
-        50
-    ],
-    "Instant": [
-        instant,
-        get,
-        "@description Returns instant of the date that was last picked using the DatePicker in milliseconds since January 1, 1970.",
-        0
-    ],
-    "InstantInTime": [
-        instant,
-        get,
-        "@description Returns instant of the time that was last picked using the TimePicker in milliseconds since January 1, 1970.",
-        0
-    ],
-    "Interval": [],
-    "IsAccepting": [],
-    "IsConnected": [],
-    "IsInitialized": [],
-    "IsOpen": [],
-    "IsPlaying": [
-        bool,
-        get,
-        "@description Reports whether the media is playing.",
-        true
-    ],
-    "ItemBackgroundColor": [
-        color,
-        getset,
-        "@description The background color of the ListPicker items.",
-        `"AAFF00F0"`
-    ],
-    "ItemTextColor": [
-        color,
-        getset,
-        "@description The text color of the ListPicker items.",
-        `"AAF0F0F0"`
-    ],
-    "KeepRunningWhenOnPause": [],
-    "Language": ["Text value."],
-    "LastMessage": [],
-    "Latitude": [],
-    "LegacyMode": [],
-    "LineWidth": [],
-    "ListData": [
-        string,
-        designer,
-        "@description Specifies filename for data to be displayed in the ListView elements. File is a text file with mainText, detailText, imageName for each element in the list on seperate lines.",
-        `"data.csv"`
-    ],
-    "ListViewLayout": [
-        string,
-        designer,
-        "@description Specifies type of layout for ListView row. Designer only property. Options are 'text', 'text_detail', 'text_detail_horz', 'image_text', 'image_text_detail'.",
-        `"image_text"`
-    ],
-    "LocationSensor": [],
-    "Longitude": [],
-    "Loop": [
-        bool,
-        getset,
-        "@description If true, the Player will loop when it plays. Setting Loop while the player is playing will affect the current playing.",
-        true
-    ],
-    "Lux": [],
-    "Magnitude": [],
-    "MapType": [],
-    "MaxValue": [
-        number,
-        getset,
-        "@description Sets the maximum value of slider. If the new maximum is less than the current minimum, then minimum and maximum will both be set to this value. Setting MaxValue resets the thumb position to halfway between MinValue and MaxValue and signals the PositionChanged` event.",
-        275
-    ],
-    "MaximumRange": [],
-    "Mentions": [],
-    "Message": ["Text value."],
-    "MinValue": [
-        number,
-        getset,
-        "@description Sets the minimum value of slider. If the new minimum is greater than the current maximum, then minimum and maximum will both be set to this value. Setting MinValue resets the thumb position to halfway between MinValue and MaxValue and signals the PositionChanged` event.",
-        125
-    ],
-    "MinimumInterval": [],
-    "Minute": [
-        number,
-        get,
-        "@description Returns the hour of the time that was last picked using the TimePicker. The time returned is always in the 24hour format.",
-        16
-    ],
-    "Month": [
-        number,
-        get,
-        "@description Returns the number of the Month that was last picked using the DatePicker.",
-        2
-    ],
-    "MonthInText": [
-        string,
-        get,
-        "@description Returns the name of the Month that was last picked using the DatePicker.",
-        `"May"`
-    ],
-    "MultiLine": [
-        bool,
-        getset,
-        "@description If true, then this TextBox accepts multiple lines of input, which are entered using the return key. For single line text boxes there is a Done key instead of a return key, and pressing Done hides the keyboard. The app should call the HideKeyboard method to hide the keyboard for a mutiline text box.",
-        true
-    ],
-    "Name": [
-        string,
-        designer,
-        "@description Sets the name of the element. This appears as a variable in the JavaScript file."
-    ],
-    "Namespace": ["Text value."],
-    "NorthLatitude": [],
-    "NotifierLength": [
-        string,
-        designer,
-        `@description Specifies the length of time that the alert is shown either “short” or “long”.`,
-        '"short"'
-    ],
-    "NumbersOnly": [
-        bool,
-        getset,
-        "@description If true, then this TextBox or PasswordTextBox accepts only numbers as keyboard input. Numbers can include a decimal point and an optional leading minus sign. This applies to keyboard input only. Even if NumbersOnly is true, you can set the text to anything at all using the [Text`](#PasswordTextBox.Text) property.",
-        true
-    ],
-    "On": [
-        bool,
-        getset,
-        "@description True if the switch is in the On state, false otherwise.",
-        true
-    ],
-    "OpenScreenAnimation": [
-        string, getset,
-        "@description Sets the animation type for this transition of the form. One of 'default', 'fade', 'zoom', 'slidehorizontal', 'slidevertical', 'none'.",
-        `"fade"`
-    ],
-    "Orientation": [
-        string,
-        getset,
-        "@description Specifies the component's orientation. This may be: Vertical, which displays elements in rows one after the other; or Horizontal, which displays one element at a time and allows the user to swipe left or right to brows the elements.",
-        `"vertical"`
-    ],
-    "OriginAtCenter": [],
-    "PaintColor": [],
-    "PasswordVisible": [
-        bool,
-        set,
-        "@description Specifies whether the password is hidden (default) or shown.",
-        true
-    ],
-    "PhoneNumber": ["Text value."],
-    "PhoneNumberList": [],
-    "Picture": [
-        string,
-        getset,
-        "@description Specifies the path of the Image’s Picture.",
-        `"cat.png"`
-    ],
-    "Pitch": [],
-    "Platform": [
-        code,
-        get,
-        "@description Gets the name of the underlying platform running the app.",
-        `"Microsoft"`
-    ],
-    "PlatformVersion": [
-        code,
-        get,
-        "@description Gets the version number of the platform running the app. This is typically a dotted version number, such as 10.0. Any value can be returned, however, so you should take care to handle unexpected data. If the platform version is unavailable, the empty text will be returned.",
-        2
-    ],
-    "PlayOnlyInForeground": [
-        bool,
-        getset,
-        "@description If true, the Player will pause playing when leaving the current screen; if false (default option), the Player continues playing whenever the current screen is displaying or not.",
-        true
-    ],
-    "Points": [],
-    "PointsFromString": ["Text value."],
-    "PollingRate": [],
-    "PrimaryColor": [
-        color,
-        designer,
-        "@description This is the primary color used as part of the Android theme, including coloring the Screen’s title bar.",
-        `"AA0000FF"`
-    ],
-    "PrimaryColorDark": [
-        color,
-        designer,
-        "@description This is the primary color used when the Theme property is specified to be Dark. It applies to a number of elements, including the Screen’s title bar.",
-        `"AAFFFF00"`
-    ],
-    "ProjectID": ["Text value."],
-    "Prompt": [
-        string,
-        getset,
-        "@description Specifies the text used for the title of the Spinner window.",
-        `"Spinner Prompt Test"`
-    ],
-    "PromptForPermission": [
-        bool,
-        getset,
-        "@description Determine if the user should be prompted for permission to use the geolocation API while in the WebViewer. If true, prompt the user of the WebViewer to give permission to access the geolocation API. If false, assume permission is granted.",
-        false
-    ],
-    "ProviderLocked": [],
-    "ProviderName": [],
-    "Radius": [],
-    "ReadMode": [],
-    "ReadOnly": [
-        bool,
-        getset,
-        "@description Whether the TextBox is read-only. By default, this is true.",
-        false
-    ],
-    "ReadPermission": [],
-    "ReceivingEnabled": [],
-    "RedisPort": [],
-    "RedisServer": ["Text value."],
-    "RefreshTime": [],
-    "RequestHeaders": [],
-    "ResponseContent": [],
-    "ResponseFileName": ["Text value."],
-    "Result": [],
-    "ResultName": ["Text value."],
-    "ResultType": [],
-    "ResultUri": [],
-    "Roll": [],
-    "Rotates": [],
-    "Rotation": [],
-    "RotationAngle": [
-        number,
-        getset,
-        "@description The angle at which the image picture appears rotated. This rotation does not appear on the designer screen, only on the device.",
-        45
-    ],
-    "Row": [
-        number,
-        designer,
-        "@description Sets the row position of the component in a table arrangement.",
-        0
-    ],
-    "Rows": [
-        number,
-        designer,
-        "@description Determines the number of rows in the table.",
-        4
-    ],
-    "SaveResponse": [],
-    "SavedRecording": ["Text value."],
-    "ScalePictureToFit": [
-        bool,
-        set,
-        "@designer Specifies whether the image should be resized to match the size of the ImageView.",
-        true
-    ],
-    "ScaleUnits": [],
-    "Scaling": [
-        number,
-        set,
-        "@designer This property determines how the picture scales according to the Height or Width of the Image. Scale proportionally (0) preserves the picture aspect ratio. Scale to fit (1) matches the Image area, even if the aspect ratio changes.",
-        1
-    ],
-    "Scope": [],
-    "ScreenOrientation": [
-        string,
-        getset,
-        "@description Declares the requested screen orientation, specified as a text value. Values are one of 'unspecified', 'landscape', 'portrait', 'sensor', 'user', 'behind', 'nosensor', 'fullsensor', 'reverselandscape', 'reverseportrait', 'sensorlandscape', 'sensorportrait'. ",
-        `"portrait"`
-    ],
-    "Script": [
-        "@description Connects a JavaScript script file to the screen",
-        `"screen1.js"`
-    ],
-    "Scrollable": [
-        bool,
-        getset,
-        "@description When checked, there will be a vertical scrollbar on the screen, and the height of the application can exceed the physical height of the device. When unchecked, the application height is constrained to the height of the device.",
-        true
-    ],
-    "SearchResults": [],
-    "Secure": [],
-    "Selection": [
-        string,
-        get,
-        "@description The selected item. When directly changed by the programmer, the SelectionIndex property is also changed to the first item in the ListPicker with the given value. If the value is not in Elements, SelectionIndex will be set to 0. WARNING: This cannot be used until the screen is initialised. This cannot be set.",
-        `"test choice 1"`
-    ],
-    "SelectionColor": [
-        color,
-        getset,
-        "@description he color of the item when it is selected.",
-        `"DDAA2288"`
-    ],
-    "SelectionDetailText": [
-        string,
-        get,
-        "@description Returns the Secondary or Detail text in the ListView at the position set by SelectionIndex. WARNING: This cannot be used until the screen is initialised. It cannot be set.",
-        `"Test selection detail text"`
-    ],
-    "SelectionIndex": [
-        number,
-        getset,
-        "@description Selection index property setter method. WARNING: This cannot be used in code until after the screen is initialised, except if it is used in the XML screen file.",
-        0
-    ],
-    "Sensitivity": [],
-    "ServiceURL": ["Text value."],
-    "Shape": [
-        string,
-        designer,
-        "@description Specifies the shape of the component. The valid values for this property are 'round', 'rectangle', and 'oval'. The Shape will not be visible if an Image is used.",
-        `"round"`
-    ],
-    "ShowCompass": [],
-    "ShowFeedback": [
-        bool,
-        getset,
-        "@description Specifies if a visual feedback should be shown when a component with an assigned Image is pressed.",
-        true
-    ],
-    "ShowFilterBar": [
-        bool,
-        getset,
-        "@description If true, the ListPicker will show a search filter bar.",
-        true
-    ],
-    "ShowListsAsJson": [
-        bool,
-        designer,
-        "@description If true (the default), lists will be shown as strings in JSON/Python notation for example [1, “a”, true]. If false, lists will be shown in the LISP notation, for example (1 a true). Note: This property should be set only in Screen1 and the value for Screen1 determines the behavior for all screens in the app.",
-        true
-    ],
-    "ShowScale": [],
-    "ShowStatusBar": [
-        bool,
-        getset,
-        "@description The status bar is the topmost bar on the screen. This property reports whether the status bar is visible.",
-        true
-    ],
-    "ShowUser": [],
-    "ShowZoom": [],
-    "SimpleSteps": [],
-    "Sizing": [
-        string,
-        designer,
-        "@description If set to 'responsive' (the default), screen layouts will use the actual resolution of the device. If set to 'fixed', screen layouts will be created for a single fixed-size screen and autoscaled. Note: This property should be set on Screen1 only and controls the sizing for all screens in the app.",
-        `"responsive"`
-    ],
-    "Source": [
-        string,
-        getset,
-        "@description Sets the audio source.",
-        `"Test audio source"`
-    ],
-    "SourceFile": ["Text value."],
-    "SouthLatitude": [],
-    "SpeechRate": [],
-    "Speed": [],
-    "SpreadsheetID": ["Text value."],
-    "StartLatitude": [],
-    "StartLocation": [],
-    "StartLongitude": [],
-    "StopDetectionTimeout": [],
-    "StrideLength": [],
-    "StrokeColor": [],
-    "StrokeOpacity": [],
-    "StrokeWidth": [],
-    "Style": [],
-    "TapThreshold": [],
-    "Temperature": [],
-    "Text": [
-        string,
-        getset,
-        "@description Specifies the text displayed by the component.",
-        `"Test value for text"`
-    ],
-    "TextAlignment": [
-        string,
-        designer,
-        "@description Specifies the alignment of the component’s text. Valid values are: 'left' (left-justified if text is written left to right), 'center', or 'right' (right-justified if text is written left to right).",
-        `"center"`
-    ],
-    "TextColor": [
-        color,
-        getset,
-        "@description Specifies the text color of the component as an alpha-red-green-blue integer.",
-        `"AA00FFFF"`
-    ],
-    "TextColorDetail": [
-        color,
-        getset,
-        "@description Specifies the color of the secondary text in a ListView layout.",
-        `"AA22FF44"`
-    ],
-    "TextToWrite": [],
-    "TextSize": [
-        number,
-        getset,
-        "@description Specifies the ListView item’s text font size.",
-        18
-    ],
-    "Theme": [
-        string,
-        designer,
-        "@designer Selects the theme for the application. Theme can only be set at compile time and the Companion will approximate changes during live development. Possible options are:<ul><li><code >Classic</code>, which is the same as older versions of App Inventor;</li><li><code >Device Default</code>, which gives the same theme as the version of Android running on thedevice and uses PrimaryColor for the Action Bar and has light buttons;</li><li><code >Black Title Text</code>, which is the <code >Device Default</code> theme but with black title text; and</li><li><code >Dark</code>, which is a dark version of the <code >Device Default</code> theme using <code >PrimaryColorDark</code> and having dark grey components.</li></ul>"
-    ],
-    "ThumbColorActive": [
-        color,
-        set,
-        "@description Specifies the Switch’s thumb color when switch is in the On state.",
-        `"AA117799"`
-    ],
-    "ThumbColorInactive": [
-        color,
-        set,
-        "@description Specifies the Switch’s thumb color when switch is in the Off state.",
-        `"AA119911"`
-    ],
-    "ThumbEnabled": [
-        bool,
-        getset,
-        "@description Whether or not the slider thumb is being be shown.",
-        true
-    ],
-    "ThumbPosition": [
-        number,
-        getset,
-        "@description Sets the position of the slider thumb. If this value is greater than MaxValue, then it will be set to same value as MaxValue. If this value is less than MinValue, then it will be set to same value as MinValue.",
-        157
-    ],
-    "TimeInterval": [],
-    "Timeout": [],
-    "TimerAlwaysFires": [],
-    "TimerEnabled": [],
-    "TimerInterval": [],
-    "Title": [
-        string,
-        getset,
-        "@description Screen: Title property setter method: sets a new caption for the form in the form’s title bar.",
-        "@description ListPicker: Optional title displayed at the top of the list of choices.",
-        `"Test for title"`
-    ],
-    "TitleVisible": [
-        bool,
-        getset,
-        "@description The title bar is the top gray bar on the screen. This property reports whether the title bar is visible.",
-        true
-    ],
-    "Token": ["Text value."],
-    "TrackColorActive": [
-        color,
-        getset,
-        "@description Specifies the Switch’s track color when in the On state.",
-        `"55EE55EE"`
-    ],
-    "TrackColorInactive": [
-        color,
-        getset,
-        "@description Specifies the Switch’s track color when in the Off state.",
-        `"55555511"`
-    ],
-    "TransportationMethod": [],
-    "TutorialURL": [
-        string,
-        designer,
-        "@descriptionA URL which will be opened on the left side panel (which can be toggled once it is open). This is intended for projects that have an in-line tutorial as part of the project. For security reasons, only tutorials hosted on http://appinventor.mit.edu or linked to from our URL shortener (http://appinv.us) may be used here. Other URLs will be silently ignored.",
-        `"Test for tutorial url"`
-    ],
-    "Type": [],
-    "Url": ["Text value."],
-    "UseExternalScanner": [],
-    "UseLegacy": [],
-    "UseSSL": [],
-    "UserLatitude": [],
-    "UserLongitude": [],
-    "Username": [],
-    "UsesLocation": [
-        bool,
-        set,
-        "@description Specifies whether or not this WebViewer can access the JavaScript geolocation API.",
-        true
-    ],
-    "VersionCode": [
-        number,
-        designer,
-        "@description An integer value which must be incremented each time a new Android Application Package File (APK) is created for the Google Play Store.",
-        2
-    ],
-    "VersionName": [
-        string,
-        designer,
-        "@description A string which can be changed to allow Google Play Store users to distinguish between different versions of the App.",
-        `"Test version"`
-    ],
-    "Visible": [
-        bool,
-        getset,
-        "@description Specifies whether the component should be visible on the screen. Value is true if the Button is showing and false if hidden.",
-        true
-    ],
-    "Volume": [
-        number,
-        set,
-        "@description Sets the volume property to a number between 0 and 100.",
-        56
-    ],
-    "WalkSteps": [],
-    "WebViewString": [
-        string,
-        getset,
-        "@description Gets the WebView’s String, which is viewable through Javascript in the WebView as the window.AppInventor object.",
-        `"Test webviewstring"`
-    ],
-    "WestLongitude": [],
-    "Width": [
-        "@type (number | 'parent' | number%)",
-        "@summary Usage depends on component type.",
-        `@description For Screens (read only in code): Returns the Screen width in pixels (x-size).
-        @description For other components (read/write in code): Specifies the horizontal width of the Button, measured in pixels.`,
-        `"parent"`
-    ],
-    "WidthPercent": [
-        number, set,
-        "@description Specifies the horizontal width of the component as a percentage of the Screen’s Width.",
-        80
-
-    ],
-    "WritePermission": [],
-    "Writetype": [],
-    "X": [],
-    "XAccel": [],
-    "XAngularVelocity": [],
-    "XStrength": [],
-    "Y": [],
-    "YAccel": [],
-    "YAngularVelocity": [],
-    "YStrength": [],
-    "Year": [
-        number,
-        get,
-        "@description Returns the Year that was last picked using the DatePicker.",
-        1902
-    ],
-    "Z": [],
-    "ZAccel": [],
-    "ZAngularVelocity": [],
-    "ZStrength": [],
-    "ZoomLevel": []
-}
 
 
 
 ///////////////////////////////////////////////////////////////////////////////
 //// This section adds the actual lines of code for the various parameters ////
+//// Code only exists here is the propery can be WRITTEN TO by code or     ////
+//// designer                                                              ////
 ///////////////////////////////////////////////////////////////////////////////
+
+/*
+Things missing:
+    Component           Property
+    ActivityStarter     Extras
+    FeatureCollection   Features
+    LineString          Points
+    Map                 BoundingBox
+    Map                 Features
+    Polygon             HolePoints
+    Polygon             Points
+    Web                 RequestHeaders
+
+*/
+
 
 let useQuotesForText = false    //this switch allows the text methods to print with quotes for XML or be processing commands for the transpilation
 
 function setAttribute(key, value, name, descriptor, useQuotes = true) {
+    console.log(descriptor, name)
 
     useQuotesForText = useQuotes
 
     switch (descriptor) {
+        case "Extras":
+        case "Features":
+        case "Points":
+        case "BoundingBox":
+        case "Features":
+        case "HolePoints":
+        case "Points":
+        case "RequestHeaders":
+            console.log(`"${descriptior}" has not yet been implemented. Ignoring for now.`)
+            return ""
+
         case "AboutScreen":
         case "Action":
         case "ActivityClass":
@@ -954,18 +366,20 @@ function setAttribute(key, value, name, descriptor, useQuotes = true) {
         case "AppName":
         case "BackgroundImage":
         case "BackgroundImageinBase64":
+        case "BlocksToolkit":
         case "CenterFromString":
         case "CharacterEncoding":
         case "ConsumerKey":
         case "ConsumerSecret":
         case "Country":
-        case "CredentialsJSON":
+        case "CredentialsJson":
         case "CurrentUrl":
         case "CurrentPageTitle":
         case "DataType":
         case "DataUri":
         case "Description":
         case "ElementsFromString":
+        case "EndLocation":
         case "ExtraKey":
         case "ExtraValue":
         case "Hint":
@@ -985,16 +399,20 @@ function setAttribute(key, value, name, descriptor, useQuotes = true) {
         case "PointsFromString": //this is array of arrays of x,y - should be a convience method to load these better//e.g. [[68.02222323204114,-127.02117919921876],[68.01142776369724,-126.99234008789064]]
         case "ProjectID":
         case "Prompt":
+        case "ProviderName":
         case "RedisServer":
         case "ResponseFileName":
         case "ResultName":
         case "SavedRecording":
+        case "Scope":
         case "Selection":
         case "ServiceURL":
         case "Source":
         case "SourceFile":
         case "SpreadsheetID":
+        case "StartLocation":
         case "Text":
+        case "TextToWrite":
         case "Title":
         case "Token":
         case "TutorialURL":
@@ -1031,11 +449,12 @@ function setAttribute(key, value, name, descriptor, useQuotes = true) {
         case "Clickable":
         case "DisconnectOnError":
         case "Draggable":
-        case "EnableInfoBox":
+        case "EnableInfobox":
         case "EnableRotation":
         case "ExtendMovesOutsideCanvas":
         case "FontBold":
         case "FontItalic":
+        case "FullScreen":
         case "GoogleVoiceEnabled":
         case "HighByteFirst":
         case "HighContrast":
@@ -1048,7 +467,10 @@ function setAttribute(key, value, name, descriptor, useQuotes = true) {
         case "NumbersOnly":
         case "On":
         case "OriginAtCenter":
+        case "PasswordVisible":
         case "PlayOnlyInForeground":
+        case "PromptForPermission":
+        case "ProviderLocked":
         case "ReadOnly":
         case "ReadPermission":
         case "SaveResponse":
@@ -1250,6 +672,7 @@ function setAttribute(key, value, name, descriptor, useQuotes = true) {
 
         default:
             console.log(`Error: Unknown descriptor "${descriptor}". Ignoring.`)
+            errors.push(descriptor)
     }
 
     return ""
@@ -1659,6 +1082,49 @@ function setTrue(key, value, name, descriptor) {
 
     return ""
 }
+
+
+*/
+
+
+/*
+
+//test code for missing arributes that can be written
+
+let errors = []
+for (let i = 0; i < ATTRIBUTES.length; i++) {
+    //console.log(ATTRIBUTES[i])
+    try {
+        setAttribute("", "", "", ATTRIBUTES[i])
+        
+    } catch (error) {
+        console.log("Caught error")
+    }
+}
+
+let {ELEMENTS} = require("./elements")
+
+let data = []
+for (let i=0; i<errors.length; i++){
+    let error = errors[i]
+
+    for (const component of Object.keys(ELEMENTS)){
+        for (const [property, value] of Object.entries(ELEMENTS[component].properties)){
+            let p = property[0].toUpperCase() + property.substring(1)
+            if (p === error) {
+                let designerOnly = ELEMENTS[component].designerNoWrite.includes(property)
+                let codeNoRead = ELEMENTS[component].codeNoRead.includes(property)
+                let codeNoWrite = ELEMENTS[component].codeNoWrite.includes(property)
+                data.push(`${component},${property}, ${value.type}, ${designerOnly}, ${codeNoRead}, ${codeNoWrite}`)
+            }
+        }
+    }
+}
+
+data.sort()
+
+fs.writeFileSync("missing.json", JSON.stringify(data))
+console.log(data)
 
 
 */

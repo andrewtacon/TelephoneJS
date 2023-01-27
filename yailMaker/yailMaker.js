@@ -69,7 +69,7 @@ function main(filename = "temp.xml") {
 
     traverse(structure.elements[0])
 
-    console.log('making helper')
+ //   console.log('making helper')
 
     let helperFile = helperMaker.run(filename, extractedData)
 
@@ -79,8 +79,6 @@ function main(filename = "temp.xml") {
 
     //add lines to execute build
     output(`\n(init-runtime)\n`)
-
-
 
     componentList = ''
     elementList.shift()  //kill first element - it is the root element of the JSON the CML is parsed
@@ -99,7 +97,7 @@ function main(filename = "temp.xml") {
     //console.log(yail.length)
 
 
-
+   // console.log(yail)
 
 
 
@@ -118,7 +116,7 @@ function traverse(object, parent = '') {
 
     let type = object.name.toLowerCase()
 
-    //handle attributes and default attributes
+    //handle attributes and default attributes - these are the properties etc from the XML and the parser gets hold of them
     if (object.attributes) {
         //convert all attributes to lowercase so can be case insensitive for the XML file
         object.attributes = Object.fromEntries(
@@ -160,7 +158,7 @@ function traverse(object, parent = '') {
 
     elementList.push(object.attributes.name)
 
-
+   
     //for tables we need to do some basic error correct for columns and rows numbers for the table and the elements within
     if (type === "table") {
         //0. determine the size of the table
@@ -450,9 +448,9 @@ function createElement(element, attributes, parent, elements) {
         if (legalAttributesLowerCase.indexOf(key.toLowerCase().trim()) !== -1) {
 
             //find correct name for the attribute for the SCHEME code
-            //need to do this because converted to lowercase for the XML file 
-            for (let [attrkey, attrvalue] of Object.entries(ATTRIBUTES)) {
-                if (attrkey.toLowerCase() === key) {             //}) || attrvalue.indexOf(key) !== -1) {
+            //need to do this because converted to lowercase for the XML file so we can forgive casing errors in XML (but not in the JavaScript code)
+            for (let attrkey of ATTRIBUTES) {
+                if (attrkey.toLowerCase() === key) {            
                     //process the attribute
                     output(setAttribute(key, value, attributes.name, attrkey))
                 }

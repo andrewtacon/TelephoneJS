@@ -6,10 +6,12 @@
         "**/CVS": true,
         "**/.DS_Store": true,
         "**/Thumbs.db": true,
-        "node_modules":true
+        "node_modules": true
     },
     "editor.acceptSuggestionOnCommitCharacter": false,
     "editor.snippetSuggestions": "bottom",
-    "emmet.showSuggestionsAsSnippets": false
-
+    "emmet.showSuggestionsAsSnippets": false,
+    "editor.showFoldingControls": "always",
+    "editor.folding": true,
+    "editor.foldingStrategy": "indentation",
 }

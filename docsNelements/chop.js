@@ -7,10 +7,10 @@ let files = fs.readdirSync(".")
 
 let data = ""
 
-for (let i=0; i<files.length; i++){
+for (let i = 0; i < files.length; i++) {
 
-    if (files[i].endsWith(".txt")){
-        data += fs.readFileSync(files[i], "utf-8") +"\r\n"
+    if (files[i].endsWith(".txt")) {
+        data += fs.readFileSync(files[i], "utf-8") + "\r\n"
 
         console.log(files[i])
     }
@@ -77,7 +77,7 @@ for (let i = 0; i < lines.length; i++) {
             type = "array"
         }
 
-       // console.log("-----------------------")
+        // console.log("-----------------------")
 
         if (!output[component]) {
             output[component] = {}
@@ -206,25 +206,32 @@ for (let i = 0; i < lines.length; i++) {
 for (const [key, value] of Object.entries(output)) {
     value.properties["class"] = {
         description: "The styling class of the the component",
-        type: ""
+        type: "string"
     }
     value.codeNoRead.push("class")
     value.codeNoWrite.push("class")
 
     value.properties["id"] = {
         description: "The styling id of the the component",
-        type: ""
+        type: "string"
     }
     value.codeNoRead.push("id")
     value.codeNoWrite.push("id")
 
     value.properties["name"] = {
         description: "The name of the component that will be used to refer to it in code.",
-        type: ""
+        type: "string"
     }
     value.codeNoRead.push("name")
     value.codeNoWrite.push("name")
 
+    let events = Object.keys(value.events)
+    if (events.length > 0) {
+        value.methods["addEventListener"] = {
+            description: "Method used to create event listeners.",
+            parameters: {}
+        }
+    }
 
 }
 
