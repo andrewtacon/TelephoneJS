@@ -640,3 +640,109 @@ exports.getSystemConstant =
     )
 )
 `
+
+
+
+exports.toARGB = 
+`
+(define
+    (toARGB colorValue)
+    (let 
+        ((
+            $colorList 
+            (call-yail-primitive split-color 
+                (*list-for-runtime* 
+                    colorValue
+                ) 
+                '(number) 
+                "split-color"
+            )
+        ))   
+        (forrange $number 
+            (begin   
+                (call-yail-primitive yail-list-set-item! 
+                    (*list-for-runtime* 
+                        (lexical-value $colorList) 
+                        (lexical-value $number) 
+                        (call-yail-primitive math-convert-dec-hex 
+                            (*list-for-runtime* 
+                                (call-yail-primitive yail-list-get-item 
+                                    (*list-for-runtime* 
+                                        (lexical-value $colorList) 
+                                        (lexical-value $number)
+                                    ) 
+                                    '(list number) 
+                                    "select list item"
+                                )
+                            ) 
+                            '(text) 
+                            "convert Dec to Hex"
+                        )
+                    ) 
+                    '(list number any) 
+                    "replace list item"
+                )
+                (if 
+                    (call-yail-primitive yail-not-equal? 
+                        (*list-for-runtime* 
+                            (call-yail-primitive string-length 
+                                (*list-for-runtime* 
+                                    (call-yail-primitive yail-list-get-item 
+                                        (*list-for-runtime* 
+                                            (lexical-value $colorList) 
+                                            (lexical-value $number)
+                                        ) 
+                                        '(list number) 
+                                        "select list item"
+                                    )
+                                ) 
+                                '(text) 
+                                "length"
+                            ) 
+                            2
+                        ) 
+                        '(any any) 
+                        "="
+                    ) 
+                    (begin   
+                        (call-yail-primitive yail-list-set-item! 
+                            (*list-for-runtime* 
+                                (lexical-value $colorList) 
+                                (lexical-value $number) 
+                                (call-yail-primitive string-append 
+                                    (*list-for-runtime* 
+                                        "0" 
+                                        (call-yail-primitive yail-list-get-item 
+                                            (*list-for-runtime* 
+                                                (lexical-value $colorList) 
+                                                (lexical-value $number)
+                                            ) 
+                                            '(list number) 
+                                            "select list item"
+                                        ) 
+                                    ) 
+                                    '(text text ) 
+                                    "join"
+                                )
+                            ) 
+                            '(list number any) 
+                            "replace list item"
+                        )
+                    )
+                )
+            ) 
+            1 
+            4 
+            1
+        )
+        (call-yail-primitive yail-list-join-with-separator 
+            (*list-for-runtime* 
+                (lexical-value $colorList) 
+                ""
+            ) 
+            '(list text) 
+            "join with separator"
+        ) 
+    )
+)
+`

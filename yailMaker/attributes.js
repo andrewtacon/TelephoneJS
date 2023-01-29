@@ -854,6 +854,7 @@ function fromList(key, value, name, options, descriptor) {
 }
 
 function setColor(key, value, name, descriptor) {
+    //this is now going to be RGBA
     //this is to handle data coming from the transpiler
     if (typeof value === "string") {
         if (value.startsWith('"') && value.endsWith('"')) {
@@ -861,11 +862,20 @@ function setColor(key, value, name, descriptor) {
         }
     }
 
+    //check for RGB
 
     if (value.length !== 8) {
-        console.log(`Invalid colour for ${descriptor}. Must be 8 digit hexadecimal string. Found value does not have 8 characters - "${value}" ***`)
-        return ""
+        if (value.length === 6) {
+            value = "FF" + value //assume full alpha and append to front
+        } else {
+            console.log(`Invalid colour for ${descriptor}. Must be 8 digit hexadecimal string. Found value does not have 8 characters - "${value}" ***`)
+            return ""
+        }
+    } else {
+        //convert from RGBA to ARGB (what the system expects)
+        value = value.substring(6) + value.substring(0,6)
     }
+
     value = value.toUpperCase()
     for (let i = 0; i < value.length; i++) {
         let ch = value[i];

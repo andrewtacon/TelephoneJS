@@ -1200,8 +1200,12 @@ function transpileDeclarations(node) {
 
                     switch (propertyRequested) {
                         case "AlignHorizontal":
+                        case "AlignVertical":
                             proceduresUsed.add(procedures.getSystemConstant)
                             return `(getSystemConstant '${MEelementName} '${propertyRequested})`
+                        case "BackgroundColor":
+                            proceduresUsed.add(procedures.toARGB)
+                            return `(toARGB (get-property '${MEelementName} '${uppercaseFirstLetter(MemberExpressionProperty)}) )`
                         case "Instant":
                             return `(com.google.appinventor.components.runtime.Clock:GetMillis (get-property '${MEelementName} '${uppercaseFirstLetter(MemberExpressionProperty)}) )`
                         case "SelectionIndex":

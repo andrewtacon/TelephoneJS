@@ -223,7 +223,7 @@ function buildTest(el) {
         tests += `${componentName}.addEventListener(
     "${event}",
     function (${params}) {
-        testNote.alert("Event occured: ${event}")
+        testnote.showAlert("Event occured: ${event}")
     }
 )\n\n`
 
