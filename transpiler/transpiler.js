@@ -1204,14 +1204,15 @@ function transpileDeclarations(node) {
                             proceduresUsed.add(procedures.getSystemConstant)
                             return `(getSystemConstant '${MEelementName} '${propertyRequested})`
                         case "BackgroundColor":
+                        case "TextColor":
                             proceduresUsed.add(procedures.toARGB)
-                            return `(toARGB (get-property '${MEelementName} '${uppercaseFirstLetter(MemberExpressionProperty)}) )`
+                            return `(toARGB (get-property '${MEelementName} '${propertyRequested}) )`
                         case "Instant":
-                            return `(com.google.appinventor.components.runtime.Clock:GetMillis (get-property '${MEelementName} '${uppercaseFirstLetter(MemberExpressionProperty)}) )`
+                            return `(com.google.appinventor.components.runtime.Clock:GetMillis (get-property '${MEelementName} '${propertyRequested}) )`
                         case "SelectionIndex":
-                            return `(- (get-property '${MEelementName} '${uppercaseFirstLetter(MemberExpressionProperty)}) 1)`  //subtract 1 to keep zero indexes in JS
+                            return `(- (get-property '${MEelementName} '${propertyRequested}) 1)`  //subtract 1 to keep zero indexes in JS
                         default:
-                            return `(get-property '${MEelementName} '${uppercaseFirstLetter(MemberExpressionProperty)})`
+                            return `(get-property '${MEelementName} '${propertyRequested})`
 
                     }
 
