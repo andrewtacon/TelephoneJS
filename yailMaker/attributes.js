@@ -339,7 +339,6 @@ Things missing:
 let useQuotesForText = false    //this switch allows the text methods to print with quotes for XML or be processing commands for the transpilation
 
 function setAttribute(key, value, name, descriptor, useQuotes = true) {
-    console.log(descriptor, name)
 
     useQuotesForText = useQuotes
 

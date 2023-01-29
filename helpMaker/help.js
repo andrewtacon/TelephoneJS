@@ -1,5 +1,5 @@
 const { ELEMENTS } = require("../yailMaker/elements")
-const { ATTRIBUTES } = require("../yailMaker/attributes")
+
 const fs = require("fs")
 
 function main(filename, elementList) {
@@ -14,7 +14,7 @@ function main(filename, elementList) {
     for (let i = 0; i < elementList.length; i++) {
         let elementInstance = elementList[i]
 
-        helperVariables +=`const ${elementInstance.name} = new ${elementInstance.type.toUpperCase()}()\n`
+        helperVariables += `const ${elementInstance.name} = new ${elementInstance.type.toUpperCase()}()\n`
 
         if (!elementTypesUsed.includes(elementInstance.type)) {
             elementTypesUsed.push(elementInstance.type)
@@ -62,8 +62,8 @@ function main(filename, elementList) {
                 for (const [parameter, type] of Object.entries(value.parameters)) {
                     if (type === "callback") {
                         methodDoc += `* @param {function} eventCallbackFunction - runs after event has been triggered\n`
-                    } else if (parameter==="eventName") {
-                        
+                    } else if (parameter === "eventName") {
+
                         methodDoc += `* @param {${type}} ${parameter} - Available event(s): ${Object.keys(element.events).join(", ")}\n`
 
                     } else {
@@ -108,13 +108,13 @@ function main(filename, elementList) {
             }
 
 
-            elementDocs += `constructor(){};\n` 
+            elementDocs += `constructor(){};\n`
             elementDocs += "}\n\n"
-            helperClasses += elementDocs 
+            helperClasses += elementDocs
         }
     }
 
-    let finalHelperCode = helperClasses+ helperVariables
+    let finalHelperCode = helperClasses + helperVariables
 
     filename = filename.substring(0, filename.lastIndexOf("."))
 
@@ -123,99 +123,9 @@ function main(filename, elementList) {
 }
 
 
-/*
-            let attributes = ""
-            let index = 0
-            for (let a = 0; a < allAttributes.length; a++) {
-                let att = allAttributes[a]
-                let attInfo
-
-                //this is a test for missing attributes
-                try { attInfo = ATTRIBUTES[att[0].toUpperCase() + att.substring(1)] } catch (error) { console.log(att); console.log(error); process.exit(0) }
-
-                let attDoc = "\n/**\n"
-                for (let a = 0; a < attInfo.length; a++) {
-                    if (typeof attInfo !== "string") { continue } //skip non-strings they are test values
-                    if (!attInfo.startsWith("@")) { continue } //this is to skip test cases for the test compiler. The JSDoc has all lines starting with @.
-                    attDoc += "* " + attInfo[a] + "\n"
-                }
-                attDoc += `*//*\n`
-attributes += `${attDoc}${att};`
-}
-
-let methods = ""
-for (let a = 0; a < element.methods.length; a++) {
-let method = element.methods[a]
-
-let methodDocs = METHODS[method]
-let methodDoc = ""
-methodDoc += `\n/**\n`
-let paramList = ""
-if (methodDocs) {
-if (methodDocs.description) {
-methodDoc += `* ${methodDocs.description}\n`
-}
-
-if (methodDocs.params) {
-for (let k = 0; k < methodDocs.params.length; k++) {
-methodDoc += `* @param ${methodDocs.params[k].type} ${methodDocs.params[k].name} ${methodDocs.params[k].info}`
-paramList += ` ${methodDocs.params[k].name},`
-}
-}
-
-if (methodDocs.events) {
-if (methodDocs.events[elementInstance.type]) {
-methodDoc += `\n`
-for (const [key, value] of Object.entries(methodDocs.events[elementInstance.type])) {
-methodDoc += `* @example <caption>${key}</caption>\n`
-methodDoc += `* ${value}`
-methodDoc += `\n`
-}
-}
-}
-
-}
-
-methodDoc += `*//*\n`
-paramList = paramList.substring(1).trim()
-
-methods += `${methodDoc}${method}(${paramList}){};\n`
-}
-
-let newHelperClass = `class ${elementInstance.type.toUpperCase()} {${attributes}constructor(){};${methods}};`
-helperClasses += newHelperClass
-
-}
-
-let newInstance = `const ${elementInstance.name} = new ${elementInstance.type.toUpperCase()}();`
-helperVariables += newInstance
-*/
-/*
-
-let constants =
-    `
-const LEFT = 1;
-const RIGHT = 2;
-const CENTER = 3;
-const TOP = 1;
-const MIDDLE =2;
-const BOTTOM = 3; 
-const FONT= {
-    Default:0,
-    Serif: 2,
-    SansSerif:1,
-    Monospace:3
-}
-`
-
-
- 
-
-}
-*/
-
 function buildTest(el) {
-    return
+
+    console.log("Building test for " + el)
     //Construct the XML document
 
     let head = `
@@ -228,47 +138,29 @@ function buildTest(el) {
     </screen>
     `
 
-    let element = ELEMENTS[el]
-
-    let allAttributes = [].concat(element.properties)
-    allAttributes = allAttributes.filter(
-        function (el) {
-            return !element.designerNoWrite.includes(el)
-        })
-
-    let middle = `<${el} `
-    for (let a = 0; a < allAttributes.length; a++) {
-        let att = allAttributes[a]
-        let attCase = att[0].toUpperCase() + att.substring(1, att.length)
-        let attInfo = ATTRIBUTES[`${attCase}`]
-
-        console.log(att)
-        //  let test = attInfo
-
-        /*     if (!Array.isArray(attInfo)) {
-                 continue
-             }
-             if (attInfo.length === 0) {
-                 continue
-             }*/
-
-        if (typeof attInfo[attInfo.length - 1] === "string") {
-            if (attInfo[attInfo.length - 1].startsWith("@")) {
-                console.log(`No test case for property "${att}". Skipping.`)
-                continue //skip those without a test case
-            }
-            middle += `\n${att}=${attInfo[attInfo.length - 1]} `
-        } else {
-            middle += ` \n${att}="${attInfo[attInfo.length - 1]}" `
-        }
-    }
-
     let xml = ""
-    if (el === 'screen') {
-        xml = middle + " name='screen1'>\n" + tail
-    } else {
-        xml = `${head} \n ${middle} \n name="${el}1" /> ${tail}`
+    let properties = ELEMENTS[el].properties
+    let nonDesigner = ELEMENTS[el].designerNoWrite
+    for (const [property, data] of Object.entries(properties)) {
+
+        if (nonDesigner.includes(property)) { continue }
+        let testValue = data.tests
+        let type = typeof testValue[0]
+
+        if (type !== "string") {
+            xml += `${property}="${testValue}"\n`
+        } else {
+            xml += `${property}=${testValue}\n`
+        }
+
     }
+
+    if (el === "screen") {
+        xml = `<screen ${xml}>\n` + tail
+    } else {
+        xml = `${head}\n <${el} ${xml} />\n ${tail}\n`
+    }
+
 
     fs.writeFileSync("screen1.xml", xml)
 
@@ -278,77 +170,67 @@ function buildTest(el) {
 
     //PROPERTIES
 
-    allAttributes = [].concat(element.properties)
     let tests = `require("./screen1Helper")\n\n`
 
     tests += `\n\ntestbox.text = testbox.text +"\\n\\n${el.toUpperCase()} READING AND WRITING TESTS\\n\\n"\n\n`
 
-    for (let a = 0; a < allAttributes.length; a++) {
-        let att = allAttributes[a]
-        let attCase = att[0].toUpperCase() + att.substring(1, att.length)
-        let attInfo = ATTRIBUTES[`${attCase}`]
+    let noRead = ELEMENTS[el].codeNoRead
+    let noWrite = ELEMENTS[el].codeNoWrite
 
-        let test = attInfo
+    let componentName = "testComponent"
+    if (el === "screen") {
+        componentName = "Screen1"
+    }
+    for (const [property, data] of Object.entries(properties)) {
 
-        if (typeof attInfo[attInfo.length - 1] === "string") {
-            if (attInfo[attInfo.length - 1].startsWith("@")) {
-                continue //skip those without a test case
-            }
+        if (noWrite.includes(property) && noRead.includes(property)) { continue }
+
+
+        //WRITING
+        if (!noWrite.includes(property)) {
+            tests += `testbox.text = testbox.text + 'Writing ${property} property to ${data.tests[0]}\\n'\n`.replaceAll('"', '')
+            tests += `${componentName}.${property} = ${data.tests[0]}\n`
         }
-
-        let print = attInfo[attInfo.length - 1]
-        if (typeof print === "string") {
-            print = print.replaceAll('"', "'")
+        if (!noRead.includes(property)) {
+            tests += `testbox.text = testbox.text + 'Read ${property} property\\n'\n`.replaceAll('"', '')
+            tests += `testbox.text = testbox.text + ${componentName}.${property}\n`.replaceAll('"', '')
         }
+        tests += `testbox.text = testbox.text + "\\n\\n"` + "\n\n"
 
-        tests += `testbox.text = testbox.text + "Setting ${el}1.${att} to ${print}\\n"\n`
-        if (!element.codeNoWrite.includes(att)) {
-            tests += `${el}1.${att} = ${attInfo[attInfo.length - 1]} \n`
-        }
-
-        if (!element.codeNoRead.includes(att)) {
-            tests += `testbox.text = testbox.text + "Value after test => "+${el}1.${att} +"\\n"\n`
-        }
-
-        tests += "\n"
     }
 
 
     //METHODS
     tests += "\n//METHOD TESTS\n\n"
 
-    for (let a = 0; a < element.methods.length; a++) {
-        let method = element.methods[a]
-        if (method === "addEventListener" || el === "listview") { continue }
-        let detail = METHODS[method]
-        if (detail.params.length === 0) { //no input parameters
-            tests += `${el}1.${method}()\n`
-        } else {
-            console.log(detail)
-            tests += `${el}1.${method}(${detail.tests.join(", ")})\n`
-        }
+    let methods = ELEMENTS[el].methods
+    for (const [method,value] of Object.entries(methods)){
+        if (method==="addEventListener"){continue} //this isn't an app inventor method and is only relevant for events
+
+        tests += `${componentName}.${method}(${value.tests.join()})\n\n`        
 
     }
-
-
 
 
 
     //EVENTS
     tests += "\n//EVENTS TESTS\n\n"
 
-    for (let a = 0; a < element.events.length; a++) {
-        let eventName = element.events[a]
-        let template = `
-${el}1.addEventListener(
-    "${eventName}",
-    function () {
-        testnote.showAlert("Event detected: ${eventName} ")
+    let events = ELEMENTS[el].events
+    for (const [event, value] of Object.entries(events)){
+        let params = Object.keys(value.parameters).join()
+
+        tests += `${componentName}.addEventListener(
+    "${event}",
+    function (${params}) {
+        testNote.alert("Event occured: ${event}")
     }
-)
-`
-        tests += template
+)\n\n`
+
+
     }
+
+
 
     fs.writeFileSync("screen1.js", tests)
 

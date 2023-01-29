@@ -22,7 +22,7 @@ let log = console.log
 //////////////////////////
 
 const helperMaker = require("./helpMaker/help")
-let buildTest = helperMaker.buildTest("table")
+//let buildTest = helperMaker.buildTest("screen")
 
 /////////////////////////
 // END TEST /////////////

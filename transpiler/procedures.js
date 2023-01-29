@@ -556,3 +556,87 @@ exports.getImageName =
     )
 )
 `
+
+
+
+exports.getSystemConstant =
+`
+(define 
+    (getSystemConstant component property)
+    (let 
+        ((
+            $stringValue 
+            (call-yail-primitive string-append 
+                (*list-for-runtime* 
+                    (call-yail-primitive make-yail-dictionary 
+                        (*list-for-runtime* 
+                            (call-yail-primitive make-dictionary-pair 
+                                (*list-for-runtime* 
+                                    "align" 
+                                    (get-property component property) 
+                                ) 
+                                '(key any)  
+                                "make a pair"
+                            )
+                        ) 
+                        '(pair ) 
+                        "make a dictionary"
+                    ) 
+                ) 
+                '(text ) 
+                "join"
+            )
+        ))   
+        (set-lexical! 
+            $stringValue 
+            (call-yail-primitive string-split 
+                (*list-for-runtime* 
+                    (lexical-value $stringValue) 
+                    ":"
+                ) 
+                '(text text) 
+                "split"
+            )
+        )
+        (set-lexical! $stringValue 
+            (call-yail-primitive yail-list-get-item 
+                (*list-for-runtime* 
+                    (lexical-value $stringValue) 
+                    2
+                ) 
+                '(list number) 
+                "select list item"
+            )
+        )
+        (set-lexical! $stringValue 
+            (call-yail-primitive string-replace-all 
+                (*list-for-runtime* 
+                    (lexical-value $stringValue) 
+                    "\\"" 
+                    ""
+                ) 
+                '(text text text) 
+                "replace all"
+            )
+        )
+        (set-lexical! $stringValue 
+            (call-yail-primitive string-to-lower-case 
+                (*list-for-runtime* 
+                    (call-yail-primitive string-replace-all 
+                        (*list-for-runtime* 
+                            (lexical-value $stringValue) 
+                            "}" 
+                            ""
+                        ) 
+                        '(text text text) 
+                        "replace all"
+                    )
+                ) 
+                '(text) 
+                "downcase"
+            )
+        )
+        (lexical-value $stringValue)
+    )
+)
+`

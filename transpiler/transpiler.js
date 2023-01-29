@@ -601,6 +601,9 @@ function transpileDeclarations(node) {
 
                     switch (isVariableOfScope) {
                         case "component":
+
+
+
                             //check if a method is called on something
                             if (node.callee.property !== undefined) {
                                 let methodCalled = node.callee.property.name
@@ -610,7 +613,7 @@ function transpileDeclarations(node) {
 
                                 //let legalMethods = ELEMENTS[isVariableOfType].methods  CHANGED FOR NEW ELEMENTS
                                 let legalMethods = Object.keys(ELEMENTS[isVariableOfType].methods)
-                                
+
                                 legalMethods.push("addEventListener")
                                 if (!legalMethods.includes(methodCalled)) {
                                     console.log(`"${elementName}" is a ${isVariableOfType} and does not have a method "${methodCalled}". Ignoring.`)
@@ -644,7 +647,7 @@ function transpileDeclarations(node) {
 
                                         return (`(define-event ${transpileDeclarations(node.callee.object)} ${uppercaseFirstLetter(asString(args, 0))}(${params.trim()}) (set-this-form) ${transpileDeclarations(args[1])})`)
 
-                                    
+
                                     ////////////////////////////////////////////////////////////////////////////////////////////
                                     /// The following generic methods handle simple cases on no, one, two etc input arguments //
                                     ////////////////////////////////////////////////////////////////////////////////////////////
@@ -1192,18 +1195,27 @@ function transpileDeclarations(node) {
                 //Do components first
                 case "component":
 
+
+                    let propertyRequested = uppercaseFirstLetter(MemberExpressionProperty)
+
+                    switch (propertyRequested) {
+                        case "AlignHorizontal":
+                            proceduresUsed.add(procedures.getSystemConstant)
+                            return `(getSystemConstant '${MEelementName} '${propertyRequested})`
+                        case "Instant":
+                            return `(com.google.appinventor.components.runtime.Clock:GetMillis (get-property '${MEelementName} '${uppercaseFirstLetter(MemberExpressionProperty)}) )`
+                        case "SelectionIndex":
+                            return `(- (get-property '${MEelementName} '${uppercaseFirstLetter(MemberExpressionProperty)}) 1)`  //subtract 1 to keep zero indexes in JS
+                        default:
+                            return `(get-property '${MEelementName} '${uppercaseFirstLetter(MemberExpressionProperty)})`
+
+                    }
+
+
                     //TODO need to make sure that these are legally get-able values for different elements
                     //valid for
                     //textbox text
                     //listview selectionDetailText
-                    let propertyRequested = uppercaseFirstLetter(MemberExpressionProperty)
-                    if (propertyRequested === "Instant") {
-                        return `(com.google.appinventor.components.runtime.Clock:GetMillis (get-property '${MEelementName} '${uppercaseFirstLetter(MemberExpressionProperty)}) )`
-                    } else if (propertyRequested === "SelectionIndex") {
-                        return `(- (get-property '${MEelementName} '${uppercaseFirstLetter(MemberExpressionProperty)}) 1)`  //subtract 1 to keep zero indexes in JS
-                    } else {
-                        return `(get-property '${MEelementName} '${uppercaseFirstLetter(MemberExpressionProperty)})`
-                    }
 
                     /*                switch (MemberExpressionProperty) {
                                         case "text":
