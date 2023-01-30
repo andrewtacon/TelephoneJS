@@ -491,6 +491,40 @@ exports.listAppend =
 `
 
 
+
+
+exports.createNewElementWithRefresh =
+`
+(define
+    (createNewElement component main detail image)
+    (let 
+        ((
+            newElement 
+            (get-property component 'Elements)
+        ))   
+        (call-yail-primitive yail-list-add-to-list! 
+            (*list-for-runtime* 
+                (lexical-value newElement) 
+                (call-component-method component 'CreateElement 
+                    (*list-for-runtime* main detail image) 
+                    '(text text text)
+                ) 
+            ) 
+            '(list any ) 
+            "add items to list"
+        )
+        (set-and-coerce-property! component 'Elements 
+            (lexical-value newElement) 
+            'list
+        )     
+    )
+)
+
+
+
+`
+
+
 exports.getDetailText =
 `
 (define 

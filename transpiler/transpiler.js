@@ -747,6 +747,15 @@ function transpileDeclarations(node) {
 
 
                                     ////////// Special Listview Methods
+                                    /*case "createElement":
+                                        proceduresUsed.add(procedures.createNewElement)
+                                        if (args.length===0) {console.log("CreateElement requires at least one input"); return ""}
+                                        if (args.length===1) {args.push(""); args.push("")}
+                                        if (args.length===2) {args.push("");}
+                                        console.log(`(createNewElement '${elementName} ${transpileDeclarations(args[0])} ${transpileDeclarations(args[1])} ${transpileDeclarations(args[2])})`)
+
+                                        return `(createNewElement '${elementName} ${transpileDeclarations(args[0])} ${transpileDeclarations(args[1])} ${transpileDeclarations(args[2])})`
+                                        */
                                     case "getDetailText":
                                         proceduresUsed.add(procedures.getDetailText)
                                         return (`(getDetailText '${elementName} ${transpileDeclarations(args[0])})`)
