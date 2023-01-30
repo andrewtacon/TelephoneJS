@@ -1205,6 +1205,7 @@ function transpileDeclarations(node) {
                             return `(getSystemConstant '${MEelementName} '${propertyRequested})`
                         case "BackgroundColor":
                         case "TextColor":
+                        case "TextColorDetail":
                             proceduresUsed.add(procedures.toARGB)
                             return `(toARGB (get-property '${MEelementName} '${propertyRequested}) )`
                         case "Instant":

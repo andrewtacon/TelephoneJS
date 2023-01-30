@@ -956,6 +956,8 @@ function loadListViewData(key, value, name, descriptor) {
     let outputText = JSON.stringify(datalist)
     outputText = outputText.replaceAll('"', '\\"')
 
+    console.log(outputText)
+
     return `\n\t(set-and-coerce-property! '${name} '${descriptor} "${outputText}" 'text)`
 }
 
