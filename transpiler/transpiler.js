@@ -1215,6 +1215,10 @@ function transpileDeclarations(node) {
                         case "BackgroundColor":
                         case "TextColor":
                         case "TextColorDetail":
+                        case "ThumbColorActive":
+                        case "ThumbColorInactive":
+                        case "TrackColorActive":
+                        case "TrackColorInactive":
                             proceduresUsed.add(procedures.toARGB)
                             return `(toARGB (get-property '${MEelementName} '${propertyRequested}) )`
                         case "Instant":
