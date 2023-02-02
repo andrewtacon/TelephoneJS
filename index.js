@@ -1,3 +1,5 @@
+process.env ['NODE_TLS_REJECT_UNAUTHORIZED'] = 0 
+
 let emulatorInterface
 let networkInterface
 const generateYail = require("./yailMaker/yailMaker")
@@ -22,7 +24,7 @@ let log = console.log
 //////////////////////////
 
 const helperMaker = require("./helpMaker/help")
-//let buildTest = helperMaker.buildTest("webviewer")
+let buildTest = helperMaker.buildTest("barometer")
 
 /////////////////////////
 // END TEST /////////////

@@ -639,7 +639,7 @@ function setAttribute(key, value, name, descriptor, useQuotes = true) {
             return fromList(key, value, name, ['metric', 'imperial'], "ScaleUnits")
             break;
         case "Sensitivity":
-            return fromList(key, value, name, ['weak', 'moderate', 'strong'], "ScaleUnits")
+            return fromList(key, value, name, ['weak', 'moderate', 'strong'], "Sensitivity")
             break;
         case "ReceivingEnabled":
             return fromList(key, value, name, ['off', 'foreground', 'always'], "ReceivingEnabled")
@@ -835,7 +835,11 @@ function fromList(key, value, name, options, descriptor) {
         // if (descriptor === "Orientation") { if (index !== 1) { return ""} } //only send through request for horizonatal, vertical is default
         if (descriptor === "NotifierLength") { if (index !== 0) { return "" } } //only send through request for short, long is default
         if (descriptor === "MapType" || descriptor === "ScaleUnits") { if (index === 0) { return "" } }
-        if (descriptor === "Sensitivity") { if (index === 2) { } return "" }
+        if (descriptor === "Sensitivity") {
+            console.log("Sensitivity", value, index)
+            if (index === 2) { return "" }
+        }
+
 
         return `\n\t(set-and-coerce-property! '${name} '${descriptor} ${index} 'number)`
     }
@@ -873,7 +877,7 @@ function setColor(key, value, name, descriptor) {
         }
     } else {
         //convert from RGBA to ARGB (what the system expects)
-        value = value.substring(6) + value.substring(0,6)
+        value = value.substring(6) + value.substring(0, 6)
     }
 
     value = value.toUpperCase()

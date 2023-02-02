@@ -659,6 +659,7 @@ function transpileDeclarations(node) {
                                     case "clearCookies":        //webview
                                     case "clearLocations":      //webview
                                     case "dismissProgressDialog":
+                                    case "doScan":              //barcode scanner
                                     case "hideKeyboard":        //screen
                                     case "goBack":              //webview
                                     case "goForward":           //webview
@@ -1210,6 +1211,7 @@ function transpileDeclarations(node) {
                     switch (propertyRequested) {
                         case "AlignHorizontal":
                         case "AlignVertical":
+                        case "Sensitivity":
                             proceduresUsed.add(procedures.getSystemConstant)
                             return `(getSystemConstant '${MEelementName} '${propertyRequested})`
                         case "BackgroundColor":
