@@ -674,6 +674,8 @@ function transpileDeclarations(node) {
                                     case "stop":                //player, soundrecorder
                                     case "stopLoading":         //webview
                                     case "takePicture":         //camera
+                                    case "now":                 //clock
+                                    case "systemTime":          //clock
                                         return (`(call-component-method '${elementName} '${uppercaseFirstLetter(methodCalled)} (*list-for-runtime*) '() )`)
 
 
@@ -684,9 +686,16 @@ function transpileDeclarations(node) {
                                     case "logWarning":
                                     case "logError":
                                     case "runJavaScript":      //webview
+                                    case "makeInstant":        //clock
                                         return (`\n(call-component-method '${elementName} '${uppercaseFirstLetter(methodCalled)}  (*list-for-runtime*  ${transpileDeclarations(args[0])} )  '(text))`)
 
                                     //methods with one numerical input
+                                    case "durationToDays":      //clock
+                                    case "durationToHours":     //clock
+                                    case "durationToMinutes":   //clock
+                                    case "durationToSeconds":   //clock
+                                    case "durationToWeeks":     //clock
+                                    case "makeInstantFromMillis": //clock
                                     case "vibrate":
                                         return (`\n(call-component-method '${elementName} '${uppercaseFirstLetter(methodCalled)}  (*list-for-runtime*  ${transpileDeclarations(args[0])} )  '(number))`)
 
@@ -726,11 +735,18 @@ function transpileDeclarations(node) {
                                     /////////////Special Date Picker and Time Picker Methods
                                     //methods with 3 numerical inputs 
                                     //TO CHECK AT END - if this is only date picker then check the ranges of the acceptable values.
+                                    case "makeDate":            //clock
+                                    case "makeTime":            //clock
                                     case "setDateToDisplay":    //datepicker
                                         if (args.length !== 3) {
                                             console.log(`"${elementName}" of type "${isVariableOfType}" requires three numerical arguments.`)
                                         }
                                         return (`(call-component-method '${elementName} '${uppercaseFirstLetter(methodCalled)} (*list-for-runtime* ${transpileDeclarations(args[0])} ${transpileDeclarations(args[1])} ${transpileDeclarations(args[2])}) '(number number number))`)
+
+                                    //six numerical iputs
+                                    case "makeInstantFromParts":
+                                        return `(call-component-method '${elementName} 'MakeInstantFromParts (*list-for-runtime*  ${transpileDeclarations(args[0])} ${transpileDeclarations(args[1])} ${transpileDeclarations(args[2])} ${transpileDeclarations(args[3])} ${transpileDeclarations(args[4])} ${transpileDeclarations(args[5])}         ) '(number number number number number number))`
+                                    
 
                                     //methods with one instant in time input - no return value
                                     //TO DO -> make instants in time 
@@ -768,6 +784,42 @@ function transpileDeclarations(node) {
                                         return (`(getImageName '${elementName} ${transpileDeclarations(args[0])})`)
                                     case "refresh":
                                         return `(call-component-method '${elementName} 'Refresh (*list-for-runtime*) '())`
+
+                                    //CLOCK METHODS 
+                                    //instant in time input
+                                    case "dayOfMonth":
+                                    case "formatTime":
+                                    case "getMillis":
+                                    case "hour":
+                                    case "minute":
+                                    case "month":
+                                    case "monthName":
+                                    case "second":
+                                    case "weekday":
+                                    case "weekdayName":
+                                    case "year":
+                                        return `(call-component-method '${elementName} '${uppercaseFirstLetter(methodCalled)} (*list-for-runtime* ${transpileDeclarations(args[0])} ) '(InstantInTime))`
+
+                                    //two instants
+                                    case "duration":
+                                        return `(call-component-method '${elementName} 'Duration (*list-for-runtime*   ${transpileDeclarations(args[0])} ${transpileDeclarations(args[1])} ) '(InstantInTime InstantInTime))`
+
+                                    //instant followed by number as input
+                                    case "addDays":
+                                    case "addDuration":
+                                    case "addHours":
+                                    case "addMinutes":
+                                    case "addSeconds":
+                                    case "addWeeks":
+                                    case "addMonths":
+                                    case "addYears":
+                                        return `(call-component-method '${elementName} '${uppercaseFirstLetter(methodCalled)} (*list-for-runtime*  ${transpileDeclarations(args[0])} ${transpileDeclarations(args[1])} ) '(InstantInTime number))`
+
+                                    //instant followed by text
+                                    case "formatDate":
+                                    case "formatDateTime":
+                                        return `(call-component-method '${elementName} '${uppercaseFirstLetter(methodCalled)} (*list-for-runtime* ${transpileDeclarations(args[0])} ${transpileDeclarations(args[1])}) '(InstantInTime text))`
+
 
                                     default:
                                         console.log(`Method "${methodCalled}" not defined in transpiler for component of type "${isVariableOfType}"`)

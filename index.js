@@ -24,7 +24,7 @@ let log = console.log
 //////////////////////////
 
 const helperMaker = require("./helpMaker/help")
-let buildTest = helperMaker.buildTest("barometer")
+//let buildTest = helperMaker.buildTest("clock")
 
 /////////////////////////
 // END TEST /////////////
