@@ -35,4 +35,5 @@ Prompt for permission never works (webviewer - maybe others also)
 
 There is no way for me to test the following component properly - they may or may not work
 Barometer
-
+GyroscopeSensor
+Hygrometer

@@ -686,6 +686,8 @@ function transpileDeclarations(node) {
                                     case "logWarning":
                                     case "logError":
                                     case "runJavaScript":      //webview
+                                    case "latitudeFromAddress": //location sensor
+                                    case "longitudeFromAddress": //location sensor
                                     case "makeInstant":        //clock
                                         return (`\n(call-component-method '${elementName} '${uppercaseFirstLetter(methodCalled)}  (*list-for-runtime*  ${transpileDeclarations(args[0])} )  '(text))`)
 
