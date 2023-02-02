@@ -32,6 +32,11 @@ PROBLEM 3:
 
 Prompt for permission never works (webviewer - maybe others also)
 
+PROBLEM 4:
+
+Go through all the components and find the RED blocks e.g. in Phonecall components - work out what these things mean
+
+
 
 There is no way for me to test the following component properly - they may or may not work
 Barometer

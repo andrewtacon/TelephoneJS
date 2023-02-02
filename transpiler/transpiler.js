@@ -665,11 +665,14 @@ function transpileDeclarations(node) {
                                     case "goForward":           //webview
                                     case "goHome":              //webview
                                     case "launchPicker":        //datepicker
+                                    case "makePhoneCall":       //phonecall
+                                    case "makePhoneCallDirect": //phonecall
                                     case "pause":               //player
                                     case "open":                //listpicker, imagepicker
                                     case "recordVideo":         //camcorder
                                     case "refresh":
                                     case "reload":              //webview
+                                    case "requestFocus":        //emailpicker
                                     case "reset":               //pedometer
                                     case "save":                //pedometer
                                     case "start":               //player, soundrecorder, pedometer
@@ -690,7 +693,10 @@ function transpileDeclarations(node) {
                                     case "runJavaScript":      //webview
                                     case "latitudeFromAddress": //location sensor
                                     case "longitudeFromAddress": //location sensor
+                                    case "shareFile":           //sharing
+                                    case "shareMessage":        //sharing
                                     case "makeInstant":        //clock
+                                    case "viewContact":         //contactPicker
                                         return (`\n(call-component-method '${elementName} '${uppercaseFirstLetter(methodCalled)}  (*list-for-runtime*  ${transpileDeclarations(args[0])} )  '(text))`)
 
                                     //methods with one numerical input
@@ -706,6 +712,7 @@ function transpileDeclarations(node) {
 
                                     //methods with two text input 
                                     case "showProgressDialog":
+                                    case "shareFileWithMessage":
                                         return (`\n(call-component-method '${elementName} '${uppercaseFirstLetter(methodCalled)}  (*list-for-runtime*  ${transpileDeclarations(args[0])}  ${transpileDeclarations(args[1])})  '(text text))`)
 
                                     //methods with 2 text and an optional true/false (default true) 
