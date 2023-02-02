@@ -670,8 +670,10 @@ function transpileDeclarations(node) {
                                     case "recordVideo":         //camcorder
                                     case "refresh":
                                     case "reload":              //webview
-                                    case "start":               //player, soundrecorder
-                                    case "stop":                //player, soundrecorder
+                                    case "reset":               //pedometer
+                                    case "save":                //pedometer
+                                    case "start":               //player, soundrecorder, pedometer
+                                    case "stop":                //player, soundrecorder, pedometer
                                     case "stopLoading":         //webview
                                     case "takePicture":         //camera
                                     case "now":                 //clock
