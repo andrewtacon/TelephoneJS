@@ -653,14 +653,19 @@ function transpileDeclarations(node) {
                                     ////////////////////////////////////////////////////////////////////////////////////////////
 
                                     //methods with no inputs 
+                                    case "authorize":           //twitter
                                     case "canGoBack":           //webview   //returns true/false
                                     case "canGoForward":        //webview   //returns true/false
+                                    case "checkAuthorized":     //twitter
                                     case "clearCaches":         //webview
                                     case "clearCookies":        //webview
                                     case "clearLocations":      //webview
+                                    case "cloudConnected":      //clouddb
+                                    case "deAuthorize":         //twitter
                                     case "dismissProgressDialog":
                                     case "doScan":              //barcode scanner
                                     case "hideKeyboard":        //screen
+                                    case "getTagList":          //clouddb
                                     case "goBack":              //webview
                                     case "goForward":           //webview
                                     case "goHome":              //webview
@@ -672,9 +677,15 @@ function transpileDeclarations(node) {
                                     case "recordVideo":         //camcorder
                                     case "refresh":
                                     case "reload":              //webview
+                                    case "requestDirectMessages":   //twitter
                                     case "requestFocus":        //emailpicker
+                                    case "requestFollowers":    //twitter
+                                    case "requestFriendTimeline":   //twitter
+                                    case "requestMentions":     //twitter
                                     case "reset":               //pedometer
                                     case "save":                //pedometer
+                                    case "sendMessage":         //testing
+                                    case "sendMessageDirect":   //texting
                                     case "start":               //player, soundrecorder, pedometer
                                     case "stop":                //player, soundrecorder, pedometer
                                     case "stopLoading":         //webview
@@ -685,17 +696,23 @@ function transpileDeclarations(node) {
 
 
                                     //methods with one text input 
+                                    case "clearTag":            //clouddb
+                                    case "follow":              //twitter
                                     case "goToUrl":             //webview
                                     case "showAlert":
                                     case "logInfo":
                                     case "logWarning":
                                     case "logError":
-                                    case "runJavaScript":      //webview
+                                    case "runJavaScript":       //webview
                                     case "latitudeFromAddress": //location sensor
-                                    case "longitudeFromAddress": //location sensor
+                                    case "longitudeFromAddress"://location sensor
+                                    case "removeFirstFromList": //clouddb
+                                    case "searchTwitter":       //twitter
                                     case "shareFile":           //sharing
                                     case "shareMessage":        //sharing
-                                    case "makeInstant":        //clock
+                                    case "stopFollowing":       //twitter
+                                    case "makeInstant":         //clock
+                                    case "tweet":               //twitter
                                     case "viewContact":         //contactPicker
                                         return (`\n(call-component-method '${elementName} '${uppercaseFirstLetter(methodCalled)}  (*list-for-runtime*  ${transpileDeclarations(args[0])} )  '(text))`)
 
@@ -711,6 +728,9 @@ function transpileDeclarations(node) {
 
 
                                     //methods with two text input 
+                                    case "directMessage":           //twitter
+                                    case "login":                   //twitter
+                                    case "tweetWithImage":          //twitter
                                     case "showProgressDialog":
                                     case "shareFileWithMessage":
                                         return (`\n(call-component-method '${elementName} '${uppercaseFirstLetter(methodCalled)}  (*list-for-runtime*  ${transpileDeclarations(args[0])}  ${transpileDeclarations(args[1])})  '(text text))`)
@@ -719,6 +739,12 @@ function transpileDeclarations(node) {
                                     case "showPasswordDialog":
                                     case "showTextDialog":
                                         return (`(call-component-method '${elementName} '${uppercaseFirstLetter(methodCalled)} (*list-for-runtime* ${transpileDeclarations(args[0])} ${transpileDeclarations(args[1])} ${transpileDeclarations(args[2])}) '(text text boolean))`)
+
+                                    //methods with two inputs text and any
+                                    case "appendValueToList":       //clouddb
+                                    case "getValue":                //clouddb
+                                    case "storeValue":              //clouddb
+                                        return (`\n(call-component-method '${elementName} '${uppercaseFirstLetter(methodCalled)}  (*list-for-runtime*  ${transpileDeclarations(args[0])}  ${transpileDeclarations(args[1])})  '(text any))`)
 
                                     //methods with 3 text inputs - no return value
                                     case "showMessageDialog":
@@ -757,7 +783,7 @@ function transpileDeclarations(node) {
                                     //six numerical iputs
                                     case "makeInstantFromParts":
                                         return `(call-component-method '${elementName} 'MakeInstantFromParts (*list-for-runtime*  ${transpileDeclarations(args[0])} ${transpileDeclarations(args[1])} ${transpileDeclarations(args[2])} ${transpileDeclarations(args[3])} ${transpileDeclarations(args[4])} ${transpileDeclarations(args[5])}         ) '(number number number number number number))`
-                                    
+
 
                                     //methods with one instant in time input - no return value
                                     //TO DO -> make instants in time 
@@ -1275,6 +1301,7 @@ function transpileDeclarations(node) {
                         case "AlignHorizontal":
                         case "AlignVertical":
                         case "Sensitivity":
+                        case "ReceivingEnabled":
                             proceduresUsed.add(procedures.getSystemConstant)
                             return `(getSystemConstant '${MEelementName} '${propertyRequested})`
                         case "BackgroundColor":

@@ -36,9 +36,17 @@ PROBLEM 4:
 
 Go through all the components and find the RED blocks e.g. in Phonecall components - work out what these things mean
 
+PROBLEM 5:
+Texting component can't send or recieve - it is the same problem in the offical app inventor to do with google permission. https://community.appinventor.mit.edu/t/error-908-permission-receive-sms/7426/5 
+
+
+PROBLEM 6:
+
+clouddb - attempting to use with apentor default values yields a java.net.UnknownHostException
 
 
 There is no way for me to test the following component properly - they may or may not work
 Barometer
 GyroscopeSensor
 Hygrometer
+Twitter - no account so no testing
