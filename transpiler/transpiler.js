@@ -666,6 +666,7 @@ function transpileDeclarations(node) {
                                     case "canGoBack":           //webview   //returns true/false
                                     case "canGoForward":        //webview   //returns true/false
                                     case "checkAuthorized":     //twitter
+                                    case "clearAll":            //tinydb
                                     case "clearCaches":         //webview
                                     case "clearCookies":        //webview
                                     case "clearLocations":      //webview
@@ -675,6 +676,7 @@ function transpileDeclarations(node) {
                                     case "doScan":              //barcode scanner
                                     case "hideKeyboard":        //screen
                                     case "getTagList":          //clouddb
+                                    case "getTags":             //tinydb
                                     case "goBack":              //webview
                                     case "goForward":           //webview
                                     case "goHome":              //webview
@@ -705,9 +707,10 @@ function transpileDeclarations(node) {
 
 
                                     //methods with one text input 
-                                    case "clearTag":            //clouddb
+                                    case "clearTag":            //clouddb, tinydb
                                     case "delete":              //file
                                     case "follow":              //twitter
+                                    case "getWebValue":         //tinywebdb
                                     case "goToUrl":             //webview
                                     case "showAlert":           //notifier
                                     case "logInfo":             //notifier
@@ -726,6 +729,7 @@ function transpileDeclarations(node) {
                                     case "makeInstant":         //clock
                                     case "tweet":               //twitter
                                     case "viewContact":         //contactPicker
+                                        if (methodCalled === "getWebValue") {methodCalled = "getValue"} //rename the alias for tinydb method so it works
                                         return (`\n(call-component-method '${elementName} '${uppercaseFirstLetter(methodCalled)}  (*list-for-runtime*  ${transpileDeclarations(args[0])} )  '(text))`)
 
                                     //methods with one numerical input
@@ -754,10 +758,12 @@ function transpileDeclarations(node) {
                                     case "showTextDialog":          //notifier
                                         return (`(call-component-method '${elementName} '${uppercaseFirstLetter(methodCalled)} (*list-for-runtime* ${transpileDeclarations(args[0])} ${transpileDeclarations(args[1])} ${transpileDeclarations(args[2])}) '(text text boolean))`)
 
-                                    //methods with two inputs text and any
+                                    //methods with two inputs - text and any
                                     case "appendValueToList":       //clouddb
-                                    case "getValue":                //clouddb
-                                    case "storeValue":              //clouddb
+                                    case "getValue":                //clouddb, tinydb
+                                    case "storeValue":              //clouddb,tinydb
+                                    case "storeWebValue":           //tinywebdb 
+                                        if (methodCalled === "storeWebValue") {methodCalled = "storeValue"} //this is so that the tinywebdb can have same name as for getting a value as getvalue is different for the tinywebdb component
                                         return (`\n(call-component-method '${elementName} '${uppercaseFirstLetter(methodCalled)}  (*list-for-runtime*  ${transpileDeclarations(args[0])}  ${transpileDeclarations(args[1])})  '(text any))`)
 
                                     //methods with 3 text inputs - no return value
