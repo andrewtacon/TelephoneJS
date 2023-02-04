@@ -403,7 +403,7 @@ function setAttribute(key, value, name, descriptor, useQuotes = true) {
         case "ResponseFileName":
         case "ResultName":
         case "SavedRecording":
-        case "Scope":
+
         case "Selection":
         case "ServiceURL":
         case "Source":
@@ -585,6 +585,7 @@ function setAttribute(key, value, name, descriptor, useQuotes = true) {
             break;
         case "DefaultFileScope":
         case "DefaultScope":
+        case "Scope":
             return setScope(key, value, name, descriptor)
             break;
         case "CloseScreenAnimation":
@@ -1028,7 +1029,7 @@ function setScope(key, value, name, descriptor) {
         return ""
     }
     value = value[0].toUpperCase() + value.substring(1)
-    return `\n\t(set-and-coerce-property! '${name} '${descriptor} "${value}" 'com.google.appinventor.components.common.FileScopeEnum)`
+    return `\n\t(set-and-coerce-property! '${name} '${descriptor} (static-field com.google.appinventor.components.common.FileScope "${value}") 'com.google.appinventor.components.common.FileScopeEnum)`
 }
 
 function setGeoJSONData(key, value, name, descriptor) {

@@ -45,6 +45,13 @@ PROBLEM 6:
 clouddb - attempting to use with apentor default values yields a java.net.UnknownHostException
 
 
+PROBLEM 7:
+datafile --> need to read the "sourcefile" tag in XML and upload that file.
+then can do all the tests for that component properly
+
+
+
+
 There is no way for me to test the following component properly - they may or may not work
 Barometer
 GyroscopeSensor

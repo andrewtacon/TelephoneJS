@@ -313,8 +313,9 @@ function transpileDeclarations(node) {
             let arrayCode = `(call-yail-primitive make-yail-list (*list-for-runtime* ${compile}) '(${anys}) "make a list")`
             return `${arrayCode}`
 
-        case "AssignmentExpression":        //this feels pretty clumsy
 
+
+        case "AssignmentExpression":        //this feels pretty clumsy
 
             isAssigning = true
             let AssignmentExpressionLeft = node.left
@@ -335,6 +336,7 @@ function transpileDeclarations(node) {
             } else {
                 return AssignmentExpressionLeft
             }
+
 
 
         case "BinaryExpression":
@@ -415,17 +417,20 @@ function transpileDeclarations(node) {
 
             break;
 
-        case "BlockStatement":
 
+
+        case "BlockStatement":
             return transpileDeclarations(node.body)
+
+
 
         case "BreakStatement":
             return `(*yail-break* #f)`
 
 
+
+
         case "CallExpression":
-
-
 
             //this is a call to a function with or with variables
             if (node.callee.type === "Identifier") {
@@ -602,7 +607,11 @@ function transpileDeclarations(node) {
                     switch (isVariableOfScope) {
                         case "component":
 
-
+                            /////////////////////////////////////////////////////////////////////////////////
+                            /////////////////////////////////////////////////////////////////////////////////
+                            /////  COMPONENT METHODS ////////////////////////////////////////////////////////
+                            /////////////////////////////////////////////////////////////////////////////////
+                            /////////////////////////////////////////////////////////////////////////////////
 
                             //check if a method is called on something
                             if (node.callee.property !== undefined) {
@@ -662,7 +671,7 @@ function transpileDeclarations(node) {
                                     case "clearLocations":      //webview
                                     case "cloudConnected":      //clouddb
                                     case "deAuthorize":         //twitter
-                                    case "dismissProgressDialog":
+                                    case "dismissProgressDialog":   //notifier
                                     case "doScan":              //barcode scanner
                                     case "hideKeyboard":        //screen
                                     case "getTagList":          //clouddb
@@ -697,15 +706,18 @@ function transpileDeclarations(node) {
 
                                     //methods with one text input 
                                     case "clearTag":            //clouddb
+                                    case "delete":              //file
                                     case "follow":              //twitter
                                     case "goToUrl":             //webview
-                                    case "showAlert":
-                                    case "logInfo":
-                                    case "logWarning":
-                                    case "logError":
+                                    case "showAlert":           //notifier
+                                    case "logInfo":             //notifier
+                                    case "logWarning":          //notifier
+                                    case "logError":            //notifier
                                     case "runJavaScript":       //webview
                                     case "latitudeFromAddress": //location sensor
                                     case "longitudeFromAddress"://location sensor
+                                    case "readFile":            //datafile
+                                    case "readFrom":            //file
                                     case "removeFirstFromList": //clouddb
                                     case "searchTwitter":       //twitter
                                     case "shareFile":           //sharing
@@ -728,16 +740,18 @@ function transpileDeclarations(node) {
 
 
                                     //methods with two text input 
+                                    case "appendToFile":            //file
                                     case "directMessage":           //twitter
                                     case "login":                   //twitter
                                     case "tweetWithImage":          //twitter
+                                    case "saveFile":                //file
                                     case "showProgressDialog":
                                     case "shareFileWithMessage":
                                         return (`\n(call-component-method '${elementName} '${uppercaseFirstLetter(methodCalled)}  (*list-for-runtime*  ${transpileDeclarations(args[0])}  ${transpileDeclarations(args[1])})  '(text text))`)
 
                                     //methods with 2 text and an optional true/false (default true) 
-                                    case "showPasswordDialog":
-                                    case "showTextDialog":
+                                    case "showPasswordDialog":      //notifier
+                                    case "showTextDialog":          //notifier
                                         return (`(call-component-method '${elementName} '${uppercaseFirstLetter(methodCalled)} (*list-for-runtime* ${transpileDeclarations(args[0])} ${transpileDeclarations(args[1])} ${transpileDeclarations(args[2])}) '(text text boolean))`)
 
                                     //methods with two inputs text and any
@@ -747,20 +761,23 @@ function transpileDeclarations(node) {
                                         return (`\n(call-component-method '${elementName} '${uppercaseFirstLetter(methodCalled)}  (*list-for-runtime*  ${transpileDeclarations(args[0])}  ${transpileDeclarations(args[1])})  '(text any))`)
 
                                     //methods with 3 text inputs - no return value
-                                    case "showMessageDialog":
+                                    case "showMessageDialog":   //notifier
                                     case "createElement":       //listview
                                         return (`(call-component-method '${elementName} '${uppercaseFirstLetter(methodCalled)} (*list-for-runtime* ${transpileDeclarations(args[0])} ${transpileDeclarations(args[1])} ${transpileDeclarations(args[2])}) '(text text text))`)
 
                                     //methods with 4 text and an optional true/false (default true) 
-                                    case "showChooseDialog":
+                                    case "showChooseDialog":    //notifier
                                         return (`(call-component-method '${elementName} '${uppercaseFirstLetter(methodCalled)} (*list-for-runtime* ${transpileDeclarations(args[0])} ${transpileDeclarations(args[1])} ${transpileDeclarations(args[2])} ${transpileDeclarations(args[3])} ${transpileDeclarations(args[4])}) '(text text text text boolean))`)
 
                                     /////////////////////////////////////////////////////////////////////////////////////////////////
                                     ///// The below component methods don't fit any simple generic pattern like the above ones do ///
                                     /////////////////////////////////////////////////////////////////////////////////////////////////
 
-                                    //////Special Screen methods
-                                    case "askForPermission":
+                                    //////////////////////////////////
+                                    //////Special Screen methods /////
+                                    //////////////////////////////////
+
+                                    case "askForPermission":    //screen
                                         //Screen - One of CourseLocation, FineLocation, MockLocation, LocationExtraCommands, ReadExternalStorage, WriteExternalStorage, Camera, Audio, Vibrate, Internet, NearFieldCommunication, Bluetooth, BluetoothAdmin, WifiState, NetworkState, AccountManager, ManageAccounts, GetAccounts, ReadContacts, UseCredentials
                                         let legalPermissions = ["CoarseLocation", "FineLocation", "MockLocation", "LocationExtraCommands", "ReadExternalStorage", "WriteExternalStorage", "Camera", "Audio", "Vibrate", "Internet", "NearFieldCommunication", "Bluetooth", "BluetoothAdmin", "WifiState", "NetworkState", "AccountManager", "ManageAccounts", "GetAccounts", "ReadContacts", "UseCredentials"]
                                         if (!legalPermissions.includes(args[0].value)) {
@@ -769,7 +786,10 @@ function transpileDeclarations(node) {
                                         }
                                         return `(call-component-method '${elementName} 'AskForPermission (*list-for-runtime* (static-field com.google.appinventor.components.common.Permission "${args[0].value}")) '(text))`
 
-                                    /////////////Special Date Picker and Time Picker Methods
+                                    //////////////////////////////////////////////////////
+                                    ///// Special Date Picker and Time Picker Methods ////
+                                    //////////////////////////////////////////////////////
+
                                     //methods with 3 numerical inputs 
                                     //TO CHECK AT END - if this is only date picker then check the ranges of the acceptable values.
                                     case "makeDate":            //clock
@@ -779,11 +799,6 @@ function transpileDeclarations(node) {
                                             console.log(`"${elementName}" of type "${isVariableOfType}" requires three numerical arguments.`)
                                         }
                                         return (`(call-component-method '${elementName} '${uppercaseFirstLetter(methodCalled)} (*list-for-runtime* ${transpileDeclarations(args[0])} ${transpileDeclarations(args[1])} ${transpileDeclarations(args[2])}) '(number number number))`)
-
-                                    //six numerical iputs
-                                    case "makeInstantFromParts":
-                                        return `(call-component-method '${elementName} 'MakeInstantFromParts (*list-for-runtime*  ${transpileDeclarations(args[0])} ${transpileDeclarations(args[1])} ${transpileDeclarations(args[2])} ${transpileDeclarations(args[3])} ${transpileDeclarations(args[4])} ${transpileDeclarations(args[5])}         ) '(number number number number number number))`
-
 
                                     //methods with one instant in time input - no return value
                                     //TO DO -> make instants in time 
@@ -800,63 +815,177 @@ function transpileDeclarations(node) {
                                         return (`(call-component-method '${elementName} '${uppercaseFirstLetter(methodCalled)} (*list-for-runtime* ${transpileDeclarations(args[0])} ) '(InstantInTime))`)
 
 
-                                    ////////// Special Listview Methods
-                                    /*case "createElement":
-                                        proceduresUsed.add(procedures.createNewElement)
-                                        if (args.length===0) {console.log("CreateElement requires at least one input"); return ""}
-                                        if (args.length===1) {args.push(""); args.push("")}
-                                        if (args.length===2) {args.push("");}
-                                        console.log(`(createNewElement '${elementName} ${transpileDeclarations(args[0])} ${transpileDeclarations(args[1])} ${transpileDeclarations(args[2])})`)
+                                    ////////////////////////////////////////
+                                    ////////// Special Listview Methods ////
+                                    ////////////////////////////////////////
 
-                                        return `(createNewElement '${elementName} ${transpileDeclarations(args[0])} ${transpileDeclarations(args[1])} ${transpileDeclarations(args[2])})`
-                                        */
-                                    case "getDetailText":
+                                    case "getDetailText":   //listview
                                         proceduresUsed.add(procedures.getDetailText)
                                         return (`(getDetailText '${elementName} ${transpileDeclarations(args[0])})`)
-                                    case "getMainText":
+                                    case "getMainText":     //listview
                                         proceduresUsed.add(procedures.getMainText)
                                         return (`(getMainText '${elementName} ${transpileDeclarations(args[0])})`)
-                                    case "getImageName":
+                                    case "getImageName":       //listview
                                         proceduresUsed.add(procedures.getImageName)
                                         return (`(getImageName '${elementName} ${transpileDeclarations(args[0])})`)
-                                    case "refresh":
+                                    case "refresh":             //listview
                                         return `(call-component-method '${elementName} 'Refresh (*list-for-runtime*) '())`
 
-                                    //CLOCK METHODS 
+
+                                    //////////////////////////////////
+                                    // SPECIAL CLOCK METHODS /////////
+                                    //////////////////////////////////
+
+                                    //six numerical iputs
+                                    case "makeInstantFromParts":    //clock
+                                        return `(call-component-method '${elementName} 'MakeInstantFromParts (*list-for-runtime*  ${transpileDeclarations(args[0])} ${transpileDeclarations(args[1])} ${transpileDeclarations(args[2])} ${transpileDeclarations(args[3])} ${transpileDeclarations(args[4])} ${transpileDeclarations(args[5])}         ) '(number number number number number number))`
+
                                     //instant in time input
-                                    case "dayOfMonth":
-                                    case "formatTime":
-                                    case "getMillis":
-                                    case "hour":
-                                    case "minute":
-                                    case "month":
-                                    case "monthName":
-                                    case "second":
-                                    case "weekday":
-                                    case "weekdayName":
-                                    case "year":
+                                    case "dayOfMonth":      //clock
+                                    case "formatTime":      //clock
+                                    case "getMillis":       //clock
+                                    case "hour":            //clock
+                                    case "minute":          //clock
+                                    case "month":           //clock
+                                    case "monthName":       //clock
+                                    case "second":          //clock
+                                    case "weekday":         //clock
+                                    case "weekdayName":     //clock
+                                    case "year":            //clock
                                         return `(call-component-method '${elementName} '${uppercaseFirstLetter(methodCalled)} (*list-for-runtime* ${transpileDeclarations(args[0])} ) '(InstantInTime))`
 
                                     //two instants
-                                    case "duration":
+                                    case "duration":        //clock
                                         return `(call-component-method '${elementName} 'Duration (*list-for-runtime*   ${transpileDeclarations(args[0])} ${transpileDeclarations(args[1])} ) '(InstantInTime InstantInTime))`
 
                                     //instant followed by number as input
-                                    case "addDays":
-                                    case "addDuration":
-                                    case "addHours":
-                                    case "addMinutes":
-                                    case "addSeconds":
-                                    case "addWeeks":
-                                    case "addMonths":
-                                    case "addYears":
+                                    case "addDays":         //clock
+                                    case "addDuration":     //clock
+                                    case "addHours":        //clock
+                                    case "addMinutes":      //clock
+                                    case "addSeconds":      //clock
+                                    case "addWeeks":        //clock
+                                    case "addMonths":       //clock
+                                    case "addYears":        //clock
                                         return `(call-component-method '${elementName} '${uppercaseFirstLetter(methodCalled)} (*list-for-runtime*  ${transpileDeclarations(args[0])} ${transpileDeclarations(args[1])} ) '(InstantInTime number))`
 
                                     //instant followed by text
-                                    case "formatDate":
-                                    case "formatDateTime":
+                                    case "formatDate":      //clock
+                                    case "formatDateTime":  //clock
                                         return `(call-component-method '${elementName} '${uppercaseFirstLetter(methodCalled)} (*list-for-runtime* ${transpileDeclarations(args[0])} ${transpileDeclarations(args[1])}) '(InstantInTime text))`
 
+
+                                    /////////////////////////////////////////////
+                                    //// SPECIAL FILE METHODS ///////////////////
+                                    /////////////////////////////////////////////
+
+                                    case "exists":
+                                        return `
+                                        (call-component-method-with-blocking-continuation 
+                                            '${elementName} 
+                                            'Exists 
+                                            (*list-for-runtime* 	
+                                                (static-field com.google.appinventor.components.common.FileScope ${transpileDeclarations(args[0])})  
+                                                ${transpileDeclarations(args[1])}
+                                            ) 
+                                            '(com.google.appinventor.components.common.FileScopeEnum text)
+                                        )
+                                        `
+
+                                    case "removeDirectory":
+                                        return `
+                                        (call-component-method-with-blocking-continuation 
+                                            '${elementName} 
+                                            'RemoveDirectory 
+                                            (*list-for-runtime* 
+                                                (static-field com.google.appinventor.components.common.FileScope ${transpileDeclarations(args[0])})  
+                                                ${transpileDeclarations(args[1])}  
+                                                ${transpileDeclarations(args[2])}
+                                            ) 
+                                            '(com.google.appinventor.components.common.FileScopeEnum text boolean)
+                                        )                                    
+                                        `
+                                    
+                                    case "makeDirectory":
+                                        return `                                    
+                                            (call-component-method-with-blocking-continuation 
+                                                '${elementName} 
+                                                'MakeDirectory 
+                                                (*list-for-runtime* 
+                                                    (static-field com.google.appinventor.components.common.FileScope ${transpileDeclarations(args[0])})  
+                                                    ${transpileDeclarations(args[1])}
+                                                ) 
+                                                '(com.google.appinventor.components.common.FileScopeEnum text)
+                                            )
+	
+                                        `
+
+                                    case "moveFile":
+                                        return `
+                                            (call-component-method-with-blocking-continuation 
+                                                '${elementName} 
+                                                'MoveFile 
+                                                (*list-for-runtime* 
+                                                    (static-field com.google.appinventor.components.common.FileScope ${transpileDeclarations(args[0])})  
+                                                    ${transpileDeclarations(args[1])}  
+                                                    (static-field com.google.appinventor.components.common.FileScope ${transpileDeclarations(args[2])})  
+                                                    ${transpileDeclarations(args[3])}
+                                                ) 
+                                                '(com.google.appinventor.components.common.FileScopeEnum text com.google.appinventor.components.common.FileScopeEnum text)
+                                            )
+                                        `
+                                    case "copyFile":
+                                        return `
+                                            (call-component-method-with-blocking-continuation 
+                                                '${elementName} 
+                                                'CopyFile 
+                                                (*list-for-runtime* 
+                                                    (static-field com.google.appinventor.components.common.FileScope ${transpileDeclarations(args[0])})  
+                                                    ${transpileDeclarations(args[1])}  
+                                                    (static-field com.google.appinventor.components.common.FileScope ${transpileDeclarations(args[2])})  
+                                                    ${transpileDeclarations(args[3])}
+                                                ) 
+                                                '(com.google.appinventor.components.common.FileScopeEnum text com.google.appinventor.components.common.FileScopeEnum text)
+                                            )
+                                        `
+                                                    
+                                    case "makeFullPath":
+                                        return `
+                                            (call-component-method 
+                                                '${elementName} 
+                                                'MakeFullPath 
+                                                (*list-for-runtime* 
+                                                    (static-field com.google.appinventor.components.common.FileScope ${transpileDeclarations(args[0])})  
+                                                    ${transpileDeclarations(args[1])}
+                                                ) 
+                                                '(com.google.appinventor.components.common.FileScopeEnum text)
+                                            )                                                                           
+                                        `
+                                    case "listDirectory":
+                                        return `
+                                            (call-component-method-with-blocking-continuation 
+                                                '${elementName} 
+                                                'ListDirectory 
+                                                (*list-for-runtime* 
+                                                    (static-field com.google.appinventor.components.common.FileScope ${transpileDeclarations(args[0])})  
+                                                    ${transpileDeclarations(args[1])}
+                                                ) 
+                                                '(com.google.appinventor.components.common.FileScopeEnum text)
+                                            )                                    
+                                        `
+                                    
+                                    case "isDirectory":
+                                        return `
+                                            (call-component-method-with-blocking-continuation 
+                                                '${elementName} 
+                                                'IsDirectory 
+                                                (*list-for-runtime* 
+                                                    (static-field com.google.appinventor.components.common.FileScope ${transpileDeclarations(args[0])})  
+                                                    ${transpileDeclarations(args[1])}
+                                                ) 
+                                                '(com.google.appinventor.components.common.FileScopeEnum text)
+                                            )                                    
+                                        `
 
                                     default:
                                         console.log(`Method "${methodCalled}" not defined in transpiler for component of type "${isVariableOfType}"`)
@@ -871,6 +1000,12 @@ function transpileDeclarations(node) {
 
                                 //check if the method that is called is a legal method for this particular element type (refer to supplied elements list)
 
+                                /////////////////////////////////////////////////////////////////////////////////////////////
+                                /////////////////////////////////////////////////////////////////////////////////////////////
+                                //// JAVASCRIPT METHODS /////////////////////////////////////////////////////////////////////
+                                /////////////////////////////////////////////////////////////////////////////////////////////
+                                /////////////////////////////////////////////////////////////////////////////////////////////
+                                
                                 switch (methodCalled) {
                                     //methods for strings
                                     case "at":
@@ -1165,19 +1300,23 @@ function transpileDeclarations(node) {
             break;
 
 
+
         case "ContinueStatement":
             console.error("Error: There is no 'continue' statement in this implementation. You need to rewrite your code.\n 'continue' is being skipped in transcompilation.\n")
             return ``
 
 
+
         case "ExpressionStatement":
             return transpileDeclarations(node.expression) + "\n"
 
+
+
         case "ForStatement":
             //init, test, update, body
-
             return ''
             break;
+
 
 
         case "FunctionDeclaration":
@@ -1217,10 +1356,10 @@ function transpileDeclarations(node) {
             removeFromVariableStack(node)
             return returnProcedure
 
+
+
         case "FunctionExpression":
             return transpileDeclarations(node.body)
-
-
 
 
 
@@ -1230,6 +1369,7 @@ function transpileDeclarations(node) {
             }
             let name2 = findVariableInStack(name)
             return name2
+
 
 
         case "IfStatement":
@@ -1259,13 +1399,13 @@ function transpileDeclarations(node) {
             }
             return value
 
+
+
         case "LogicalExpression":
             switch (node.operator) {
                 case "&&": return `(and ${transpileDeclarations(node.left)} ${transpileDeclarations(node.right)})`
                 case "||": return `(or ${transpileDeclarations(node.left)} ${transpileDeclarations(node.right)})`
             }
-
-
 
 
 
@@ -1294,6 +1434,12 @@ function transpileDeclarations(node) {
                 //Do components first
                 case "component":
 
+                    /////////////////////////////////////////////////////////////////////////////////
+                    /////////////////////////////////////////////////////////////////////////////////
+                    ///// COMPONENT PROPERTIES //////////////////////////////////////////////////////
+                    ///// FOR REQUESTING VALUES OF //////////////////////////////////////////////////
+                    /////////////////////////////////////////////////////////////////////////////////
+                    /////////////////////////////////////////////////////////////////////////////////
 
                     let propertyRequested = uppercaseFirstLetter(MemberExpressionProperty)
 
@@ -1386,6 +1532,8 @@ function transpileDeclarations(node) {
 
             break;
 
+
+
         case "MemberExpressionSet":
             let MemberExpressionSetProperty = node.property.name       // .text
             let MemberExpressionSetValue = node.property.value         // ["text"] or [2]    //need to work out if the is whole number 
@@ -1409,6 +1557,16 @@ function transpileDeclarations(node) {
             switch (MESisVariableOfScope) {
 
                 case "component":
+
+
+                    ////////////////////////////////////////////////////////////////////////////////////////////////
+                    ////////////////////////////////////////////////////////////////////////////////////////////////
+                    //// COMPONENT PROPERTIES //////////////////////////////////////////////////////////////////////
+                    //// FOR ASSIGNING VALUES TO - THIS IS OUTSOURCED TO THE yailmaker FILE THAT ///////////////////
+                    //// IS ALSO USED FOR ASSIGNING VALUES FROM THE PARSING OF THE XML FILE ////////////////////////
+                    ////////////////////////////////////////////////////////////////////////////////////////////////
+                    ////////////////////////////////////////////////////////////////////////////////////////////////
+
                     //MESisVariableOfType  -> what type of component is it -> get the alllowable attributes for it
                     let elemInfo = ELEMENTS[MESisVariableOfType + ""]
 
@@ -1441,6 +1599,11 @@ function transpileDeclarations(node) {
 
                 default:
 
+                    /////////////////////////////////////////////////////////////////////////////
+                    /// This sets the property or assigns values to anything else ///////////////
+                    /// that has properties - that is objects and arrays ////////////////////////
+                    /////////////////////////////////////////////////////////////////////////////
+
                     switch (MemberExpressionSetProperty) {
 
                         default:
@@ -1470,6 +1633,7 @@ function transpileDeclarations(node) {
             break;
 
 
+
         case "ObjectExpression":
 
             let objectCode = `(call-yail-primitive make-yail-dictionary (*list-for-runtime* `
@@ -1497,6 +1661,8 @@ function transpileDeclarations(node) {
 
             return `${objectCode}`
 
+
+
         case "Program":
             let ProgramCode = ""
             for (let n of node.body) {
@@ -1505,17 +1671,24 @@ function transpileDeclarations(node) {
             return ProgramCode
 
 
+
         case "ReturnStatement":
             //console.log(node)
             return transpileDeclarations(node.argument)
 
+
+
         case "SequenceExpression":
             return transpileDeclarations(node.expressions)
+
+
 
         case "TemplateElement":
             //console.log(node.value.cooked)
             //console.log(node.value.cooked.replaceAll('"',"\\\""))
             return `"${node.value.cooked.replaceAll('"', "\\\"")}"`
+
+
 
         case "TemplateLiteral":
             let templateOutput = transpileDeclarations(node.quasis[0])
@@ -1523,6 +1696,7 @@ function transpileDeclarations(node) {
                 templateOutput += `(coerce-arg ${transpileDeclarations(node.expressions[i])} 'text)${transpileDeclarations(node.quasis[i + 1])}`
             }
             return `(string-append ${templateOutput})`
+
 
 
         case "UnaryExpression":
@@ -1559,6 +1733,8 @@ function transpileDeclarations(node) {
                     console.log(`Unknown unary operator "${JSON.stringify(uop)}". Panic!`)
             }
             break;
+
+
 
         case "UpdateExpression":
             let assignee = transpileDeclarations(node.argument)
@@ -1607,8 +1783,8 @@ function transpileDeclarations(node) {
             }
 
 
-        case "VariableDeclaration":
 
+        case "VariableDeclaration":
 
             let source;
             if (node.declarations[0].init) {
@@ -1640,6 +1816,8 @@ function transpileDeclarations(node) {
             }
 
             break;
+
+
 
         case "WhileStatement":
             return `
