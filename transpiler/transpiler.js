@@ -675,6 +675,7 @@ function transpileDeclarations(node) {
                                     case "dismissProgressDialog":   //notifier
                                     case "doScan":              //barcode scanner
                                     case "hideKeyboard":        //screen
+                                    case "getDuration":         //videoplayer
                                     case "getTagList":          //clouddb
                                     case "getTags":             //tinydb
                                     case "goBack":              //webview
@@ -683,7 +684,7 @@ function transpileDeclarations(node) {
                                     case "launchPicker":        //datepicker
                                     case "makePhoneCall":       //phonecall
                                     case "makePhoneCallDirect": //phonecall
-                                    case "pause":               //player
+                                    case "pause":               //player, videoplayer
                                     case "open":                //listpicker, imagepicker
                                     case "recordVideo":         //camcorder
                                     case "refresh":
@@ -697,8 +698,8 @@ function transpileDeclarations(node) {
                                     case "save":                //pedometer
                                     case "sendMessage":         //testing
                                     case "sendMessageDirect":   //texting
-                                    case "start":               //player, soundrecorder, pedometer
-                                    case "stop":                //player, soundrecorder, pedometer
+                                    case "start":               //player, soundrecorder, pedometer, videoplayer
+                                    case "stop":                //player, soundrecorder, pedometer, videoplayer
                                     case "stopLoading":         //webview
                                     case "takePicture":         //camera
                                     case "now":                 //clock
@@ -739,6 +740,7 @@ function transpileDeclarations(node) {
                                     case "durationToSeconds":   //clock
                                     case "durationToWeeks":     //clock
                                     case "makeInstantFromMillis": //clock
+                                    case "seekTo":              //videoplayer
                                     case "vibrate":
                                         return (`\n(call-component-method '${elementName} '${uppercaseFirstLetter(methodCalled)}  (*list-for-runtime*  ${transpileDeclarations(args[0])} )  '(number))`)
 

@@ -54,6 +54,11 @@ need credentials json file for spreadsheet tests
 this file needs to be added to the upload files list
 
 
+PROBLEM 9:
+vidoeplayer source needs to upload the file
+
+
+
 There is no way for me to test the following component properly - they may or may not work
 Barometer
 GyroscopeSensor
