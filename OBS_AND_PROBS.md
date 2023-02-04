@@ -49,7 +49,9 @@ PROBLEM 7:
 datafile --> need to read the "sourcefile" tag in XML and upload that file.
 then can do all the tests for that component properly
 
-
+PROBLEM 8:
+need credentials json file for spreadsheet tests
+this file needs to be added to the upload files list
 
 
 There is no way for me to test the following component properly - they may or may not work

@@ -905,7 +905,7 @@ function transpileDeclarations(node) {
                                             '(com.google.appinventor.components.common.FileScopeEnum text boolean)
                                         )                                    
                                         `
-                                    
+
                                     case "makeDirectory":
                                         return `                                    
                                             (call-component-method-with-blocking-continuation 
@@ -948,7 +948,7 @@ function transpileDeclarations(node) {
                                                 '(com.google.appinventor.components.common.FileScopeEnum text com.google.appinventor.components.common.FileScopeEnum text)
                                             )
                                         `
-                                                    
+
                                     case "makeFullPath":
                                         return `
                                             (call-component-method 
@@ -973,7 +973,7 @@ function transpileDeclarations(node) {
                                                 '(com.google.appinventor.components.common.FileScopeEnum text)
                                             )                                    
                                         `
-                                    
+
                                     case "isDirectory":
                                         return `
                                             (call-component-method-with-blocking-continuation 
@@ -986,6 +986,37 @@ function transpileDeclarations(node) {
                                                 '(com.google.appinventor.components.common.FileScopeEnum text)
                                             )                                    
                                         `
+
+                                    ///////////////////////////////////////////
+                                    /// SPECIAL SPREADSHEET METHODS ///////////
+                                    ///////////////////////////////////////////
+                                    case "getRangeReference":
+                                        return `(call-component-method '${elementName} 'GetRangeReference (*list-for-runtime* ${transpileDeclarations(args[0])} ${transpileDeclarations(args[1])} ${transpileDeclarations(args[2])} ${transpileDeclarations(args[3])}) '(number number number number))`
+                                    case "getCellReference":
+                                        return `(call-component-method '${elementName} '${uppercaseFirstLetter(methodCalled)} (*list-for-runtime* ${transpileDeclarations(args[0])} ${transpileDeclarations(args[1])}) '(number number))`
+                                    case "addCol":
+                                    case "addRow":
+                                        return `(call-component-method '${elementName} '${uppercaseFirstLetter(methodCalled)} (*list-for-runtime* ${transpileDeclarations(args[0])} ${transpileDeclarations(args[1])}) '(text list))`
+                                    case "clearRange":
+                                    case "readCell":
+                                    case "readRange":
+                                        return `(call-component-method '${elementName} '${uppercaseFirstLetter(methodCalled)} (*list-for-runtime* ${transpileDeclarations(args[0])} ${transpileDeclarations(args[1])}) '(text text))`
+                                    case "readCol":
+                                    case "readRow":
+                                    case "removeCol":
+                                    case "removeRow":
+                                        return `(call-component-method '${elementName} '${uppercaseFirstLetter(methodCalled)} (*list-for-runtime* ${transpileDeclarations(args[0])} ${transpileDeclarations(args[1])}) '(text number))`
+                                    case "readSheet":
+                                        return `(call-component-method '${elementName} 'ReadSheet (*list-for-runtime* ${transpileDeclarations(args[0])}) '(text))`
+                                    case "readWithExactFilter":
+                                    case "readWithPartialFilter":
+                                        return `(call-component-method '${elementName} '${uppercaseFirstLetter(methodCalled)} (*list-for-runtime* ${transpileDeclarations(args[0])} ${transpileDeclarations(args[1])} ${transpileDeclarations(args[2])}) '(text number text))`
+                                    case "writeCell":
+                                        return `(call-component-method '${elementName} 'WriteCell (*list-for-runtime* ${transpileDeclarations(args[0])} ${transpileDeclarations(args[1])} ${transpileDeclarations(args[2])}) '(text text any))`
+                                    case "writeCol":
+                                    case "writeRange":
+                                    case "writeRow":
+                                        return `(call-component-method '${elementName} 'WriteRow (*list-for-runtime* ${transpileDeclarations(args[0])} ${transpileDeclarations(args[1])} ${transpileDeclarations(args[2])}) '(text number list))`
 
                                     default:
                                         console.log(`Method "${methodCalled}" not defined in transpiler for component of type "${isVariableOfType}"`)
@@ -1005,7 +1036,7 @@ function transpileDeclarations(node) {
                                 //// JAVASCRIPT METHODS /////////////////////////////////////////////////////////////////////
                                 /////////////////////////////////////////////////////////////////////////////////////////////
                                 /////////////////////////////////////////////////////////////////////////////////////////////
-                                
+
                                 switch (methodCalled) {
                                     //methods for strings
                                     case "at":
