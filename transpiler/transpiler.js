@@ -750,6 +750,7 @@ function transpileDeclarations(node) {
                                     case "directMessage":           //twitter
                                     case "login":                   //twitter
                                     case "tweetWithImage":          //twitter
+                                    case "requestTranslation":      //translator
                                     case "saveFile":                //file
                                     case "showProgressDialog":
                                     case "shareFileWithMessage":

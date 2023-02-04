@@ -24,7 +24,7 @@ let log = console.log
 //////////////////////////
 
 const helperMaker = require("./helpMaker/help")
-let buildTest = helperMaker.buildTest("videoplayer")
+let buildTest = helperMaker.buildTest("translator")
 
 /////////////////////////
 // END TEST /////////////
