@@ -690,6 +690,7 @@ function transpileDeclarations(node) {
                                     case "makePhoneCall":       //phonecall
                                     case "makePhoneCallDirect": //phonecall
                                     case "pause":               //player, videoplayer
+                                    case "play":                //sound
                                     case "open":                //listpicker, imagepicker
                                     case "recordVideo":         //camcorder
                                     case "refresh":
@@ -700,6 +701,7 @@ function transpileDeclarations(node) {
                                     case "requestFriendTimeline":   //twitter
                                     case "requestMentions":     //twitter
                                     case "reset":               //pedometer
+                                    case "resume":              //sound
                                     case "save":                //pedometer
                                     case "sendMessage":         //testing
                                     case "sendMessageDirect":   //texting

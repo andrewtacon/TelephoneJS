@@ -24,7 +24,7 @@ let log = console.log
 //////////////////////////
 
 const helperMaker = require("./helpMaker/help")
-//let buildTest = helperMaker.buildTest("speechrecognizer")
+//let buildTest = helperMaker.buildTest("sound")
 
 /////////////////////////
 // END TEST /////////////
