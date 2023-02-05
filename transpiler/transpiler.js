@@ -317,6 +317,8 @@ function transpileDeclarations(node) {
 
         case "AssignmentExpression":        //this feels pretty clumsy
 
+            //console.log(node)
+
             isAssigning = true
             let AssignmentExpressionLeft = node.left
             let AssignmentExpressionRight = node.right
@@ -327,6 +329,8 @@ function transpileDeclarations(node) {
             AssignmentExpressionLeft.assignedRight = AssignmentExpressionRight     //need to send the right hand side on for insertion later on 
 
             AssignmentExpressionLeft = transpileDeclarations(AssignmentExpressionLeft)
+
+           
             if (AssignmentExpressionLeft.startsWith("(get-var ")) {  //this is string, numbers and bools (simple cases)
                 AssignmentExpressionLeft = AssignmentExpressionLeft.substring(8, AssignmentExpressionLeft.length - 1)
                 return `(set-var! ${AssignmentExpressionLeft} ${transpileDeclarations(AssignmentExpressionRight)}  )`
@@ -678,6 +682,7 @@ function transpileDeclarations(node) {
                                     case "getDuration":         //videoplayer
                                     case "getTagList":          //clouddb
                                     case "getTags":             //tinydb
+                                    case "getText":             //speechrecognizer
                                     case "goBack":              //webview
                                     case "goForward":           //webview
                                     case "goHome":              //webview
@@ -728,6 +733,7 @@ function transpileDeclarations(node) {
                                     case "shareMessage":        //sharing
                                     case "stopFollowing":       //twitter
                                     case "makeInstant":         //clock
+                                    case "speak":               //texttospeech
                                     case "tweet":               //twitter
                                     case "viewContact":         //contactPicker
                                         if (methodCalled === "getWebValue") {methodCalled = "getValue"} //rename the alias for tinydb method so it works

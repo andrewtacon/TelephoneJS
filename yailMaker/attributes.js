@@ -698,7 +698,7 @@ function getProperty(key, value, name, descriptor) {
 
 function setText(key, value, name, descriptor) {
 
-    if (descriptor === "Country") {
+    /*if (descriptor === "Country") {
         value = value.toUpperCase()
         let countries = ["AUS", "AUT", "BEL", "BLZ", "BWA", "CAN", "CHE", "DEU", "ESP", "FRA", "GBR", "HKG", "IND", "IRL", "ITA", "JAM", "LIE", "LUX", "MCO", "MHL", "MLT", "NAM", "NZL", "PAK", "PHL", "SGP", "TTO", "USA", "VIR", "ZAF", "ZWE"]
         if (countries.indexOf(value) === -1) {
@@ -713,7 +713,7 @@ function setText(key, value, name, descriptor) {
             console.log("Invalid language in speech recognizer. Ignoring.")
             return
         }
-    }
+    }*/
 
     if (useQuotesForText) {
         return `\n\t(set-and-coerce-property! '${name} '${descriptor} "${value}" 'text)`
