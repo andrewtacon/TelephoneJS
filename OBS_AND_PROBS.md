@@ -58,6 +58,9 @@ PROBLEM 9:
 vidoeplayer source needs to upload the file
 
 
+PROBLEM 10:
+camera and camcorder throw errors on console but seem to work
+
 
 There is no way for me to test the following component properly - they may or may not work
 Barometer
