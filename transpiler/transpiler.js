@@ -330,7 +330,7 @@ function transpileDeclarations(node) {
 
             AssignmentExpressionLeft = transpileDeclarations(AssignmentExpressionLeft)
 
-           
+
             if (AssignmentExpressionLeft.startsWith("(get-var ")) {  //this is string, numbers and bools (simple cases)
                 AssignmentExpressionLeft = AssignmentExpressionLeft.substring(8, AssignmentExpressionLeft.length - 1)
                 return `(set-var! ${AssignmentExpressionLeft} ${transpileDeclarations(AssignmentExpressionRight)}  )`
@@ -442,6 +442,8 @@ function transpileDeclarations(node) {
                 //these are the system functions
 
                 switch (node.callee.name) {
+                    case "getComponent": //in code like this getComponent(screen1) ... perhaps should be like this getComponent("screen1") .. or maybe both
+                        return `(get-component ${transpileDeclarations(node.arguments[0])})`
                     case "inject":  //inject scheme code directly into the application
                         return node.arguments[0].quasis[0].value.raw
                     case "require":
@@ -670,6 +672,7 @@ function transpileDeclarations(node) {
                                     case "canGoBack":           //webview   //returns true/false
                                     case "canGoForward":        //webview   //returns true/false
                                     case "checkAuthorized":     //twitter
+                                    case "clear":               //canvas
                                     case "clearAll":            //tinydb
                                     case "clearCaches":         //webview
                                     case "clearCookies":        //webview
@@ -689,6 +692,7 @@ function transpileDeclarations(node) {
                                     case "launchPicker":        //datepicker
                                     case "makePhoneCall":       //phonecall
                                     case "makePhoneCallDirect": //phonecall
+                                    case "moveIntoBounds":      //ball
                                     case "pause":               //player, videoplayer
                                     case "play":                //sound
                                     case "open":                //listpicker, imagepicker
@@ -702,7 +706,7 @@ function transpileDeclarations(node) {
                                     case "requestMentions":     //twitter
                                     case "reset":               //pedometer
                                     case "resume":              //sound
-                                    case "save":                //pedometer
+                                    case "save":                //pedometer, canvas
                                     case "sendMessage":         //testing
                                     case "sendMessageDirect":   //texting
                                     case "start":               //player, soundrecorder, pedometer, videoplayer
@@ -735,10 +739,11 @@ function transpileDeclarations(node) {
                                     case "shareMessage":        //sharing
                                     case "stopFollowing":       //twitter
                                     case "makeInstant":         //clock
+                                    case "saveAs":              //canvas
                                     case "speak":               //texttospeech
                                     case "tweet":               //twitter
                                     case "viewContact":         //contactPicker
-                                        if (methodCalled === "getWebValue") {methodCalled = "getValue"} //rename the alias for tinydb method so it works
+                                        if (methodCalled === "getWebValue") { methodCalled = "getValue" } //rename the alias for tinydb method so it works
                                         return (`\n(call-component-method '${elementName} '${uppercaseFirstLetter(methodCalled)}  (*list-for-runtime*  ${transpileDeclarations(args[0])} )  '(text))`)
 
                                     //methods with one numerical input
@@ -774,7 +779,7 @@ function transpileDeclarations(node) {
                                     case "getValue":                //clouddb, tinydb
                                     case "storeValue":              //clouddb,tinydb
                                     case "storeWebValue":           //tinywebdb 
-                                        if (methodCalled === "storeWebValue") {methodCalled = "storeValue"} //this is so that the tinywebdb can have same name as for getting a value as getvalue is different for the tinywebdb component
+                                        if (methodCalled === "storeWebValue") { methodCalled = "storeValue" } //this is so that the tinywebdb can have same name as for getting a value as getvalue is different for the tinywebdb component
                                         return (`\n(call-component-method '${elementName} '${uppercaseFirstLetter(methodCalled)}  (*list-for-runtime*  ${transpileDeclarations(args[0])}  ${transpileDeclarations(args[1])})  '(text any))`)
 
                                     //methods with 3 text inputs - no return value
@@ -1034,6 +1039,63 @@ function transpileDeclarations(node) {
                                     case "writeRange":
                                     case "writeRow":
                                         return `(call-component-method '${elementName} 'WriteRow (*list-for-runtime* ${transpileDeclarations(args[0])} ${transpileDeclarations(args[1])} ${transpileDeclarations(args[2])}) '(text number list))`
+
+
+                                    ///////////////////////////////////////////
+                                    /// SPECIAL CANVAS METHODS ////////////////
+                                    ///////////////////////////////////////////
+
+                                    case "drawPoint":
+                                    case "getPixelColor":
+                                    case "getBackgroundPixelColor":
+                                        return `(call-component-method '${elementName} '${uppercaseFirstLetter(methodCalled)} (*list-for-runtime* ${transpileDeclarations(args[0])} ${transpileDeclarations(args[1])}) '(number number))`
+
+                                    case "drawArc":
+                                        return `(call-component-method '${elementName} 'DrawArc (*list-for-runtime* ${transpileDeclarations(args[0])} ${transpileDeclarations(args[1])} ${transpileDeclarations(args[2])} ${transpileDeclarations(args[3])} ${transpileDeclarations(args[4])} ${transpileDeclarations(args[5])} ${transpileDeclarations(args[6])} ${transpileDeclarations(args[7])}) '(number number number number number number boolean boolean))`
+
+                                    case "drawCircle":
+                                        return `(call-component-method '${elementName} 'DrawCircle (*list-for-runtime* ${transpileDeclarations(args[0])} ${transpileDeclarations(args[1])} ${transpileDeclarations(args[2])} ${transpileDeclarations(args[3])}) '(number number number boolean))`
+
+                                    case "drawLine":
+                                        return `(call-component-method '${elementName} 'DrawLine (*list-for-runtime* ${transpileDeclarations(args[0])} ${transpileDeclarations(args[1])} ${transpileDeclarations(args[2])} ${transpileDeclarations(args[3])}) '(number number number number))`
+
+                                    case "drawShape":
+                                        return `(call-component-method '${elementName} 'DrawShape (*list-for-runtime* ${transpileDeclarations(args[0])} ${transpileDeclarations(args[1])}) '(list boolean))`
+
+                                    case "drawText":
+                                        return `(call-component-method '${elementName} 'DrawText (*list-for-runtime* ${transpileDeclarations(args[0])} ${transpileDeclarations(args[1])} ${transpileDeclarations(args[2])}) '(text number number))`
+
+                                    case "drawTextAtAngle":
+                                        return `(call-component-method '${elementName} 'DrawTextAtAngle (*list-for-runtime* ${transpileDeclarations(args[0])} ${transpileDeclarations(args[1])} ${transpileDeclarations(args[2])} ${transpileDeclarations(args[3])}) '(text number number number))`
+
+                                    case "setBackgroundPixelColor":
+                                        //need a function to turn AARRGGBB into a number for this to work
+                                        return `(call-component-method '${elementName} 'SetBackgroundPixelColor (*list-for-runtime* ${transpileDeclarations(args[0])} ${transpileDeclarations(args[1])} ${transpileDeclarations(args[2])}) '(number number number))`
+
+
+                                    ///////////////////////////////////////////
+                                    /// SPECIAL BALL METHODS //////////////////
+                                    ///////////////////////////////////////////
+
+                                    case "bounce":
+                                        return `(call-component-method '${elementName} 'Bounce (*list-for-runtime* ${transpileDeclarations(args[0])}) '(number))`
+
+                                    case "moveTo":
+                                    case "pointInDirection":
+                                        return `(call-component-method '${elementName} '${uppercaseFirstLetter(methodCalled)} (*list-for-runtime*  ${transpileDeclarations(args[0])} ${transpileDeclarations(args[1])} ) '(number number))`
+
+                                    case "moveToPoint":
+                                        return `(call-component-method '${elementName} 'MoveToPoint (*list-for-runtime* ${transpileDeclarations(args[0])} ) '(list))`
+
+                                    case "pointTowards":
+                                    case "collidingWith":
+                                        return `(call-component-method '${elementName} '${uppercaseFirstLetter(methodCalled)} (*list-for-runtime*  ${transpileDeclarations(args[0])} ) '(component))`
+
+
+                                    ///////////////////////////////////////////
+                                    // DEFAULT ERROR MESSAGE //////////////////
+                                    ///////////////////////////////////////////
+
 
                                     default:
                                         console.log(`Method "${methodCalled}" not defined in transpiler for component of type "${isVariableOfType}"`)

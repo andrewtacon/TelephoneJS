@@ -61,6 +61,10 @@ vidoeplayer source needs to upload the file
 PROBLEM 10:
 camera and camcorder throw errors on console but seem to work
 
+PROBLEM 11:
+need to create color.create methods to trun RGB and RGBA into integer colors for box hex strings and integer values in the legal ranges.
+
+
 
 There is no way for me to test the following component properly - they may or may not work
 Barometer

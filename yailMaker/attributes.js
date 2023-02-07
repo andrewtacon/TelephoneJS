@@ -758,14 +758,22 @@ function setTrueFalse(key, value, name, descriptor) {
 
 function setFloat(key, value, name, descriptor) {
     //this is to handle data coming from the transpiler
+
+    let skipCheck = false
     if (typeof value === "string") {
+        if (value.startsWith(`(call-yail-primitive - (*list-for-runtime*`) && value.endsWith(`) '(number ) "negate")`)) {
+            skipCheck = true
+        }
+
         if (value.startsWith('"') && value.endsWith('"')) {
             value = value.substring(1, value.length - 1)
         }
     }
 
-    value = parseFloat(value)
-    if (!isNaN(value)) {
+    if (!skipCheck) {
+        value = parseFloat(value)
+    }
+    if (!isNaN(value) || skipCheck) {
         if (descriptor === "StokeOpacity") {
             if (value < 0) { value = 0 }
             if (value > 1) { value = 1 }
@@ -778,7 +786,7 @@ function setFloat(key, value, name, descriptor) {
         }
         return `\n\t(set-and-coerce-property! '${name} '${descriptor} ${value} 'number)`
     } else {
-        console.log(`${descriptor} requires a numerical value as input.`)
+        console.log(`${descriptor} requires a numerical value as input. Value given is ${value} of type ${typeof value}`)
     }
     return ""
 }
@@ -983,34 +991,36 @@ function fromTextList(key, value, name, options, descriptor) {
             console.log(`Transportation method set to "Walking": either not supplied or invalid method given.`)
             return ""
         }
-    } else
-        if (descriptor === "CloseScreenAnimation" || descriptor === "OpenScreenAnimation") {
-            if (options.indexOf(value) === -1) {
-                console.log(`Invalid option given for Open/Close Screen Animation: setting to default.`)
+    } else if (descriptor === "CloseScreenAnimation" || descriptor === "OpenScreenAnimation") {
+        if (options.indexOf(value) === -1) {
+            console.log(`Invalid option given for Open/Close Screen Animation: setting to default.`)
+            return ""
+        }
+    } else if (descriptor === "ScreenOrientation") {
+        if (options.indexOf(value) === -1) {
+            console.log(`Invalid option given for Screen Orientation: setting to default.`)
+            return ""
+        }
+    } else if (descriptor === "Sizing") {
+        value = value.toLowerCase()
+        if (options.indexOf(value) === -1) {
+            value = "Responsive"
+            console.log(`Invalid option given for Sizing (of screen): setting to responsive.`)
+        } else {
+            value = value[0].toUpperCase() + value.substring(1)
+        }
+    } else {
+        if (descriptor === "Theme") {
+            if (value === "devicedefault") { value = "AppTheme.Light.DarkActionBar" }
+            else if (value === "blacktitle") { value = "AppTheme.Light" }
+            else if (value === "dark") { value = "AppTheme" }
+            else {
+                console.log("Invalid value for theme (of screen): setting to 'classic'.")
                 return ""
             }
-        } else
-            if (descriptor === "ScreenOrientation") {
-                if (options.indexOf(value) === -1) {
-                    console.log(`Invalid option given for Screen Orientation: setting to default.`)
-                    return ""
-                }
-            } else
-                if (descriptor === "Sizing") {
-                    if (options.indexOf(value) === -1) {
-                        value = "responsive"
-                        console.log(`Invalid option given for Sizing (of screen): setting to responsive.`)
-                    }
-                } else
-                    if (descriptor === "Theme") {
-                        if (value === "devicedefault") { value = "AppTheme.Light.DarkActionBar" }
-                        else if (value === "blacktitle") { value = "AppTheme.Light" }
-                        else if (value === "dark") { value = "AppTheme" }
-                        else {
-                            console.log("Invalid value for theme (of screen): setting to 'classic'.")
-                            return ""
-                        }
-                    }
+        }
+    }
+
     return `\n\t(set-and-coerce-property! '${name} '${descriptor} "${value}" 'text)`
 }
 
