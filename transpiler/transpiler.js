@@ -705,11 +705,13 @@ function transpileDeclarations(node) {
                                     case "requestFriendTimeline":   //twitter
                                     case "requestMentions":     //twitter
                                     case "reset":               //pedometer
+                                    case "resolveActivity":     //activity starter
                                     case "resume":              //sound
                                     case "save":                //pedometer, canvas
                                     case "sendMessage":         //testing
                                     case "sendMessageDirect":   //texting
                                     case "start":               //player, soundrecorder, pedometer, videoplayer
+                                    case "startActivity":       //activity starter
                                     case "stop":                //player, soundrecorder, pedometer, videoplayer
                                     case "stopLoading":         //webview
                                     case "takePicture":         //camera
@@ -1090,6 +1092,8 @@ function transpileDeclarations(node) {
                                     case "pointTowards":
                                     case "collidingWith":
                                         return `(call-component-method '${elementName} '${uppercaseFirstLetter(methodCalled)} (*list-for-runtime*  ${transpileDeclarations(args[0])} ) '(component))`
+
+                            
 
 
                                     ///////////////////////////////////////////

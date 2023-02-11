@@ -343,7 +343,7 @@ function setAttribute(key, value, name, descriptor, useQuotes = true) {
     useQuotesForText = useQuotes
 
     switch (descriptor) {
-        case "Extras":
+
         case "Features":
         case "Points":
         case "BoundingBox":
@@ -351,7 +351,7 @@ function setAttribute(key, value, name, descriptor, useQuotes = true) {
         case "HolePoints":
         case "Points":
         case "RequestHeaders":
-            console.log(`"${descriptior}" has not yet been implemented. Ignoring for now.`)
+            console.log(`"${descriptor}" has not yet been implemented. Ignoring for now.`)
             return ""
 
         case "AboutScreen":
@@ -662,6 +662,7 @@ function setAttribute(key, value, name, descriptor, useQuotes = true) {
             return setInstantinTime(key, value, name, descriptor)
 
         case "Elements":
+        case "Extras":
             return setFromObject(key, value, name, descriptor)
 
 

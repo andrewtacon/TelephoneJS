@@ -129,7 +129,7 @@ function buildTest(el) {
     //Construct the XML document
 
     let head = `
-    <screen script="screen1.js" name="screen1" AppName="yail" Title="Great Title!" TitleVisible="false" ShowStatusBar="false" Scrollable="true">
+    <screen script="screen1.js" name="screen1" AppName="yail" Title="Great Title!" TitleVisible="false" ShowStatusBar="false" Scrollable="true" Sizing="Responsive">
     `
 
     let tail = `

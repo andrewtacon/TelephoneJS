@@ -136,7 +136,7 @@ function traverse(object, parent = '') {
         //default screen attributes
         if (type === "screen") {
             if (typeof attributes.showlistsasjson === undefined) { attributes.showlistsasjson = "true" }
-            if (typeof attributes.sizing === undefined) { attributes.sizing = "responsive" }
+            if (typeof attributes.sizing === undefined) { attributes.sizing = "Responsive" }
             if (typeof attributes.title === undefined) { attributes.title = "Screen1" }
             if (typeof attributes.name === undefined) { attributes.name = "Screen1" }
             if (typeof attributes.appname === undefined) { attributes.appname = "Crazy Green Pencils" }
