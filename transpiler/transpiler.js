@@ -782,6 +782,7 @@ function transpileDeclarations(node) {
                                     case "uriEncode":						//web
                                     case "XMLTextDecode":					//web
                                     case "XMLTextDecodeAsDictionary":		//web
+                                    case "loadFromURL":                     //map
 
 
                                         if (methodCalled === "getWebValue") { methodCalled = "getValue" } //rename the alias for tinydb method so it works
@@ -1149,8 +1150,16 @@ function transpileDeclarations(node) {
                                     case "collidingWith":
                                         return `(call-component-method '${elementName} '${uppercaseFirstLetter(methodCalled)} (*list-for-runtime*  ${transpileDeclarations(args[0])} ) '(component))`
 
+                                    //////////////////////////////////////////
+                                    /// SPECIAL MAP METHODS //////////////////
+                                    //////////////////////////////////////////
 
-
+                                    case "featureFromDescription":
+                                        return (`(call-component-method '${elementName} 'FeatureFromDescription (*list-for-runtime* ${transpileDeclarations(args[0])}) '(list))`)
+                                    case "panTo":
+                                        return (`(call-component-method '${elementName} 'PanTo (*list-for-runtime*  ${transpileDeclarations(args[0])} ${transpileDeclarations(args[1])} ${transpileDeclarations(args[2])}   ) '(number number number))`)
+                                    case "createMarker":
+                                        return (`(call-component-method '${elementName} 'CreateMarker (*list-for-runtime* ${transpileDeclarations(args[0])} ${transpileDeclarations(args[1])}  ) '(number number))`)
 
                                     ///////////////////////////////////////////
                                     // DEFAULT ERROR MESSAGE //////////////////
@@ -1618,6 +1627,8 @@ function transpileDeclarations(node) {
                         case "AlignVertical":
                         case "Sensitivity":
                         case "ReceivingEnabled":
+                        case "ScaleUnits":
+                        case "MapType":
                             proceduresUsed.add(procedures.getSystemConstant)
                             return `(getSystemConstant '${MEelementName} '${propertyRequested})`
                         case "BackgroundColor":

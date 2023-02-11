@@ -68,6 +68,12 @@ PROBLEM 12:
 ball component needs all methods to be tested, anything except bounce has not been tested
 
 
+PROBLEM 13
+for map need to properly test methods of
+FeatureFromDescription and
+Save
+
+
 
 There is no way for me to test the following component properly - they may or may not work
 Barometer

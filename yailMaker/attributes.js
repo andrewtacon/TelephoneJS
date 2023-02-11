@@ -344,10 +344,6 @@ function setAttribute(key, value, name, descriptor, useQuotes = true) {
 
     switch (descriptor) {
 
-        case "Features":
-        case "Points":
-        case "BoundingBox":
-        case "Features":
         case "HolePoints":
         case "Points":
 
@@ -634,9 +630,27 @@ function setAttribute(key, value, name, descriptor, useQuotes = true) {
             return fromList(key, value, name, ['text', 'text_detail', 'text_detail_horz', 'image_text', 'image_text_detail'], "ListViewLayout")
             break;
         case "MapType":
-            return fromList(key, value, name, ['roads', 'aerial', 'terrain'], "MapType")
+            let mapOrigValue = value
+            value = value.replaceAll('"',"").toLowerCase().trim()
+            value = value[0].toUpperCase() + value.substring(1)
+            if (['Road', 'Aerial', 'Terrain'].includes(value)){
+                return `(set-and-coerce-property! '${name} 'MapType (static-field com.google.appinventor.components.common.MapType "${value}") 'number)`
+            } else {
+                console.log(`MapType must be 'road', 'aerial' or 'terrain'. Invalid value of '${mapOrigValue}' supplied. Ignoring.`)
+                return
+            }
             break;
         case "ScaleUnits":
+            let scaleOrigValue = value
+            value = value.replaceAll('"',"").toLowerCase().trim()
+            value = value[0].toUpperCase() + value.substring(1)
+            if (['Metric', 'Imperial'].includes(value)){
+                return `(set-and-coerce-property! '${name} 'ScaleUnits (static-field com.google.appinventor.components.common.ScaleUnits "${value}") 'number)`
+            } else {
+                console.log(`ScaleUnits must be 'metric', or 'imperial'. Invalid value of '${scaleOrigValue}' supplied. Ignoring.`)
+                return
+            }
+            break;
             return fromList(key, value, name, ['metric', 'imperial'], "ScaleUnits")
             break;
         case "Sensitivity":
@@ -663,7 +677,10 @@ function setAttribute(key, value, name, descriptor, useQuotes = true) {
 
         case "Elements":
         case "Extras":
-        case "RequestHeaders":
+        case "RequestHeaders":      //web
+        case "BoundingBox":         //map
+        case "Features":            //map
+
             return setFromObject(key, value, name, descriptor)
 
 
@@ -845,7 +862,7 @@ function fromList(key, value, name, options, descriptor) {
         if (descriptor === "TextAlignment" || descriptor === "ListViewLayout") { index-- }
         // if (descriptor === "Orientation") { if (index !== 1) { return ""} } //only send through request for horizonatal, vertical is default
         if (descriptor === "NotifierLength") { if (index !== 0) { return "" } } //only send through request for short, long is default
-        if (descriptor === "MapType" || descriptor === "ScaleUnits") { if (index === 0) { return "" } }
+        if (descriptor === "ScaleUnits") { if (index === 0) { return "" } }
         if (descriptor === "Sensitivity") {
             console.log("Sensitivity", value, index)
             if (index === 2) { return "" }
