@@ -676,15 +676,17 @@ function transpileDeclarations(node) {
                                     case "clear":               //canvas
                                     case "clearAll":            //tinydb
                                     case "clearCaches":         //webview
-                                    case "clearCookies":        //webview
+                                    case "clearCookies":        //webview, web
                                     case "clearLocations":      //webview
                                     case "cloudConnected":      //clouddb
                                     case "closeSerial":         //serial
                                     case "deAuthorize":         //twitter
+                                    case "delete":              //web
                                     case "disconnect":          //bluetoothclient
                                     case "dismissProgressDialog":   //notifier
                                     case "doScan":              //barcode scanner
                                     case "hideKeyboard":        //screen
+                                    case "get":                 //web
                                     case "getDuration":         //videoplayer
                                     case "getTagList":          //clouddb
                                     case "getTags":             //tinydb
@@ -767,6 +769,21 @@ function transpileDeclarations(node) {
                                     case "tweet":               //twitter
                                     case "viewContact":         //contactPicker
                                     case "writeSerial":         //serial
+                                    case "htmlTextDecode":					//web
+                                    case "jsonTextDecode":					//web
+                                    case "jsonTextDecodeWithDictionaries":	//web
+                                    case "patchFile":						//web
+                                    case "patchText":						//web
+                                    case "postFile":						//web
+                                    case "postText":						//web
+                                    case "putFile":							//web
+                                    case "putText":							//web
+                                    case "uriDecode":						//web
+                                    case "uriEncode":						//web
+                                    case "XMLTextDecode":					//web
+                                    case "XMLTextDecodeAsDictionary":		//web
+
+
                                         if (methodCalled === "getWebValue") { methodCalled = "getValue" } //rename the alias for tinydb method so it works
                                         return (`\n(call-component-method '${elementName} '${uppercaseFirstLetter(methodCalled)}  (*list-for-runtime*  ${transpileDeclarations(args[0])} )  '(text))`)
 
@@ -796,6 +813,9 @@ function transpileDeclarations(node) {
                                     case "saveFile":                //file
                                     case "showProgressDialog":
                                     case "shareFileWithMessage":
+                                    case "patchTextWithEncoding":   //web
+                                    case "postTextWithEncoding":    //web
+                                    case "putTextWithEncoding":     //web
                                         return (`\n(call-component-method '${elementName} '${uppercaseFirstLetter(methodCalled)}  (*list-for-runtime*  ${transpileDeclarations(args[0])}  ${transpileDeclarations(args[1])})  '(text text))`)
 
                                     //methods with 2 text and an optional true/false (default true) 
@@ -821,8 +841,13 @@ function transpileDeclarations(node) {
                                         return (`(call-component-method '${elementName} '${uppercaseFirstLetter(methodCalled)} (*list-for-runtime* ${transpileDeclarations(args[0])} ${transpileDeclarations(args[1])} ${transpileDeclarations(args[2])} ${transpileDeclarations(args[3])} ${transpileDeclarations(args[4])}) '(text text text text boolean))`)
 
                                     //methods to send a list
-                                    case "sendBytes":
+                                    case "sendBytes":           //serial?
+                                    case "buildRequestData":    //web
                                         return (`(call-component-method '${elementName} '${uppercaseFirstLetter(methodCalled)} (*list-for-runtime* ${transpileDeclarations(args[0])}) '(list))`)
+
+                                    //methods accepting 'any'
+                                    case "jsonObjectEncode":
+                                        return (`(call-component-method '${elementName} '${uppercaseFirstLetter(methodCalled)} (*list-for-runtime* ${transpileDeclarations(args[0])}) '(any))`)
 
                                     /////////////////////////////////////////////////////////////////////////////////////////////////
                                     ///// The below component methods don't fit any simple generic pattern like the above ones do ///

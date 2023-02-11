@@ -350,7 +350,7 @@ function setAttribute(key, value, name, descriptor, useQuotes = true) {
         case "Features":
         case "HolePoints":
         case "Points":
-        case "RequestHeaders":
+
             console.log(`"${descriptor}" has not yet been implemented. Ignoring for now.`)
             return ""
 
@@ -663,6 +663,7 @@ function setAttribute(key, value, name, descriptor, useQuotes = true) {
 
         case "Elements":
         case "Extras":
+        case "RequestHeaders":
             return setFromObject(key, value, name, descriptor)
 
 
