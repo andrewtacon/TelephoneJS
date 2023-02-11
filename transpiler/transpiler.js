@@ -669,6 +669,7 @@ function transpileDeclarations(node) {
 
                                     //methods with no inputs 
                                     case "authorize":           //twitter
+                                    case "bytesAvailableToReceive": //bluetoothclient
                                     case "canGoBack":           //webview   //returns true/false
                                     case "canGoForward":        //webview   //returns true/false
                                     case "checkAuthorized":     //twitter
@@ -678,7 +679,9 @@ function transpileDeclarations(node) {
                                     case "clearCookies":        //webview
                                     case "clearLocations":      //webview
                                     case "cloudConnected":      //clouddb
+                                    case "closeSerial":         //serial
                                     case "deAuthorize":         //twitter
+                                    case "disconnect":          //bluetoothclient
                                     case "dismissProgressDialog":   //notifier
                                     case "doScan":              //barcode scanner
                                     case "hideKeyboard":        //screen
@@ -689,13 +692,22 @@ function transpileDeclarations(node) {
                                     case "goBack":              //webview
                                     case "goForward":           //webview
                                     case "goHome":              //webview
+                                    case "initializeSerial":    //serial
                                     case "launchPicker":        //datepicker
                                     case "makePhoneCall":       //phonecall
                                     case "makePhoneCallDirect": //phonecall
                                     case "moveIntoBounds":      //ball
                                     case "pause":               //player, videoplayer
                                     case "play":                //sound
-                                    case "open":                //listpicker, imagepicker
+                                    case "open":                //listpicker, imagepicker\
+                                    case "openSerial":          //serial
+                                    case "readSerial":          //serial
+                                    case "receiveSigned1ByteNumber":    //bluetoothclient
+                                    case "receiveSigned2ByteNumber":    //bluetoothclient
+                                    case "receiveSigned4ByteNumber":    //bluetoothclient
+                                    case "receiveUnsigned1ByteNumber":  //bluetoothclient
+                                    case "receiveUnsigned2ByteNumber":  //bluetoothclient
+                                    case "receiveUnsigned4ByteNumber":  //bluetoothclient
                                     case "recordVideo":         //camcorder
                                     case "refresh":
                                     case "reload":              //webview
@@ -713,6 +725,7 @@ function transpileDeclarations(node) {
                                     case "start":               //player, soundrecorder, pedometer, videoplayer
                                     case "startActivity":       //activity starter
                                     case "stop":                //player, soundrecorder, pedometer, videoplayer
+                                    case "stopAccepting":       //bluetoothserver
                                     case "stopLoading":         //webview
                                     case "takePicture":         //camera
                                     case "now":                 //clock
@@ -721,11 +734,18 @@ function transpileDeclarations(node) {
 
 
                                     //methods with one text input 
+                                    case "acceptConnection":    //bluetoothserver
                                     case "clearTag":            //clouddb, tinydb
+                                    case "connect":             //bluetoothclient
                                     case "delete":              //file
                                     case "follow":              //twitter
                                     case "getWebValue":         //tinywebdb
                                     case "goToUrl":             //webview
+                                    case "isDevicePaired":		//bluetoothclient
+                                    case "send1ByteNumber":		//bluetoothclient
+                                    case "send2ByteNumber":		//bluetoothclient
+                                    case "send4ByteNumber":		//bluetoothclient
+                                    case "sendText":			//bluetoothclient
                                     case "showAlert":           //notifier
                                     case "logInfo":             //notifier
                                     case "logWarning":          //notifier
@@ -733,6 +753,7 @@ function transpileDeclarations(node) {
                                     case "runJavaScript":       //webview
                                     case "latitudeFromAddress": //location sensor
                                     case "longitudeFromAddress"://location sensor
+                                    case "printSerial":         //serial
                                     case "readFile":            //datafile
                                     case "readFrom":            //file
                                     case "removeFirstFromList": //clouddb
@@ -745,6 +766,7 @@ function transpileDeclarations(node) {
                                     case "speak":               //texttospeech
                                     case "tweet":               //twitter
                                     case "viewContact":         //contactPicker
+                                    case "writeSerial":         //serial
                                         if (methodCalled === "getWebValue") { methodCalled = "getValue" } //rename the alias for tinydb method so it works
                                         return (`\n(call-component-method '${elementName} '${uppercaseFirstLetter(methodCalled)}  (*list-for-runtime*  ${transpileDeclarations(args[0])} )  '(text))`)
 
@@ -756,12 +778,17 @@ function transpileDeclarations(node) {
                                     case "durationToWeeks":     //clock
                                     case "makeInstantFromMillis": //clock
                                     case "seekTo":              //videoplayer
+                                    case "receiveSignedBytes":		//bluetoothclient
+                                    case "receiveText":				//bluetoothclient
+                                    case "receiveUnsignedBytes":	//bluetoothclient
                                     case "vibrate":
                                         return (`\n(call-component-method '${elementName} '${uppercaseFirstLetter(methodCalled)}  (*list-for-runtime*  ${transpileDeclarations(args[0])} )  '(number))`)
 
 
                                     //methods with two text input 
+                                    case "acceptConnectionWithUUID":    //bluetoothserver
                                     case "appendToFile":            //file
+                                    case "connectWithUUID":         //bluetoothclient
                                     case "directMessage":           //twitter
                                     case "login":                   //twitter
                                     case "tweetWithImage":          //twitter
@@ -792,6 +819,10 @@ function transpileDeclarations(node) {
                                     //methods with 4 text and an optional true/false (default true) 
                                     case "showChooseDialog":    //notifier
                                         return (`(call-component-method '${elementName} '${uppercaseFirstLetter(methodCalled)} (*list-for-runtime* ${transpileDeclarations(args[0])} ${transpileDeclarations(args[1])} ${transpileDeclarations(args[2])} ${transpileDeclarations(args[3])} ${transpileDeclarations(args[4])}) '(text text text text boolean))`)
+
+                                    //methods to send a list
+                                    case "sendBytes":
+                                        return (`(call-component-method '${elementName} '${uppercaseFirstLetter(methodCalled)} (*list-for-runtime* ${transpileDeclarations(args[0])}) '(list))`)
 
                                     /////////////////////////////////////////////////////////////////////////////////////////////////
                                     ///// The below component methods don't fit any simple generic pattern like the above ones do ///
@@ -1093,7 +1124,7 @@ function transpileDeclarations(node) {
                                     case "collidingWith":
                                         return `(call-component-method '${elementName} '${uppercaseFirstLetter(methodCalled)} (*list-for-runtime*  ${transpileDeclarations(args[0])} ) '(component))`
 
-                            
+
 
 
                                     ///////////////////////////////////////////
