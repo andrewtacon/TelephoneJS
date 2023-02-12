@@ -69,7 +69,7 @@ function main(filename = "temp.xml") {
 
     traverse(structure.elements[0])
 
- //   console.log('making helper')
+    //   console.log('making helper')
 
     let helperFile = helperMaker.run(filename, extractedData)
 
@@ -97,7 +97,7 @@ function main(filename = "temp.xml") {
     //console.log(yail.length)
 
 
-   // console.log(yail)
+    // console.log(yail)
 
 
 
@@ -158,7 +158,7 @@ function traverse(object, parent = '') {
 
     elementList.push(object.attributes.name)
 
-   
+
     //for tables we need to do some basic error correct for columns and rows numbers for the table and the elements within
     if (type === "table") {
         //0. determine the size of the table
@@ -348,8 +348,12 @@ function traverse(object, parent = '') {
     //generate the assetList
     if (object.attributes) {
         for (const [key, value] of Object.entries(object.attributes)) {
-            if (key !== "backgroundimage" && key !== "image" && key !== "picture") { continue; }
-            assetsList.push(value)
+        
+            if (["backgroundimage", "image", "picture", "sourcefile", "source"].includes(key)) {
+                if (!value.toLowerCase().startsWith("http:")) { //avoid urls for geojson
+                    assetsList.push(value)
+                }
+            }
         }
     }
     fs.writeFileSync("assets.list", JSON.stringify(assetsList))
@@ -450,7 +454,7 @@ function createElement(element, attributes, parent, elements) {
             //find correct name for the attribute for the SCHEME code
             //need to do this because converted to lowercase for the XML file so we can forgive casing errors in XML (but not in the JavaScript code)
             for (let attrkey of ATTRIBUTES) {
-                if (attrkey.toLowerCase() === key) {            
+                if (attrkey.toLowerCase() === key) {
                     //process the attribute
                     output(setAttribute(key, value, attributes.name, attrkey))
                 }

@@ -212,17 +212,21 @@ function buildMessage(message) {
 //// Asset Handling - load all the images etc into the emulator  ///////
 //// before running ////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////
-
+let assetList=[]
 async function loadAssets() {
+
+//    console.log("load ", assetList)
 
     //get known assets
     let devices = await adb.devices()
     let files = await adb.getFiles(devices)
-    let assetList = JSON.parse(fs.readFileSync("assets.list", "utf8"))
+   // let assetList = JSON.parse(fs.readFileSync("assets.list", "utf8"))
+  //  console.log(files)
 
     for (let i = 0; i < assetList.length; i++) {
         let asset = assetList[i]
 
+    //    console.log(asset)
         if (files.includes(asset)) {
             console.log(`"${asset}" found on device - skipping upload.`)
             continue
@@ -235,7 +239,7 @@ async function loadAssets() {
             continue
         }
 
-      //  log(`Loading "${asset} onto device.`)
+    //    log(`Loading "${asset} onto device.`)
 
 
         //run an OPTIONS request
@@ -260,7 +264,7 @@ async function loadAssets() {
             body: readStream // Here, stringContent or bufferContent would also work
         });
         let putReturn = await put
-
+   //     console.log(putReturn)
 
     }
 
@@ -340,8 +344,9 @@ function pushNewData(data) {
 }
 
 
-function loadData(data) {
+function loadData(data, assetListData) {
     yail = data
+    assetList = assetListData
     debug("Initial data")
     debug(yail)
 }

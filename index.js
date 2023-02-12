@@ -135,8 +135,9 @@ async function main(arg) {
         networkInterface.load(yail)
 
     } else {
+        console.log(assetList)
         emulatorInterface = require("./emulatorInterface/emulatorUSBConnection")
-        emulatorInterface.load(yail)
+        emulatorInterface.load(yail, assetList)
 
         if (arg === "usb") {
             log("USB mode")
