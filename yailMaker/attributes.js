@@ -344,12 +344,6 @@ function setAttribute(key, value, name, descriptor, useQuotes = true) {
 
     switch (descriptor) {
 
-        case "HolePoints":
-        case "Points":
-
-            console.log(`"${descriptor}" has not yet been implemented. Ignoring for now.`)
-            return ""
-
         case "AboutScreen":
         case "Action":
         case "ActivityClass":
@@ -611,11 +605,11 @@ function setAttribute(key, value, name, descriptor, useQuotes = true) {
             break;
         case "AlignVertical":
         case "AnchorVertical":
-            return fromList(key, value, name, ['top', 'center', 'bottom'], "AlignVertical")
+            return fromList(key, value, name, ['top', 'center', 'bottom'], descriptor)
             break;
         case "AlignHorizontal":
         case "AnchorHorizontal":
-            return fromList(key, value, name, ['left', 'right', 'center'], "AlignHorizontal")
+            return fromList(key, value, name, ['left', 'right', 'center'], descriptor)
             break;
         case "TextAlignment":
             return fromList(key, value, name, ['left', 'center', 'right'], "TextAlignment")
@@ -680,7 +674,8 @@ function setAttribute(key, value, name, descriptor, useQuotes = true) {
         case "RequestHeaders":      //web
         case "BoundingBox":         //map
         case "Features":            //map
-
+        case "Points":              //linstring
+        case "HolePoints":          //polygon
             return setFromObject(key, value, name, descriptor)
 
 

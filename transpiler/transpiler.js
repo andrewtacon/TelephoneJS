@@ -669,9 +669,12 @@ function transpileDeclarations(node) {
 
                                     //methods with no inputs 
                                     case "authorize":           //twitter
+                                    case "bounds":              //rectangle on map
                                     case "bytesAvailableToReceive": //bluetoothclient
                                     case "canGoBack":           //webview   //returns true/false
                                     case "canGoForward":        //webview   //returns true/false
+                                    case "center":              //rectangle on map
+                                    case "centroid":            //polygon on maps
                                     case "checkAuthorized":     //twitter
                                     case "clear":               //canvas
                                     case "clearAll":            //tinydb
@@ -695,6 +698,7 @@ function transpileDeclarations(node) {
                                     case "goForward":           //webview
                                     case "goHome":              //webview
                                     case "initializeSerial":    //serial
+                                    case "hideInfobox":         //circle
                                     case "launchPicker":        //datepicker
                                     case "makePhoneCall":       //phonecall
                                     case "makePhoneCallDirect": //phonecall
@@ -714,6 +718,7 @@ function transpileDeclarations(node) {
                                     case "refresh":
                                     case "reload":              //webview
                                     case "requestDirectMessages":   //twitter
+                                    case "requestDirections":   //navigation
                                     case "requestFocus":        //emailpicker
                                     case "requestFollowers":    //twitter
                                     case "requestFriendTimeline":   //twitter
@@ -724,6 +729,7 @@ function transpileDeclarations(node) {
                                     case "save":                //pedometer, canvas
                                     case "sendMessage":         //testing
                                     case "sendMessageDirect":   //texting
+                                    case "showInfobox":         //circle
                                     case "start":               //player, soundrecorder, pedometer, videoplayer
                                     case "startActivity":       //activity starter
                                     case "stop":                //player, soundrecorder, pedometer, videoplayer
@@ -823,6 +829,13 @@ function transpileDeclarations(node) {
                                     case "showPasswordDialog":      //notifier
                                     case "showTextDialog":          //notifier
                                         return (`(call-component-method '${elementName} '${uppercaseFirstLetter(methodCalled)} (*list-for-runtime* ${transpileDeclarations(args[0])} ${transpileDeclarations(args[1])} ${transpileDeclarations(args[2])}) '(text text boolean))`)
+
+                                    //methods with two numerical inputs
+                                    case "setLocation":
+                                    case "bearingToPoint":          //marker on map
+                                    case "setCenter":               //rectangle on map
+                                        return (`(call-component-method '${elementName} '${uppercaseFirstLetter(methodCalled)} (*list-for-runtime*  ${transpileDeclarations(args[0])} ${transpileDeclarations(args[1])} ) '(number number))`)
+
 
                                     //methods with two inputs - text and any
                                     case "appendValueToList":       //clouddb
@@ -1160,6 +1173,24 @@ function transpileDeclarations(node) {
                                         return (`(call-component-method '${elementName} 'PanTo (*list-for-runtime*  ${transpileDeclarations(args[0])} ${transpileDeclarations(args[1])} ${transpileDeclarations(args[2])}   ) '(number number number))`)
                                     case "createMarker":
                                         return (`(call-component-method '${elementName} 'CreateMarker (*list-for-runtime* ${transpileDeclarations(args[0])} ${transpileDeclarations(args[1])}  ) '(number number))`)
+
+                                    /////////////////////////////////////////////
+                                    /// CIRCLE (FOR MAP) METHODS ////////////////
+                                    /////////////////////////////////////////////
+
+                                    case "distanceToFeature":
+                                    case "bearingToFeature":
+                                        return (`(call-component-method '${elementName} 'DistanceToFeature (*list-for-runtime*  ${transpileDeclarations(args[0])} ${transpileDeclarations(args[1])} ) '(component boolean))`)
+                                    case "distanceToPoint":
+                                        if (args.length === 3) {
+                                            return `(call-component-method '${elementName} 'DistanceToPoint (*list-for-runtime*  ${transpileDeclarations(args[0])} ${transpileDeclarations(args[1])} ${transpileDeclarations(args[2])}  ) '(number number boolean))`
+                                        } else if (args.length === 2) {
+                                            return `(call-component-method '${elementName} 'DistanceToPoint (*list-for-runtime*  ${transpileDeclarations(args[0])} ${transpileDeclarations(args[1])} ) '(number number))`
+                                        } else {
+                                            console.log("'DistanceToPoint' requires 2 arguments for Markers (number number) and 3 arguments for Circles and Polygons (number number boolean)")
+                                            return ""
+                                        }
+
 
                                     ///////////////////////////////////////////
                                     // DEFAULT ERROR MESSAGE //////////////////
@@ -1625,6 +1656,8 @@ function transpileDeclarations(node) {
                     switch (propertyRequested) {
                         case "AlignHorizontal":
                         case "AlignVertical":
+                        case "AnchorHorizontal":
+                        case "AnchorVertical":
                         case "Sensitivity":
                         case "ReceivingEnabled":
                         case "ScaleUnits":

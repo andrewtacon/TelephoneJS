@@ -74,6 +74,16 @@ FeatureFromDescription and
 Save
 
 
+PROBLEM 14
+feature collection = everything
+
+
+PROBLEM 15
+test navigation component by getting API key
+
+PROBLEM 16
+polygons don't show up ??????
+
 
 There is no way for me to test the following component properly - they may or may not work
 Barometer
