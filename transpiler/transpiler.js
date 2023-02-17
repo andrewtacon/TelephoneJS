@@ -585,6 +585,40 @@ function transpileDeclarations(node) {
                     break;
 
 
+                case "Color":
+                    let ColorMethod = node.callee.property.name
+
+                    switch (ColorMethod) {
+                        case "make":
+                            let colorRed = 0, colorGreen = 0, colorBlue = 0, colorAlpha = 255
+                            if (node.arguments.length === 1) {
+                                colorRed= transpileDeclarations(node.arguments[0])
+                                colorBlue=transpileDeclarations(node.arguments[0])
+                                colorGreen = transpileDeclarations(node.arguments[0])
+                            } else if (node.arguments.length===2) {
+                                colorRed= transpileDeclarations(node.arguments[0])
+                                colorBlue=transpileDeclarations(node.arguments[0])
+                                colorGreen = transpileDeclarations(node.arguments[0])
+                                colorAlpha = transpileDeclarations(node.arguments[1])
+                            } else if (node.arguments.length === 3) {
+                                colorRed= transpileDeclarations(node.arguments[0])
+                                colorBlue=transpileDeclarations(node.arguments[1])
+                                colorGreen = transpileDeclarations(node.arguments[2])
+                            } else if (node.arguments.length === 4) {
+                                colorRed= transpileDeclarations(node.arguments[0])
+                                colorBlue=transpileDeclarations(node.arguments[1])
+                                colorGreen = transpileDeclarations(node.arguments[2])
+                                colorAlpha = transpileDeclarations(node.arguments[3])
+                            }
+                            return `(call-yail-primitive make-color (*list-for-runtime* (call-yail-primitive make-yail-list (*list-for-runtime* ${colorRed} ${colorBlue} ${colorGreen} ${colorAlpha} ) '(any any any any ) "make a list")) '(list) "make-color")`
+                        case "split":
+                            proceduresUsed.add(procedures.splitColor)
+                            proceduresUsed.add(procedures.RGBAtoARGB)
+                            return `(splitColor ${transpileDeclarations(node.arguments[0])})`
+                            //return `(call-yail-primitive split-color (*list-for-runtime* ${transpileDeclarations(node.arguments[0])}) '(number) "split-color")`
+                    }
+                    break;
+
                 default:
 
 
@@ -1108,9 +1142,10 @@ function transpileDeclarations(node) {
                                     case "writeCell":
                                         return `(call-component-method '${elementName} 'WriteCell (*list-for-runtime* ${transpileDeclarations(args[0])} ${transpileDeclarations(args[1])} ${transpileDeclarations(args[2])}) '(text text any))`
                                     case "writeCol":
-                                    case "writeRange":
                                     case "writeRow":
-                                        return `(call-component-method '${elementName} 'WriteRow (*list-for-runtime* ${transpileDeclarations(args[0])} ${transpileDeclarations(args[1])} ${transpileDeclarations(args[2])}) '(text number list))`
+                                        return `(call-component-method '${elementName} '${uppercaseFirstLetter(methodCalled)} (*list-for-runtime* ${transpileDeclarations(args[0])} ${transpileDeclarations(args[1])} ${transpileDeclarations(args[2])}) '(text number list))`
+                                    case "writeRange":
+                                        return `(call-component-method '${elementName} '${uppercaseFirstLetter(methodCalled)} (*list-for-runtime* ${transpileDeclarations(args[0])} ${transpileDeclarations(args[1])} ${transpileDeclarations(args[2])}) '(text text list))`
 
 
                                     ///////////////////////////////////////////
@@ -1377,10 +1412,14 @@ function transpileDeclarations(node) {
                                         }
                                         return `
                                             (begin                    
-                                                ${pushes}        
-                                                (length ${transpileDeclarations(node.callee.object)} "")
+                                                ${pushes}
+                                                (call-yail-primitive yail-list-length (*list-for-runtime* ${transpileDeclarations(node.callee.object)} ) '(list) "length of list")
                                             )
                                             `
+
+
+
+
 
 
                                     case "repeat":
@@ -1672,7 +1711,8 @@ function transpileDeclarations(node) {
                         case "TrackColorActive":
                         case "TrackColorInactive":
                             proceduresUsed.add(procedures.toARGB)
-                            return `(toARGB (get-property '${MEelementName} '${propertyRequested}) )`
+                           
+                            return `(toARGB (get-property '${MEelementName} '${propertyRequested}) ) `
                         case "Instant":
                             return `(com.google.appinventor.components.runtime.Clock:GetMillis (get-property '${MEelementName} '${propertyRequested}) )`
                         case "SelectionIndex":

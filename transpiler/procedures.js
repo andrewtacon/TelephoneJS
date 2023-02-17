@@ -780,3 +780,70 @@ exports.toARGB =
     )
 )
 `
+
+exports.RGBAtoARGB = `
+(define
+    (RGBAtoARGB colorText)
+    (begin
+        (call-yail-primitive string-append 
+            (*list-for-runtime* 
+                (call-yail-primitive string-substring 
+                    (*list-for-runtime* 
+                        (lexical-value colorText) 7 2
+                    ) 
+                    '(text number number) 
+                    "segment"
+                ) 
+                (call-yail-primitive string-substring 
+                    (*list-for-runtime* 
+                        (lexical-value colorText) 1 6
+                    ) 
+                    '(text number number) 
+                    "segment"
+                ) 
+            ) 
+            '(text text ) 
+            "join"
+        )
+    )
+)
+`
+
+exports.splitColor = `
+(define
+    (splitColor colorValue)
+    (begin 
+        (let 
+            ( ($name colorValue)  )   
+            (if 
+                (call-yail-primitive is-number? 
+                    (*list-for-runtime* 
+                        (lexical-value $name)
+                    ) 
+                    '(text) 
+                    "is a number?"
+                ) 
+                (begin   
+                    (call-yail-primitive split-color (*list-for-runtime* (lexical-value $name)) '(number) "split-color")
+                ) 
+                (begin   
+                    (call-yail-primitive split-color 
+                        (*list-for-runtime* 
+                            (call-yail-primitive math-convert-hex-dec 
+                                (*list-for-runtime* 
+                                    (RGBAtoARGB (lexical-value $name))
+                                ) 
+                                '(text) 
+                                "convert Hex to Dec"
+                            )
+                        ) 
+                        '(number) 
+                        "split-color"
+                    )
+                )
+            ) 
+        )
+    )
+)
+
+`

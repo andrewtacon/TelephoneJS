@@ -60,7 +60,8 @@ for (let i = 0; i < files.length; i++) {
 //this sets up the folder watcher for any saved or changed files
 //currently it watches all files - and refreshes if an xml file is changed or and js file with a matching xml file is changed
 let changedFiles = []
-fs.watch(__dirname, 'utf8', function (eventType, filename) {
+
+fs.watch(".", 'utf8', function (eventType, filename) {
     if (filename === null) { return }
     if (filename.toLowerCase().endsWith(".xml")) {
         if (!changedFiles.includes(filename)) {
@@ -98,6 +99,7 @@ function update(filename) {
 //if so it updates the contents in the yail array and send it off to the connection manager for queuing and distribution
 let firstRun = true;
 function checkForChanges() {
+
     let changesMade = false
     for (let i = changedFiles.length - 1; i >= 0; i--) {
         update(changedFiles[i])

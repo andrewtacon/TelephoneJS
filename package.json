@@ -7,5 +7,18 @@
     "node-fetch": "^2.6.7",
     "wrtc": "^0.4.7",
     "xml-js": "^1.6.11"
-  }
+  },
+  "name": "appinventorjs",
+  "version": "1.0.0",
+  "description": "MIT App Inventor using nodeJS",
+  "main": "index.js",
+  "directories": {
+    "test": "tests"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Andrew Tacon",
+  "license": "ISC"
 }

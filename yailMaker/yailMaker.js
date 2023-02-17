@@ -349,7 +349,7 @@ function traverse(object, parent = '') {
     if (object.attributes) {
         for (const [key, value] of Object.entries(object.attributes)) {
         
-            if (["backgroundimage", "image", "picture", "sourcefile", "source"].includes(key)) {
+            if (["backgroundimage", "image", "picture", "sourcefile", "source", "credentialsjson"].includes(key)) {
                 if (!value.toLowerCase().startsWith("http:")) { //avoid urls for geojson
                     assetsList.push(value)
                 }

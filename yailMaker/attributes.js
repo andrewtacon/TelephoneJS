@@ -895,8 +895,17 @@ function setColor(key, value, name, descriptor) {
         if (value.length === 6) {
             value = "FF" + value //assume full alpha and append to front
         } else {
-            console.log(`Invalid colour for ${descriptor}. Must be 8 digit hexadecimal string. Found value does not have 8 characters - "${value}" ***`)
-            return ""
+
+            //special case for make color
+            if (value.indexOf("call-yail-primitive make-color")!==-1) {
+                return `\n\t(set-and-coerce-property! '${name} '${descriptor} ${value} 'number)`
+            } else {
+                console.log(`Invalid colour for ${descriptor}. Must be 8 digit hexadecimal string. Found value does not have 8 characters - "${value}" ***`)
+                return ""    
+            }
+
+
+
         }
     } else {
         //convert from RGBA to ARGB (what the system expects)

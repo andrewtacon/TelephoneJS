@@ -345,6 +345,9 @@ function pushNewData(data) {
 
 
 function loadData(data, assetListData) {
+    //console.log(data)
+    //console.log(assetListData)
+
     yail = data
     assetList = assetListData
     debug("Initial data")

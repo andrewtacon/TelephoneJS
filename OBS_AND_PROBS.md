@@ -3,67 +3,40 @@ InstantInTime means milliseconds since epoch (1,1,1970 midnight)
 
 PROBLEMS
 
-PROBLEM 1: Array push has an issue.
-this code doesn't work
-        let list = testComponent.elements
-        let b =  testComponent.createElement("c1", "c2", "cat.png")
-        list.push(b)
-        testComponent.elements = list
 
-but this code does
-        //let list =[]
-        let b =  testComponent.createElement("c1", "c2", "cat.png")
-        //list.push(b)
-        testComponent.elements = [b]
-        //testComponent.refresh()
-There seems to be a problem there for with pushing to arrays and assigning them to components (or maybe this is an edge case)
-
-PROBLEM 2:
-go back and check createElement for listview
-
-PROBLEM 3:
+PROBLEM 1:
 Prompt for permission never works (webviewer - maybe others also)
 
-PROBLEM 5:
+PROBLEM 2:
 Texting component can't send or recieve - it is the same problem in the offical app inventor to do with google permission. https://community.appinventor.mit.edu/t/error-908-permission-receive-sms/7426/5 
 
-PROBLEM 6:
-clouddb - attempting to use with apentor default values yields a java.net.UnknownHostException
-
-PROBLEM 8:
-need credentials json file for spreadsheet tests
-this file needs to be added to the upload files list
-
-PROBLEM 10:
+PROBLEM 3:
 camera and camcorder throw errors on console but seem to work
 
-PROBLEM 11:
-need to create color.create methods to trun RGB and RGBA into integer colors for box hex strings and integer values in the legal ranges.
-
-PROBLEM 12:
+PROBLEM 4:
 ball component needs all methods to be tested, anything except bounce has not been tested
 
-PROBLEM 13
+PROBLEM 5
 for map need to properly test methods of
 FeatureFromDescription and
 Save
 
-PROBLEM 14
+PROBLEM 6
 feature collection = everything
 
-PROBLEM 15
+PROBLEM 7
 test navigation component by getting API key
 
-PROBLEM 16
+PROBLEM 8
 polygons don't show up ??????
 
-PROBLEM 17
+PROBLEM 9
 fail gracefully but not terminate on xml and js errors in code
 
-PROBLEM 18
+PROBLEM 10
 xml hinting dtd template?
 
-PROBLEM 19
+PROBLEM 11
 emulatorUSb needs to have better file on device checking - at moment seems to upload everything each time (which works and is fine but annoying)
 
 
