@@ -187,7 +187,7 @@ const ATTRIBUTES = [
     "PrimaryColorDark",
     "ProjectID",
     "Prompt",
-    "PromptforPermission",
+    "PromptForPermission",
     "ProviderLocked",
     "ProviderName",
     "Radius",
@@ -417,6 +417,7 @@ function setAttribute(key, value, name, descriptor, useQuotes = true) {
         case "FollowLinks":
         case "HasMargins":
         case "PromptForPermission":
+            if (descriptor === "PromptForPermission"){ descriptor = "PromptforPermission"} //inconsistent casing in app inventor so changing it here
         case "ReadMode":
         case "Rotates":
         case "Secure":
@@ -458,7 +459,7 @@ function setAttribute(key, value, name, descriptor, useQuotes = true) {
         case "OriginAtCenter":
         case "PasswordVisible":
         case "PlayOnlyInForeground":
-        case "PromptForPermission":
+        //case "PromptForPermission":
         case "ProviderLocked":
         case "ReadOnly":
         case "ReadPermission":

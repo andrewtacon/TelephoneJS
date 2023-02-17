@@ -1693,6 +1693,11 @@ function transpileDeclarations(node) {
                     let propertyRequested = uppercaseFirstLetter(MemberExpressionProperty)
 
                     switch (propertyRequested) {
+
+                        case "PromptForPermission":
+                            return `(get-property '${MEelementName} 'PromptforPermission)`  //inconsistent naming in app inventor - fixing here
+
+
                         case "AlignHorizontal":
                         case "AlignVertical":
                         case "AnchorHorizontal":
