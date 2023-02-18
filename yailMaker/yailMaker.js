@@ -2,6 +2,7 @@ const fs = require("fs")
 const convert = require("xml-js")
 const transpiler = require("../transpiler/transpiler")
 const helperMaker = require("../helpMaker/help")
+const geojson = require("../geojsonHandler/geojsonSchemeMaker")
 
 const { ATTRIBUTES, setAttribute } = require("./attributes")
 const { ELEMENTS } = require("./elements")
@@ -348,10 +349,16 @@ function traverse(object, parent = '') {
     //generate the assetList
     if (object.attributes) {
         for (const [key, value] of Object.entries(object.attributes)) {
-        
+
             if (["backgroundimage", "image", "picture", "sourcefile", "source", "credentialsjson"].includes(key)) {
-                if (!value.toLowerCase().startsWith("http:")) { //avoid urls for geojson
-                    assetsList.push(value)
+                if (type === "featurecollection") {
+                    let geojsonData= geojson.load(value, object.attributes.name )
+                    output(geojsonData.scheme)
+                    elementList.push(...geojsonData.componentNames)
+                } else {
+                    if (!value.toLowerCase().startsWith("http:")) {
+                        assetsList.push(value)
+                    }
                 }
             }
         }
