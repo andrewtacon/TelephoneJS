@@ -352,11 +352,13 @@ function traverse(object, parent = '') {
 
             if (["backgroundimage", "image", "picture", "sourcefile", "source", "credentialsjson"].includes(key)) {
                 if (type === "featurecollection") {
-                    let geojsonData= geojson.load(value, object.attributes.name )
-                    output(geojsonData.scheme)
-                    elementList.push(...geojsonData.componentNames)
+                    if (!value.toLowerCase().startsWith("http")) {
+                        let geojsonData= geojson.load(value, object.attributes.name )
+                        output(geojsonData.scheme)
+                        elementList.push(...geojsonData.componentNames)
+                    }
                 } else {
-                    if (!value.toLowerCase().startsWith("http:")) {
+                    if (!value.toLowerCase().startsWith("http")) {
                         assetsList.push(value)
                     }
                 }
