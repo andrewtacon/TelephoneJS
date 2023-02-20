@@ -2,7 +2,6 @@ const fs = require("fs")
 const convert = require("xml-js")
 const transpiler = require("../transpiler/transpiler")
 const helperMaker = require("../helpMaker/help")
-const geojson = require("../geojsonHandler/geojsonSchemeMaker")
 
 const { ATTRIBUTES, setAttribute } = require("./attributes")
 const { ELEMENTS } = require("./elements")
@@ -352,11 +351,14 @@ function traverse(object, parent = '') {
 
             if (["backgroundimage", "image", "picture", "sourcefile", "source", "credentialsjson"].includes(key)) {
                 if (type === "featurecollection") {
-                    if (!value.toLowerCase().startsWith("http")) {
+                  /*  if (!value.toLowerCase().startsWith("http")) {
                         let geojsonData= geojson.load(value, object.attributes.name )
                         output(geojsonData.scheme)
                         elementList.push(...geojsonData.componentNames)
-                    }
+                    }*/
+                    //ignoring feature collection loading in the xml file - too complicated to implement
+                    //and already implemented well enough in code for HTTP
+                    //static files can be loaded via file component and parsing with web component
                 } else {
                     if (!value.toLowerCase().startsWith("http")) {
                         assetsList.push(value)

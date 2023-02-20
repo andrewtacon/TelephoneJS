@@ -1,0 +1,11 @@
+This will be a lot more work, sigh.....
+
+
+Add functional list operators like map, filter, reduce, and sort (@siyaoL1)
+Add new math stats blocks like average, standard deviation, min/max over lists
+Add custom font typeface support (@preetvadaliya)
+Add new Bluetooth permissions to permission helper block
+Add “every component” block (@Vishwas-Adiga)
+
+
+Add functions to Chart to set domain and range of charts and to fix the origin at 0, 0
