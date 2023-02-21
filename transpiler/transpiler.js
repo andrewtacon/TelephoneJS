@@ -694,7 +694,41 @@ function transpileDeclarations(node) {
                                             params += args[1].params[i].name + " "
                                         }
 
-                                        return (`(define-event ${transpileDeclarations(node.callee.object)} ${uppercaseFirstLetter(asString(args, 0))}(${params.trim()}) (set-this-form) ${transpileDeclarations(args[1])})`)
+                                        /*  this is how it was handled when function were created - this is essentially the same thing
+                                          for (let i = 0; i < node.params.length; i++) {
+                                                variableStack[variableStack.length - 1].push(
+                                                    {
+                                                        "scope": "local",
+                                                        "identifier": node.params[i].name,
+                                                        "type": "procedureVariable"
+                                                    }
+                                                )
+                                                parameters += `$${node.params[i].name} `
+                                            }
+
+                                            let returnProcedure = `
+                                            (def
+                                                (p$${node.id.name} ${parameters})
+                                                ${transpileDeclarations(node.body)}
+                                            )
+                                            `
+
+                                            //remove variables from stack
+                                            for (let i = node.params.length - 1; i >= 0; i--) {
+                                                removeFromVariableStack(node.params[i].name, true)
+                                            }
+
+                                            removeFromVariableStack(node)
+
+
+                                        */
+
+
+                                        //need to add these parameters as lexically scoped variables so they can be called (I think)
+                                        let returnEventlistener =  (`(define-event ${transpileDeclarations(node.callee.object)} ${uppercaseFirstLetter(asString(args, 0))}(${params.trim()}) (set-this-form) ${transpileDeclarations(args[1])})`)
+                                        //then remove them as variables
+                                        
+                                        return returnEventlistener
 
 
                                     ////////////////////////////////////////////////////////////////////////////////////////////
@@ -761,6 +795,9 @@ function transpileDeclarations(node) {
                                     case "resolveActivity":     //activity starter
                                     case "resume":              //sound
                                     case "save":                //pedometer, canvas
+                                        if (methodCalled === "save" && args.length === 1) { //case for map which has a single text input
+                                            return (`\n(call-component-method '${elementName} '${uppercaseFirstLetter(methodCalled)}  (*list-for-runtime*  ${transpileDeclarations(args[0])} )  '(text))`)
+                                        }
                                     case "sendMessage":         //testing
                                     case "sendMessageDirect":   //texting
                                     case "showInfobox":         //circle
@@ -1759,6 +1796,22 @@ function transpileDeclarations(node) {
                             ((isList ${transpileDeclarations(node.object)}) (getFromList ${transpileDeclarations(node.property)} ${transpileDeclarations(node.object)} ))
                             (else #f)
                         )`
+
+                       /* console.log("here")
+                        return `
+                        (if 
+                            (call-yail-primitive yail-dictionary? (*list-for-runtime* ${transpileDeclarations(node.object)} ) '(any) "check if something is a dictionary") 
+                            (call-yail-primitive yail-dictionary-lookup (*list-for-runtime* ${isNaN(transpileDeclarations(node.property)) ? transpileDeclarations(node.property) : `"${transpileDeclarations(node.property)}"`} ${transpileDeclarations(node.object)} #f) '(key any any) "dictionary lookup")
+                            (if 
+                                (call-yail-primitive yail-list? (*list-for-runtime* ${transpileDeclarations(node.object)} ) '(any) "is a list?") 
+                                    (getFromList ${transpileDeclarations(node.property)} ${transpileDeclarations(node.object)} ) 
+                                    #f
+                                )
+                            )
+                        )  
+                        `*/
+
+
                     }
 
                     switch (MemberExpressionProperty) {
@@ -1778,6 +1831,8 @@ function transpileDeclarations(node) {
                             /*
                                 cannot transpile declarations on the object property in case it is also the name of a variable
                             */
+//THERE IS A PROBLEN HERE USING A CONDITION STATEMENT FOR A DECLARATION eg. let f = dictionary.value when the variable f is declared
+
                             return `
                                 (cond 
                                     ((isDictionary  ${transpileDeclarations(node.object)} ) (getFromDict ${node.property.name ? `"${node.property.name}"` : transpileDeclarations(node.property)} ${transpileDeclarations(node.object)}) )
