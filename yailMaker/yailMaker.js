@@ -77,6 +77,10 @@ function main(filename = "temp.xml") {
     //this runs the transpiler on the attached scripts
     let generatedCode = transpiler.run(scripts, extractedData)
 
+    //this is so can always access JSON components - ideally would test all the source code first but meh
+    output(`
+        (add-component screen1 com.google.appinventor.components.runtime.Web JSONUtilityBelt)
+    `)
     //add lines to execute build
     output(`\n(init-runtime)\n`)
 
@@ -85,6 +89,8 @@ function main(filename = "temp.xml") {
     for (let i = 0; i < elementList.length; i++) {
         componentList += `'${elementList[i]} `
     }
+
+    componentList += "'JSONUtilityBelt "
 
 
     output(generatedCode)
@@ -127,6 +133,12 @@ function traverse(object, parent = '') {
         if (!attributes.name) {
             attributes.name = type + "_" + generator.next().value
         } else {
+            //probably should check users if they rename something the same thing.
+            if (attributes.name === "JSONUtilityBelt") {
+                attributes.name += "_" + generator.next().value
+                console.log(`JSONUtilityBelt is a protected name, your component is renamed to "${attributes.name}".`)
+            }
+
             let newNamedElement = {
                 type: type,
                 name: attributes.name
@@ -351,11 +363,11 @@ function traverse(object, parent = '') {
 
             if (["backgroundimage", "image", "picture", "sourcefile", "source", "credentialsjson"].includes(key)) {
                 if (type === "featurecollection") {
-                  /*  if (!value.toLowerCase().startsWith("http")) {
-                        let geojsonData= geojson.load(value, object.attributes.name )
-                        output(geojsonData.scheme)
-                        elementList.push(...geojsonData.componentNames)
-                    }*/
+                    /*  if (!value.toLowerCase().startsWith("http")) {
+                          let geojsonData= geojson.load(value, object.attributes.name )
+                          output(geojsonData.scheme)
+                          elementList.push(...geojsonData.componentNames)
+                      }*/
                     //ignoring feature collection loading in the xml file - too complicated to implement
                     //and already implemented well enough in code for HTTP
                     //static files can be loaded via file component and parsing with web component

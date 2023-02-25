@@ -46,6 +46,13 @@ this doesn't
 this seems to because defining the variable cannto contain a condition in generated scheme code
 
 
+PROBLEM 12
+for loops don't work or print in functions
+
+PROBLEM 13
+increment and decrement don't work in for loops eg i++ as the update
+
+
 There is no way for me to test the following component properly - they may or may not work
 Barometer
 GyroscopeSensor

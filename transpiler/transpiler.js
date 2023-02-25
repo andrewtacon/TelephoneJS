@@ -64,29 +64,7 @@ exports.run = main
 //don't need to float globals to the top - yay!
 function modifyTree(tree) {
 
-    //refactor for loops as a block with a while loop in it
-    walk(tree, (node, parent) => {
 
-        if (node.type === "ForStatement") {
-            node.type = "BlockStatement"
-            node.newbody = []
-            node.newbody.push(node.init)
-            let newWhileStatement = {
-                type: 'WhileStatement',
-                test: { type: 'Literal', value: true },
-                body: { type: 'BlockStatement', body: [] }
-            }
-            newWhileStatement.test = node.test
-            newWhileStatement.body.body.push(...node.body.body)
-            newWhileStatement.body.body.push(node.update)
-            node.newbody.push(newWhileStatement)
-            node.body = node.newbody
-            delete node.newbody
-            delete node.init
-            delete node.test
-            delete node.update
-        }
-    })
 
 
     //this step
@@ -207,6 +185,36 @@ function modifyTree(tree) {
     }
 
     nestVariables(tree)
+
+
+
+
+    //refactor for loops as a block with a while loop in it
+    /*  walk(tree, (node, parent) => {
+  
+          if (node.type === "ForStatement") {
+              node.type = "BlockStatement"
+              node.newbody = []
+              node.newbody.push(node.init)
+              let newWhileStatement = {
+                  type: 'WhileStatement',
+                  test: { type: 'Literal', value: true },
+                  body: { type: 'BlockStatement', body: [] }
+              }
+              newWhileStatement.test = node.test
+              newWhileStatement.body.body.push(...node.body.body)
+              newWhileStatement.body.body.push(node.update)
+              node.newbody.push(newWhileStatement)
+              node.body = node.newbody
+              delete node.newbody
+              delete node.init
+              delete node.test
+              delete node.update
+          }
+      })*/
+
+
+
 
     return tree
 }
@@ -489,6 +497,20 @@ function transpileDeclarations(node) {
             //console.log("Call expression on element: " + elementName)
 
             switch (elementName) {
+                case "JSON":
+                    let JSONMethod = node.callee.property.name
+                    // ${transpileDeclarations(node.arguments[0])}
+                    switch (JSONMethod) {
+                        case "parse":
+                            return `(call-component-method 'JSONUtilityBelt 'JsonTextDecodeWithDictionaries (*list-for-runtime* ${transpileDeclarations(node.arguments[0])}) '(text))`
+                        case "stringify":
+                            return `(call-component-method 'JSONUtilityBelt 'JsonObjectEncode (*list-for-runtime*  ${transpileDeclarations(node.arguments[0])}) '(text))`
+                    }   
+
+                    //(call-component-method 'Web1 'JsonTextDecode (*list-for-runtime* (call-component-method 'Web1 'JsonObjectEncode (*list-for-runtime*  ${transpileDeclarations(node.arguments[0])}) '(text))) '(text))
+                    break;
+
+
                 case "Math":
 
                     let MathOperator = ""
@@ -545,6 +567,7 @@ function transpileDeclarations(node) {
                         default:
                             return `(call-yail-primitive ${MathOperator} (*list-for-runtime* ${transpileDeclarations(node.arguments[0])} ) '(number) "${MathCommandOperator}")`
                     }
+                    break;
 
                 //END OF MATH
 
@@ -592,21 +615,21 @@ function transpileDeclarations(node) {
                         case "make":
                             let colorRed = 0, colorGreen = 0, colorBlue = 0, colorAlpha = 255
                             if (node.arguments.length === 1) {
-                                colorRed= transpileDeclarations(node.arguments[0])
-                                colorBlue=transpileDeclarations(node.arguments[0])
+                                colorRed = transpileDeclarations(node.arguments[0])
+                                colorBlue = transpileDeclarations(node.arguments[0])
                                 colorGreen = transpileDeclarations(node.arguments[0])
-                            } else if (node.arguments.length===2) {
-                                colorRed= transpileDeclarations(node.arguments[0])
-                                colorBlue=transpileDeclarations(node.arguments[0])
+                            } else if (node.arguments.length === 2) {
+                                colorRed = transpileDeclarations(node.arguments[0])
+                                colorBlue = transpileDeclarations(node.arguments[0])
                                 colorGreen = transpileDeclarations(node.arguments[0])
                                 colorAlpha = transpileDeclarations(node.arguments[1])
                             } else if (node.arguments.length === 3) {
-                                colorRed= transpileDeclarations(node.arguments[0])
-                                colorBlue=transpileDeclarations(node.arguments[1])
+                                colorRed = transpileDeclarations(node.arguments[0])
+                                colorBlue = transpileDeclarations(node.arguments[1])
                                 colorGreen = transpileDeclarations(node.arguments[2])
                             } else if (node.arguments.length === 4) {
-                                colorRed= transpileDeclarations(node.arguments[0])
-                                colorBlue=transpileDeclarations(node.arguments[1])
+                                colorRed = transpileDeclarations(node.arguments[0])
+                                colorBlue = transpileDeclarations(node.arguments[1])
                                 colorGreen = transpileDeclarations(node.arguments[2])
                                 colorAlpha = transpileDeclarations(node.arguments[3])
                             }
@@ -615,7 +638,7 @@ function transpileDeclarations(node) {
                             proceduresUsed.add(procedures.splitColor)
                             proceduresUsed.add(procedures.RGBAtoARGB)
                             return `(splitColor ${transpileDeclarations(node.arguments[0])})`
-                            //return `(call-yail-primitive split-color (*list-for-runtime* ${transpileDeclarations(node.arguments[0])}) '(number) "split-color")`
+                        //return `(call-yail-primitive split-color (*list-for-runtime* ${transpileDeclarations(node.arguments[0])}) '(number) "split-color")`
                     }
                     break;
 
@@ -691,43 +714,63 @@ function transpileDeclarations(node) {
 
                                         let params = ""
                                         for (let i = 0; i < args[1].params.length; i++) {
-                                            params += args[1].params[i].name + " "
+                                            params += "$" + args[1].params[i].name + " "
+                                            variableStack[variableStack.length - 1].push(
+                                                {
+                                                    "scope": "local",
+                                                    "identifier": args[1].params[i].name,
+                                                    "type": "procedureVariable"
+                                                }
+                                            )
                                         }
 
-                                        /*  this is how it was handled when function were created - this is essentially the same thing
-                                          for (let i = 0; i < node.params.length; i++) {
-                                                variableStack[variableStack.length - 1].push(
-                                                    {
-                                                        "scope": "local",
-                                                        "identifier": node.params[i].name,
-                                                        "type": "procedureVariable"
-                                                    }
-                                                )
-                                                parameters += `$${node.params[i].name} `
-                                            }
-
-                                            let returnProcedure = `
-                                            (def
-                                                (p$${node.id.name} ${parameters})
-                                                ${transpileDeclarations(node.body)}
+                                        //import code
+                                        /* for (let i = 0; i < node.params.length; i++) {
+                                            variableStack[variableStack.length - 1].push(
+                                                {
+                                                    "scope": "local",
+                                                    "identifier": node.params[i].name,
+                                                    "type": "procedureVariable"
+                                                }
                                             )
-                                            `
-
-                                            //remove variables from stack
-                                            for (let i = node.params.length - 1; i >= 0; i--) {
-                                                removeFromVariableStack(node.params[i].name, true)
-                                            }
-
-                                            removeFromVariableStack(node)
-
-
-                                        */
-
+                                            parameters += `$${node.params[i].name} `
+                                        }*/
 
                                         //need to add these parameters as lexically scoped variables so they can be called (I think)
-                                        let returnEventlistener =  (`(define-event ${transpileDeclarations(node.callee.object)} ${uppercaseFirstLetter(asString(args, 0))}(${params.trim()}) (set-this-form) ${transpileDeclarations(args[1])})`)
+                                        let returnEventlistener = (`(define-event ${transpileDeclarations(node.callee.object)} ${uppercaseFirstLetter(asString(args, 0))}(${params.trim()}) (set-this-form) ${transpileDeclarations(args[1])})`)
                                         //then remove them as variables
-                                        
+
+
+                                        /*   let returnProcedure = `
+                                        (def
+                                            (p$${node.id.name} ${parameters})
+                                            ${transpileDeclarations(node.body)}
+                                        )
+                                        `*/
+
+                                        /* for (let i = 0; i < args[1].params.length; i++) {
+                                              params += args[1].params[i].name + " "
+                                              variableStack[variableStack.length - 1].push(
+                                                  {
+                                                      "scope": "local",
+                                                      "identifier": args[1].params[i].name,
+                                                      "type": "procedureVariable"
+                                                  }
+                                              )
+                                          }*/
+
+                                        //remove variables from stack
+                                        for (let i = 0; i < args[1].params.length; i++) {
+                                            removeFromVariableStack(args[1].params[i].name, true)
+                                        }
+
+                                        //  removeFromVariableStack(node)
+
+
+                                        //end import
+
+
+
                                         return returnEventlistener
 
 
@@ -1240,7 +1283,24 @@ function transpileDeclarations(node) {
                                     //////////////////////////////////////////
 
                                     case "featureFromDescription":
-                                        return (`(call-component-method '${elementName} 'FeatureFromDescription (*list-for-runtime* ${transpileDeclarations(args[0])}) '(list))`)
+                                        return (`
+                                            (call-component-method '${elementName} 'FeatureFromDescription 
+                                                (*list-for-runtime* 
+                                                    (call-component-method 'webComponent 'JsonTextDecode  
+                                                        (*list-for-runtime*  
+                                                            (call-component-method 'webComponent 'JsonObjectEncode 
+                                                                (*list-for-runtime* 
+                                                                    ${transpileDeclarations(args[0])}
+                                                                ) 
+                                                                '(any)
+                                                            ) 
+                                                        )  
+                                                        '(text)
+                                                    )
+                                                )
+                                                '(list)
+                                            )
+                                        `)
                                     case "panTo":
                                         return (`(call-component-method '${elementName} 'PanTo (*list-for-runtime*  ${transpileDeclarations(args[0])} ${transpileDeclarations(args[1])} ${transpileDeclarations(args[2])}   ) '(number number number))`)
                                     case "createMarker":
@@ -1600,7 +1660,23 @@ function transpileDeclarations(node) {
 
         case "ForStatement":
             //init, test, update, body
-            return ''
+            console.log("For Statement Found")
+
+            //this limits for loops to one declaration 
+            let forStatementDec = `${transpileDeclarations(node.init)}`
+            let forStatementLoop = `
+            
+                (while
+                    ${transpileDeclarations(node.test)}
+                    (begin
+                        ${transpileDeclarations(node.body)}    
+                        ${transpileDeclarations(node.update)}
+                    )    
+                )
+            
+            `
+            forStatementDec = forStatementDec.replace("undefined", forStatementLoop)
+            return forStatementDec
             break;
 
 
@@ -1753,7 +1829,7 @@ function transpileDeclarations(node) {
                         case "TrackColorActive":
                         case "TrackColorInactive":
                             proceduresUsed.add(procedures.toARGB)
-                           
+
                             return `(toARGB (get-property '${MEelementName} '${propertyRequested}) ) `
                         case "Instant":
                             return `(com.google.appinventor.components.runtime.Clock:GetMillis (get-property '${MEelementName} '${propertyRequested}) )`
@@ -1797,19 +1873,39 @@ function transpileDeclarations(node) {
                             (else #f)
                         )`
 
-                       /* console.log("here")
-                        return `
-                        (if 
-                            (call-yail-primitive yail-dictionary? (*list-for-runtime* ${transpileDeclarations(node.object)} ) '(any) "check if something is a dictionary") 
-                            (call-yail-primitive yail-dictionary-lookup (*list-for-runtime* ${isNaN(transpileDeclarations(node.property)) ? transpileDeclarations(node.property) : `"${transpileDeclarations(node.property)}"`} ${transpileDeclarations(node.object)} #f) '(key any any) "dictionary lookup")
-                            (if 
-                                (call-yail-primitive yail-list? (*list-for-runtime* ${transpileDeclarations(node.object)} ) '(any) "is a list?") 
-                                    (getFromList ${transpileDeclarations(node.property)} ${transpileDeclarations(node.object)} ) 
-                                    #f
-                                )
+
+
+                        /*
+                            check if transpile declaration is a number - if number the getfrom list, if string then lookup pairs?
+
+                            (call-yail-primitive yail-alist-lookup 
+                                (*list-for-runtime* 
+                                    "features" 
+                                    (lexical-value $data) 
+                                    "not found"
+                                ) 
+                                '(any list any)  
+                                "lookup in pairs"
                             )
-                        )  
-                        `*/
+
+
+                        */
+
+
+
+                        /* console.log("here")
+                         return `
+                         (if 
+                             (call-yail-primitive yail-dictionary? (*list-for-runtime* ${transpileDeclarations(node.object)} ) '(any) "check if something is a dictionary") 
+                             (call-yail-primitive yail-dictionary-lookup (*list-for-runtime* ${isNaN(transpileDeclarations(node.property)) ? transpileDeclarations(node.property) : `"${transpileDeclarations(node.property)}"`} ${transpileDeclarations(node.object)} #f) '(key any any) "dictionary lookup")
+                             (if 
+                                 (call-yail-primitive yail-list? (*list-for-runtime* ${transpileDeclarations(node.object)} ) '(any) "is a list?") 
+                                     (getFromList ${transpileDeclarations(node.property)} ${transpileDeclarations(node.object)} ) 
+                                     #f
+                                 )
+                             )
+                         )  
+                         `*/
 
 
                     }
@@ -1831,7 +1927,7 @@ function transpileDeclarations(node) {
                             /*
                                 cannot transpile declarations on the object property in case it is also the name of a variable
                             */
-//THERE IS A PROBLEN HERE USING A CONDITION STATEMENT FOR A DECLARATION eg. let f = dictionary.value when the variable f is declared
+                            //THERE IS A PROBLEN HERE USING A CONDITION STATEMENT FOR A DECLARATION eg. let f = dictionary.value when the variable f is declared
 
                             return `
                                 (cond 
@@ -2134,6 +2230,7 @@ function transpileDeclarations(node) {
 
 
         case "WhileStatement":
+            console.log(node)
             return `
                 (while
                     ${transpileDeclarations(node.test)}
