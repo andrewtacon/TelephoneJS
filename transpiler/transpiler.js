@@ -1926,31 +1926,21 @@ function transpileDeclarations(node) {
                             proceduresUsed.add(procedures.getFromDict)
                             proceduresUsed.add(procedures.isList)
                             proceduresUsed.add(procedures.getFromList)
-                            /*
-                                cannot transpile declarations on the object property in case it is also the name of a variable
-                            */
-                            //THERE IS A PROBLEN HERE USING A CONDITION STATEMENT FOR A DECLARATION eg. let f = dictionary.f when the variable f is declared
-
                             proceduresUsed.add(procedures.mep)
 
                             //problems here again? remember node.computed tells the differnce between a variable and a literal (I hope) node.computed)
                             if (!node.computed) { //then treat as string
                                 return `(mep ${transpileDeclarations(node.object)} ${node.property.name ? `"${node.property.name}"` : transpileDeclarations(node.property)} ${node.property.name ? `"${node.property.name}"` : transpileDeclarations(node.property)})`
                             } else { //if a variable
-                                let test= node.property.name ? `"${node.property.name}"` : transpileDeclarations(node.property)
+                                let test = node.property.name ? `"${node.property.name}"` : transpileDeclarations(node.property)
                                 //this tests that a variable should exist for this name. If not then make it throw an error
-                                if (!test.startsWith("(get-var") && !test.startsWith("(lexical-value") && !test.startsWith('"')){
+                                if (!test.startsWith("(get-var") && !test.startsWith("(lexical-value") && !test.startsWith('"')) {
                                     test = `(lexical-value $${test})`
                                     console.log(`Variable "${test}" potentially doesn't exist at some point and should.`)
                                 }
                                 return `(mep ${transpileDeclarations(node.object)} ${transpileDeclarations(node.property)} ${test})`
                             }
-                        /*return `
-                            (cond 
-                                ((isDictionary  ${transpileDeclarations(node.object)} ) (getFromDict ${node.property.name ? `"${node.property.name}"` : transpileDeclarations(node.property)} ${transpileDeclarations(node.object)}) )
-                                ((isList ${transpileDeclarations(node.object)}) (getFromList ${transpileDeclarations(node.property)} ${transpileDeclarations(node.object)} ) )
-                                (else #f)
-                            )`*/
+
                     }
 
 
@@ -2164,10 +2154,12 @@ function transpileDeclarations(node) {
 
         case "UpdateExpression":
             let assignee = transpileDeclarations(node.argument)
+            let assignmentOp = "set-var!"
             if (assignee.startsWith("(get-var ")) {  //this is string, numbers and bools (simple cases)
                 assignee = assignee.substring(8, assignee.length - 1)
             } else if (assignee.startsWith("(lexical-value ")) {
                 assignee = assignee.substring(15, assignee.length - 1)
+                assignmentOp = "set!"
             }
 
             if (node.prefix) {
@@ -2176,14 +2168,14 @@ function transpileDeclarations(node) {
                         proceduresUsed.add(procedures.add)
                         return `
                             (begin
-                                (set-var! ${assignee} (+ ${transpileDeclarations(node.argument)} 1))
+                                (${assignmentOp} ${assignee} (+ ${transpileDeclarations(node.argument)} 1))
                                 ${transpileDeclarations(node.argument)}
                             )
                         `
                     case "--":
                         return `
                         (begin
-                            (set-var! ${assignee} (- ${transpileDeclarations(node.argument)} 1))
+                            (${assignmentOp} ${assignee} (- ${transpileDeclarations(node.argument)} 1))
                             ${transpileDeclarations(node.argument)}
                         )
                         `
@@ -2194,14 +2186,14 @@ function transpileDeclarations(node) {
                         proceduresUsed.add(procedures.add)
                         return `
                             (let ((temp ${transpileDeclarations(node.argument)}))
-                                    (set-var! ${assignee} (+ ${transpileDeclarations(node.argument)} 1))
+                                    (${assignmentOp} ${assignee} (+ ${transpileDeclarations(node.argument)} 1))
                                     temp
                             )
                         `
                     case "--":
                         return `
                         (let ((temp ${transpileDeclarations(node.argument)}))
-                            (set-var! ${assignee} (- ${transpileDeclarations(node.argument)} 1))
+                            (${assignmentOp} ${assignee} (- ${transpileDeclarations(node.argument)} 1))
                             temp
                     )`
                 }

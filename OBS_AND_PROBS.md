@@ -13,31 +13,17 @@ PROBLEM 3:
 ball component needs all methods to be tested, anything except bounce has not been tested
 
 PROBLEM 4
-for map need to properly test methods of
-Save
-
-PROBLEM 5
-feature collection = everything
-
-PROBLEM 6
 test navigation component by getting API key
 
-PROBLEM 7
-polygons don't show up ??????
-
-PROBLEM 8
+PROBLEM 5
 fail gracefully but not terminate on xml and js errors in code
 
-PROBLEM 9
+PROBLEM 6
 xml hinting dtd template?
 
-PROBLEM 10
+PROBLEM 7
 emulatorUSb needs to have better file on device checking - at moment seems to upload everything each time (which works and is fine but annoying)
 
-
-
-PROBLEM 13
-increment and decrement don't work in for loops eg i++ as the update
 
 
 
