@@ -847,3 +847,27 @@ exports.splitColor = `
 )
 
 `
+
+
+//member expression property
+exports.props = `
+(define 
+    (props object property either)
+    (cond 
+        ((isDictionary  object) (getFromDict either object) )
+        ((isList object) (getFromList property object ))
+        (else #f)
+    )    
+)
+`
+
+exports.mep = `
+(define
+    (mep object property name)
+    (cond 
+        ((isDictionary  object ) (getFromDict name object) )
+        ((isList object) (getFromList property object ) )
+        (else #f)
+    )
+)
+`

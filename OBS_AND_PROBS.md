@@ -34,23 +34,11 @@ xml hinting dtd template?
 PROBLEM 10
 emulatorUSb needs to have better file on device checking - at moment seems to upload everything each time (which works and is fine but annoying)
 
-PROBLEM 11 
-Need to declare variables before using in some cases
-this works 
-    let data = webComponent.jsonTextDecode(result)
-    let features = 0
-    features = data.features
-this doesn't
-    let data = webComponent.jsonTextDecode(result)
-    let features = data.features
-this seems to because defining the variable cannto contain a condition in generated scheme code
 
-
-PROBLEM 12
-for loops don't work or print in functions
 
 PROBLEM 13
 increment and decrement don't work in for loops eg i++ as the update
+
 
 
 There is no way for me to test the following component properly - they may or may not work

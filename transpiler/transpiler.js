@@ -505,7 +505,7 @@ function transpileDeclarations(node) {
                             return `(call-component-method 'JSONUtilityBelt 'JsonTextDecodeWithDictionaries (*list-for-runtime* ${transpileDeclarations(node.arguments[0])}) '(text))`
                         case "stringify":
                             return `(call-component-method 'JSONUtilityBelt 'JsonObjectEncode (*list-for-runtime*  ${transpileDeclarations(node.arguments[0])}) '(text))`
-                    }   
+                    }
 
                     //(call-component-method 'Web1 'JsonTextDecode (*list-for-runtime* (call-component-method 'Web1 'JsonObjectEncode (*list-for-runtime*  ${transpileDeclarations(node.arguments[0])}) '(text))) '(text))
                     break;
@@ -1286,9 +1286,9 @@ function transpileDeclarations(node) {
                                         return (`
                                             (call-component-method '${elementName} 'FeatureFromDescription 
                                                 (*list-for-runtime* 
-                                                    (call-component-method 'webComponent 'JsonTextDecode  
+                                                    (call-component-method 'JSONUtilityBelt 'JsonTextDecode  
                                                         (*list-for-runtime*  
-                                                            (call-component-method 'webComponent 'JsonObjectEncode 
+                                                            (call-component-method 'JSONUtilityBelt 'JsonObjectEncode 
                                                                 (*list-for-runtime* 
                                                                     ${transpileDeclarations(args[0])}
                                                                 ) 
@@ -1866,12 +1866,14 @@ function transpileDeclarations(node) {
                         proceduresUsed.add(procedures.getFromDict)
                         proceduresUsed.add(procedures.isList)
                         proceduresUsed.add(procedures.getFromList)
-                        return `
+                        proceduresUsed.add(procedures.props)
+                        return `(props ${transpileDeclarations(node.object)} ${transpileDeclarations(node.property)} ${isNaN(transpileDeclarations(node.property)) ? transpileDeclarations(node.property) : `"${transpileDeclarations(node.property)}"`})`
+                        /*return `
                         (cond 
                             ((isDictionary  ${transpileDeclarations(node.object)}) (getFromDict ${isNaN(transpileDeclarations(node.property)) ? transpileDeclarations(node.property) : `"${transpileDeclarations(node.property)}"`} ${transpileDeclarations(node.object)}) )
                             ((isList ${transpileDeclarations(node.object)}) (getFromList ${transpileDeclarations(node.property)} ${transpileDeclarations(node.object)} ))
                             (else #f)
-                        )`
+                        )`*/
 
 
 
@@ -1927,14 +1929,28 @@ function transpileDeclarations(node) {
                             /*
                                 cannot transpile declarations on the object property in case it is also the name of a variable
                             */
-                            //THERE IS A PROBLEN HERE USING A CONDITION STATEMENT FOR A DECLARATION eg. let f = dictionary.value when the variable f is declared
+                            //THERE IS A PROBLEN HERE USING A CONDITION STATEMENT FOR A DECLARATION eg. let f = dictionary.f when the variable f is declared
 
-                            return `
-                                (cond 
-                                    ((isDictionary  ${transpileDeclarations(node.object)} ) (getFromDict ${node.property.name ? `"${node.property.name}"` : transpileDeclarations(node.property)} ${transpileDeclarations(node.object)}) )
-                                    ((isList ${transpileDeclarations(node.object)}) (getFromList ${transpileDeclarations(node.property)} ${transpileDeclarations(node.object)} ) )
-                                    (else #f)
-                                )`
+                            proceduresUsed.add(procedures.mep)
+
+                            //problems here again? remember node.computed tells the differnce between a variable and a literal (I hope) node.computed)
+                            if (!node.computed) { //then treat as string
+                                return `(mep ${transpileDeclarations(node.object)} ${node.property.name ? `"${node.property.name}"` : transpileDeclarations(node.property)} ${node.property.name ? `"${node.property.name}"` : transpileDeclarations(node.property)})`
+                            } else { //if a variable
+                                let test= node.property.name ? `"${node.property.name}"` : transpileDeclarations(node.property)
+                                //this tests that a variable should exist for this name. If not then make it throw an error
+                                if (!test.startsWith("(get-var") && !test.startsWith("(lexical-value") && !test.startsWith('"')){
+                                    test = `(lexical-value $${test})`
+                                    console.log(`Variable "${test}" potentially doesn't exist at some point and should.`)
+                                }
+                                return `(mep ${transpileDeclarations(node.object)} ${transpileDeclarations(node.property)} ${test})`
+                            }
+                        /*return `
+                            (cond 
+                                ((isDictionary  ${transpileDeclarations(node.object)} ) (getFromDict ${node.property.name ? `"${node.property.name}"` : transpileDeclarations(node.property)} ${transpileDeclarations(node.object)}) )
+                                ((isList ${transpileDeclarations(node.object)}) (getFromList ${transpileDeclarations(node.property)} ${transpileDeclarations(node.object)} ) )
+                                (else #f)
+                            )`*/
                     }
 
 
