@@ -368,7 +368,6 @@ function setAttribute(key, value, name, descriptor, useQuotes = true) {
         case "DataUri":
         case "Description":
         case "ElementsFromString":
-        case "EndLocation":
         case "ExtraKey":
         case "ExtraValue":
         case "Hint":
@@ -399,7 +398,6 @@ function setAttribute(key, value, name, descriptor, useQuotes = true) {
         case "Source":
         case "SourceFile":
         case "SpreadsheetID":
-        case "StartLocation":
         case "Text":
         case "TextToWrite":
         case "Title":
@@ -417,7 +415,7 @@ function setAttribute(key, value, name, descriptor, useQuotes = true) {
         case "FollowLinks":
         case "HasMargins":
         case "PromptForPermission":
-            if (descriptor === "PromptForPermission"){ descriptor = "PromptforPermission"} //inconsistent casing in app inventor so changing it here
+            if (descriptor === "PromptForPermission") { descriptor = "PromptforPermission" } //inconsistent casing in app inventor so changing it here
         case "ReadMode":
         case "Rotates":
         case "Secure":
@@ -569,6 +567,9 @@ function setAttribute(key, value, name, descriptor, useQuotes = true) {
             return setDimensions(key, value, name, descriptor);
             break;
         case "LocationSensor":
+        case "StartLocation":
+        case "EndLocation":
+
             return setComponent(key, value, name, descriptor);
             break;
         case "FeaturesFromGeoJSON":
@@ -626,9 +627,9 @@ function setAttribute(key, value, name, descriptor, useQuotes = true) {
             break;
         case "MapType":
             let mapOrigValue = value
-            value = value.replaceAll('"',"").toLowerCase().trim()
+            value = value.replaceAll('"', "").toLowerCase().trim()
             value = value[0].toUpperCase() + value.substring(1)
-            if (['Road', 'Aerial', 'Terrain'].includes(value)){
+            if (['Road', 'Aerial', 'Terrain'].includes(value)) {
                 return `(set-and-coerce-property! '${name} 'MapType (static-field com.google.appinventor.components.common.MapType "${value}") 'number)`
             } else {
                 console.log(`MapType must be 'road', 'aerial' or 'terrain'. Invalid value of '${mapOrigValue}' supplied. Ignoring.`)
@@ -637,9 +638,9 @@ function setAttribute(key, value, name, descriptor, useQuotes = true) {
             break;
         case "ScaleUnits":
             let scaleOrigValue = value
-            value = value.replaceAll('"',"").toLowerCase().trim()
+            value = value.replaceAll('"', "").toLowerCase().trim()
             value = value[0].toUpperCase() + value.substring(1)
-            if (['Metric', 'Imperial'].includes(value)){
+            if (['Metric', 'Imperial'].includes(value)) {
                 return `(set-and-coerce-property! '${name} 'ScaleUnits (static-field com.google.appinventor.components.common.ScaleUnits "${value}") 'number)`
             } else {
                 console.log(`ScaleUnits must be 'metric', or 'imperial'. Invalid value of '${scaleOrigValue}' supplied. Ignoring.`)
@@ -842,7 +843,7 @@ function setComponent(key, value, name, descriptor) {
     }
 
     //somehow need to validate that the component actually exists.....
-    return `\n\t(set-and-coerce-property! '${name} '${descriptor} (get-component ${value}) 'component)`
+    return `\n\t(set-and-coerce-property! '${name} '${descriptor} ${value} 'component)`
 }
 
 function fromList(key, value, name, options, descriptor) {
@@ -898,11 +899,11 @@ function setColor(key, value, name, descriptor) {
         } else {
 
             //special case for make color
-            if (value.indexOf("call-yail-primitive make-color")!==-1) {
+            if (value.indexOf("call-yail-primitive make-color") !== -1) {
                 return `\n\t(set-and-coerce-property! '${name} '${descriptor} ${value} 'number)`
             } else {
                 console.log(`Invalid colour for ${descriptor}. Must be 8 digit hexadecimal string. Found value does not have 8 characters - "${value}" ***`)
-                return ""    
+                return ""
             }
 
 
