@@ -9,9 +9,6 @@ Texting component can't send or recieve - it is the same problem in the offical 
 PROBLEM 2:
 camera and camcorder throw errors on console but seem to work
 
-PROBLEM 3:
-ball component needs all methods to be tested, anything except bounce has not been tested
-
 PROBLEM 4
 test navigation component by getting API key
 
