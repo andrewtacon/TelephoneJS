@@ -18,7 +18,17 @@ xml hinting dtd template?
 PROBLEM 5
 emulatorUSb needs to have better file on device checking - at moment seems to upload everything each time (which works and is fine but annoying)
 
+PROBLEM 7
+Test twitter
 
+PROBLEM 8 
+Graphs
+
+PROBLEM 9 
+New functions for math etc
+
+PROBLEM 10 (aspirational)
+COMPILATION
 
 
 

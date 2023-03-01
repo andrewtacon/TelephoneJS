@@ -361,18 +361,14 @@ function traverse(object, parent = '') {
     if (object.attributes) {
         for (const [key, value] of Object.entries(object.attributes)) {
 
-            if (["backgroundimage", "image", "picture", "sourcefile", "source", "credentialsjson"].includes(key)) {
-                if (type === "featurecollection") {
-                    /*  if (!value.toLowerCase().startsWith("http")) {
-                          let geojsonData= geojson.load(value, object.attributes.name )
-                          output(geojsonData.scheme)
-                          elementList.push(...geojsonData.componentNames)
-                      }*/
-                    //ignoring feature collection loading in the xml file - too complicated to implement
-                    //and already implemented well enough in code for HTTP
-                    //static files can be loaded via file component and parsing with web component
-                } else {
-                    if (!value.toLowerCase().startsWith("http")) {
+            if (["backgroundimage", "image", "picture", "sourcefile", "source", "credentialsjson", "filelist"].includes(key)) {
+                if (!value.toLowerCase().startsWith("http")) {
+                    if (key === "filelist" && type==="assetlist") {
+                        let values= value.split(",")
+                        for (let p=0;p<values.length; p++){
+                            assetsList.push(values[p].trim())
+                        }
+                    } else {
                         assetsList.push(value)
                     }
                 }
