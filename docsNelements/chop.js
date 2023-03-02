@@ -9,7 +9,7 @@ let data = ""
 
 for (let i = 0; i < files.length; i++) {
 
-    if (files[i].endsWith(".txt")) {
+    if (files[i].endsWith("chart.txt")) {
         data += fs.readFileSync(files[i], "utf-8") + "\r\n"
 
         console.log(files[i])
@@ -54,7 +54,7 @@ for (let i = 0; i < lines.length; i++) {
         let name = line2[0].trim()
         name = name[0].toLowerCase(0) + name.substring(1)
 
-        let description = line2[1].trim()
+        let description = line2[1]? line2[1].trim():""
         let component = specs.substring(specs.indexOf('"') + 1, specs.indexOf('.'))
 
         let runTimeName = component
@@ -243,4 +243,4 @@ for (const [key, value] of Object.entries(output)) {
 //at end add 'name', 'class' and 'id' as properties that are designer only
 
 
-fs.writeFileSync("elementsAuto.json", JSON.stringify(output))
+fs.writeFileSync("chart.json", JSON.stringify(output))

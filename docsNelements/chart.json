@@ -1,0 +1,374 @@
+{
+    "chart": {
+        "properties": {
+            "backgroundColor": {
+                "description": "Specifies the chart's background color as an alpha-red-green-blue integer.",
+                "type": "color"
+            },
+            "description": {
+                "description": "Specifies the text displayed by the description label inside the Chart. Specifying an empty string (\"\") will not display any label.",
+                "type": "string"
+            },
+            "gridEnabled": {
+                "description": "Changes the visibility of the Chart's grid, if the Chart Type is set to a Chart with an Axis (applies for Area, Bar, Line, Scatter Chart types).",
+                "type": "boolean"
+            },
+            "height": {
+                "description": "Specifies the Chart's vertical height, measured in pixels.",
+                "type": "number"
+            },
+            "heightPercent": {
+                "description": "Specifies the Chart's vertical height as a percentage of the Screen's Height.",
+                "type": "number"
+            },
+            "labels": {
+                "description": "Changes the Chart's X axis labels to the specified List, if the Chart's Type is set to a Chart with an Axis. The first entry of the List corresponds to the minimum x value of the data, the second to the min x value + 1, and so on. If a label is not specified for an x value, a default value is used (the x value of the axis tick at that location).",
+                "type": "array"
+            },
+            "labelsFromString": {
+                "description": "Specifies the labels to set to the Chart's X Axis, provided the current view is a Chart with an X Axis. The labels are specified as a single comma-separated values String (meaning each value is separated by a comma). See Chart.Labels for more details on how the Labels are applied to the Chart.",
+                "type": "string"
+            },
+            "legendEnabled": {
+                "description": "Changes the visibility of the Chart's Legend.",
+                "type": "boolean"
+            },
+            "pieRadius": {
+                "description": "Sets the Pie Radius of the Chart. If the current type is not the Pie Chart, the value has no effect.",
+                "type": "number"
+            },
+            "type": {
+                "description": "Specifies the type of the Chart, which determines how to visualize the data.",
+                "type": "string"
+            },
+            "visible": {
+                "description": "Specifies whether the Chart should be visible on the screen.  Value is true if the Chart is showing and false if hidden.",
+                "type": "boolean"
+            },
+            "width": {
+                "description": "Specifies the horizontal width of the Chart, measured in pixels.",
+                "type": "number"
+            },
+            "widthPercent": {
+                "description": "Specifies the horizontal width of the Chart as a percentage of the Screen's Width.",
+                "type": "number"
+            },
+            "XFromZero": {
+                "description": "Determines whether the X axis origin is set at 0 or the minimum X value across all data series.",
+                "type": "boolean"
+            },
+            "YFromZero": {
+                "description": "Determines whether the Y axis origin is set at 0 or the minimum y value across all data series.",
+                "type": "boolean"
+            },
+            "class": {
+                "description": "The styling class of the the component",
+                "type": "string"
+            },
+            "id": {
+                "description": "The styling id of the the component",
+                "type": "string"
+            },
+            "name": {
+                "description": "The name of the component that will be used to refer to it in code.",
+                "type": "string"
+            }
+        },
+        "designerNoWrite": [
+            "height",
+            "heightPercent",
+            "labels",
+            "width",
+            "widthPercent"
+        ],
+        "codeNoRead": [
+            "heightPercent",
+            "labelsFromString",
+            "pieRadius",
+            "type",
+            "widthPercent",
+            "class",
+            "id",
+            "name"
+        ],
+        "codeNoWrite": [
+            "labelsFromString",
+            "pieRadius",
+            "type",
+            "class",
+            "id",
+            "name"
+        ],
+        "methods": {
+            "setDomain": {
+                "parameters": {
+                    "minimum": "number",
+                    "maximum": "number"
+                },
+                "description": "Sets the minimum and maximum for the domain of the X axis."
+            },
+            "setRange": {
+                "parameters": {
+                    "minimum": "number",
+                    "maximum": "number"
+                },
+                "description": "Sets the minimum and maximum for the range of the Y axis."
+            },
+            "addEventListener": {
+                "description": "Method used to create event listeners.",
+                "parameters": {
+                    "eventName": "string",
+                    "eventCallbackFunction": "callback"
+                },
+                "tests": [
+                    "Test eventName",
+                    "callback"
+                ]
+            }
+        },
+        "events": {
+            "entryClick": {
+                "parameters": {
+                    "series": "component",
+                    "x": "any",
+                    "y": "number"
+                },
+                "description": "Indicates that the user clicked on a data entry in the Chart. The specific series, along with its x and y values, are reported."
+            }
+        },
+        "runTimeName": "Chart"
+    },
+    "chartdata2d": {
+        "properties": {
+            "color": {
+                "description": "Specifies the data series color as an alpha-red-green-blue integer.",
+                "type": "color"
+            },
+            "colors": {
+                "description": "Specifies the data series colors as a list of alpha-red-green-blue integers. If there is more data than there are colors, the colors will be alternated in order. E.g. if there are two colors Red and Blue, the colors will be applied in the order: Red, Blue, Red, Blue, ...",
+                "type": "array"
+            },
+            "dataFileXColumn": {
+                "description": "Value used when importing data from a DataFile component [Source](#ChartData2D.Source). The value represents the column to use from the DataFile for the x entries of the Data Series. For instance, if a column's first value is \"Time\", and a column value of \"Time\" is specified, that column will be used for the x values. If a value here is not specified, default values for the x values will be generated instead.",
+                "type": "string"
+            },
+            "dataFileYColumn": {
+                "description": "Value used when importing data from a DataFile component [Source](#ChartData2D.Source). The value represents the column to use from the DataFile for the y entries of the Data Series. For instance, if a column's first value is \"Temperature\", and a column value of \"Temperature\" is specified, that column will be used for the y values. If a value here is not specified, default values for the y values will be generated instead.",
+                "type": "string"
+            },
+            "dataSourceKey": {
+                "description": "Sets the Data Source key identifier for the value to import from the attached Data Source. An example is the tag of the TinyDB component, which identifies the value. The property is a Designer-only property, and should be changed after setting the Source component of the Chart Data component. A complete list of applicable values for each compatible source is as follows: * For TinyDB and CloudDB, this is the tag value. * For the AccelerometerSensor, the value should be one of the following: X Y or Z * For the GyroscopeSensor, the value should be one of the following: X Y or Z * For the LocationSensor, the value should be one of the following: latitude, longitude, altitude or speed * For the OrientationSensor, the value should be one of the following: pitch, azimuth or roll * For the Pedometer, the value should be one of the following:  WalkSteps, SimpleSteps or Distance * For the ProximitySensor, the value should be distance. * For the BluetoothClient, the value represents the prefix to remove from the value. For instance, if values come in the format \"t:12\", the prefix can be specified as \"t:\", and the prefix will then be removed from the data. No value can be specified if purely numerical values are returned.",
+                "type": "string"
+            },
+            "elementsFromPairs": {
+                "description": "Comma separated list of Elements to use for the data series. Values are formatted as follows: x1,y1,x2,y2,x3,y3. Values are taken in pairs, and an entry is formed from the x and y values.",
+                "type": "string"
+            },
+            "label": {
+                "description": "Specifies the text for the data series label.",
+                "type": "string"
+            },
+            "lineType": {
+                "description": "Changes the Line Type of the Data Series, provided that the Data component is attached to a Chart that has the type set to a line-based Chart(applies to area and line Chart types).  Valid types include linear, curved or stepped.",
+                "type": "string"
+            },
+            "pointShape": {
+                "description": "Changes the Point Shape of the Data Series, provided that the Data component is attached to a Chart that has the type set to the Scatter Chart. Valid types include circle, square, triangle, cross, x.",
+                "type": "string"
+            },
+            "source": {
+                "description": "Sets the Source to use for the Data component. Valid choices include AccelerometerSensor, BluetoothClient, CloudDB, DataFile, GyroscopeSensor, LocationSesnro, OrientationSensor, Pedometer, ProximitySensor TinyDB and Web components. The Source value also requires valid DataSourceValue, WebColumn or DataFileColumn properties, depending on the type of the Source attached (the required properties show up in the Properties menu after the Source is changed). If the data identified by the [DataSourceKey](#ChartData2D.DataSourceKey) is updated in the attached Data Source component, then the data is also updated in the Chart Data component.",
+                "type": "string"
+            },
+            "spreadsheetUseHeaders": {
+                "description": "If checked, the first row of the spreadsheet will be used to interpret the x and y column values. Otherwise, the x and y columns should be a column reference, such as A or B.",
+                "type": "boolean"
+            },
+            "spreadsheetXColumn": {
+                "description": "Sets the column to parse from the attached Spreadsheet component for the x values. If a column is not specified, default values for the x values will be generated instead.",
+                "type": "string"
+            },
+            "spreadsheetYColumn": {
+                "description": "Sets the column to parse from the attached Spreadsheet component for the y values. If a column is not specified, default values for the y values will be generated instead.",
+                "type": "string"
+            },
+            "webXColumn": {
+                "description": "Value used when importing data from a Web component Source. The value represents the column to use from the Web for the x entries of the Data Series. For instance, if the contents of the Web are retrieved in JSON format, and an array with the \"Time\" tag exists, the \"Time\" column value can be specified to use that array.",
+                "type": "string"
+            },
+            "webYColumn": {
+                "description": "Value used when importing data from a Web component Source. The value represents the column to use from the Web for the y entries of the Data Series. For instance, if the contents of the Web are retrieved in JSON format, and an array with the \"Temperature\" tag exists, the \"Temperature\" column value can be specified to use that array.",
+                "type": "string"
+            },
+            "class": {
+                "description": "The styling class of the the component",
+                "type": "string"
+            },
+            "id": {
+                "description": "The styling id of the the component",
+                "type": "string"
+            },
+            "name": {
+                "description": "The name of the component that will be used to refer to it in code.",
+                "type": "string"
+            }
+        },
+        "designerNoWrite": [
+            "colors"
+        ],
+        "codeNoRead": [
+            "dataFileXColumn",
+            "dataFileYColumn",
+            "dataSourceKey",
+            "elementsFromPairs",
+            "lineType",
+            "pointShape",
+            "source",
+            "spreadsheetUseHeaders",
+            "spreadsheetXColumn",
+            "spreadsheetYColumn",
+            "webXColumn",
+            "webYColumn",
+            "class",
+            "id",
+            "name"
+        ],
+        "codeNoWrite": [
+            "dataFileXColumn",
+            "dataFileYColumn",
+            "dataSourceKey",
+            "elementsFromPairs",
+            "lineType",
+            "pointShape",
+            "source",
+            "spreadsheetUseHeaders",
+            "spreadsheetXColumn",
+            "spreadsheetYColumn",
+            "webXColumn",
+            "webYColumn",
+            "class",
+            "id",
+            "name"
+        ],
+        "methods": {
+            "addEntry": {
+                "parameters": {
+                    "x": "string",
+                    "y": "string"
+                },
+                "description": "Adds an entry with the specified x and y value. Values can be specified as text, or as numbers. For Line, Scatter, Area and Bar Charts, both values should represent a number. For Bar charts, the x value is rounded to the nearest integer. For Pie Charts, the x value is a text value."
+            },
+            "changeDataSource": {
+                "parameters": {
+                    "source": "component",
+                    "keyValue": "string"
+                },
+                "description": "Changes the Data Source of the component to the specified component Source with the specified key value. See the ChartData2D.Source property for applicable components. See the ChartData2D.DataSourceKey property for the interpretation of the keyValue. In the case of the DataFile and Web components, the keyValue is expected to be a CSV formatted string, where the first value corresponds to the x column, and the second value corresponds to the y value."
+            },
+            "clear": {
+                "parameters": {},
+                "description": "Removes all the entries from the Data Series."
+            },
+            "doesEntryExist": {
+                "parameters": {
+                    "x": "string",
+                    "y": "string"
+                },
+                "description": "Returns a boolean value specifying whether an entry with the specified x and y values exists. The boolean value of true is returned if the value exists, and a false value otherwise. See ChartData2D.AddEntry for an explanation of the valid entry values."
+            },
+            "getAllEntries": {
+                "parameters": {},
+                "description": "Returns all entries of the data series. The returned value is a list, where each element of the list is a list containing the values of the entry in order."
+            },
+            "getEntriesWithXValue": {
+                "parameters": {
+                    "x": "string"
+                },
+                "description": "Returns all entries of the data series matching the specified x value. For a description of the format of the returned List, see ChartData2D.GetAllEntries"
+            },
+            "getEntriesWithYValue": {
+                "parameters": {
+                    "y": "string"
+                },
+                "description": "Returns all entries of the data series matching the specified y value. For a description of the format of the returned List, see ChartData2D.GetAllEntries"
+            },
+            "importFromCloudDB": {
+                "parameters": {
+                    "cloudDB": "component",
+                    "tag": "string"
+                },
+                "description": "Imports data from the specified CloudDB component by taking the value identified by the specified tag value. The expected CloudDB value is a list formatted in the same way as described in ChartData2D.ImportFromList. Does not overwrite any data."
+            },
+            "importFromDataFile": {
+                "parameters": {
+                    "dataFile": "component",
+                    "xValueColumn": "string",
+                    "yValueColumn": "string"
+                },
+                "description": "Imports data from the specified DataFile component by taking the specified x column for the x values, and the specified y column for the y values. The DataFile's source file is expected to be either a CSV or a JSON file.  Passing in empty test for any of the column parameters will result in the usage of default values which are the indices of the entries. For the first entry, the default value would be the 1, for the second it would be 2, and so on."
+            },
+            "importFromList": {
+                "parameters": {
+                    "list": "list"
+                },
+                "description": "Imports the data from the specified list parameter to the data series. The list is expected to contain element which are also lists. Each list element is expected to have 2 values, the first one being the x value, and the second one being the y value. Invalid list entries are simply skipped. Existing data are not cleared."
+            },
+            "importFromSpreadsheet": {
+                "parameters": {
+                    "spreadsheet": "component",
+                    "xColumn": "string",
+                    "yColumn": "string",
+                    "useHeaders": "boolean"
+                },
+                "description": "Imports data from the specified Spreadsheet component by taking the specified x column for the x values, and the specified y column for the y values. Prior to calling this function, the Spreadsheet component's ReadSheet method has to be called to load the data. The usage of the GotSheet event in the Spreadsheet component is unnecessary. Empty columns are filled with default values (1, 2, 3, ... for Entry 1, 2, 3, ...)."
+            },
+            "importFromTinyDB": {
+                "parameters": {
+                    "tinyDB": "component",
+                    "tag": "string"
+                },
+                "description": "Imports data from the specified TinyDB component by taking the value identified by the specified tag value. The expected TinyDB value is a list formatted in the same way as described in ChartData2D.ImportFromList. Does not overwrite any data."
+            },
+            "importFromWeb": {
+                "parameters": {
+                    "web": "component",
+                    "xValueColumn": "string",
+                    "yValueColumn": "string"
+                },
+                "description": "Imports data from the specified Web component by taking the specified x column for the x values, and the specified y column for the y values. Prior to calling this function, the Web component's Get method has to be called to load the data. The usage of the gotValue event in the Web component is unnecessary. The expected response of the Web component is a JSON or CSV formatted file for this function to work. Empty columns are filled with default values (1, 2, 3, ... for Entry 1, 2, 3, ...)."
+            },
+            "removeDataSource": {
+                "parameters": {},
+                "description": "Removes the currently attached Data Source from the Chart Data component. Doing so will result in no more updates from the Data Source being sent, however, the current data will not be removed."
+            },
+            "removeEntry": {
+                "parameters": {
+                    "x": "string",
+                    "y": "string"
+                },
+                "description": "Removes an entry with the specified x and y value, provided it exists. See ChartData2D.AddEntry for an explanation of the valid entry values."
+            },
+            "addEventListener": {
+                "description": "Method used to create event listeners.",
+                "parameters": {
+                    "eventName": "string",
+                    "eventCallbackFunction": "callback"
+                },
+                "tests": [
+                    "Test eventName",
+                    "callback"
+                ]
+            }
+        },
+        "events": {
+            "entryClick": {
+                "parameters": {
+                    "x": "any",
+                    "y": "number"
+                },
+                "description": "Indicates that the user tapped on a data point in the chart. The x and y values of the tapped entry are reported."
+            }
+        },
+        "runTimeName": "ChartData2D"
+    }
+}

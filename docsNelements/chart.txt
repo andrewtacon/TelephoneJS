@@ -1,0 +1,204 @@
+---
+layout: documentation
+title: Charts
+---
+
+[&laquo; Back to index](index.html)
+# Charts
+
+Table of Contents:
+
+* [Chart](#Chart)
+* [ChartData2D](#ChartData2D)
+
+## Chart  {#Chart}
+
+The Chart component plots data originating from it's attached Data components. Five different
+ Chart types are available, including Line, Area, Scatter, Bar and Pie, which can be changed by
+ the [Type](#Chart.Type) property.
+ The Chart component itself has various other properties that change the appearance
+ of the Chart, such as {[Description](#Chart.Description), [GridEnabled](#Chart.GridEnabled),
+
+
+
+### Properties  {#Chart-Properties}
+
+{:.properties}
+
+{:id="Chart.BackgroundColor" .color} *BackgroundColor*
+: Specifies the chart's background color as an alpha-red-green-blue
+ integer.
+
+{:id="Chart.Description" .text} *Description*
+: Specifies the text displayed by the description label inside the Chart. Specifying an empty string ("") will not display any label.
+
+{:id="Chart.GridEnabled" .boolean} *GridEnabled*
+: 
+
+{:id="Chart.Height" .number .bo} *Height*
+: 
+
+{:id="Chart.HeightPercent" .number .wo .bo} *HeightPercent*
+: 
+
+{:id="Chart.Labels" .list .bo} *Labels*
+: 
+
+{:id="Chart.LabelsFromString" .text .wo .do} *LabelsFromString*
+: 
+
+{:id="Chart.LegendEnabled" .boolean} *LegendEnabled*
+: 
+
+{:id="Chart.PieRadius" .number .wo .do} *PieRadius*
+: 
+
+{:id="Chart.Type" .com.google.appinventor.components.common.ChartTypeEnum .do} *Type*
+: 
+
+{:id="Chart.Visible" .boolean} *Visible*
+: 
+
+{:id="Chart.Width" .number .bo} *Width*
+: 
+
+{:id="Chart.WidthPercent" .number .wo .bo} *WidthPercent*
+: 
+
+{:id="Chart.XFromZero" .boolean} *XFromZero*
+: 
+
+{:id="Chart.YFromZero" .boolean} *YFromZero*
+: 
+
+### Events  {#Chart-Events}
+
+{:.events}
+
+{:id="Chart.EntryClick"} EntryClick(*series*{:.component},*x*{:.any},*y*{:.number})
+: 
+
+### Methods  {#Chart-Methods}
+
+{:.methods}
+
+{:id="Chart.SetDomain" class="method"} <i/> SetDomain(*minimum*{:.number},*maximum*{:.number})
+: 
+
+{:id="Chart.SetRange" class="method"} <i/> SetRange(*minimum*{:.number},*maximum*{:.number})
+: 
+
+## ChartData2D  {#ChartData2D}
+
+A ChartData2D component represents a single two-dimensional Data Series in the Chart component,
+ for example, a single Line in the case of a Line Chart, or a single Bar in the case of a Bar
+ Chart. The Data component is responsible for handling all the data of the Chart. The entries
+ of the Data component correspond of an x and a y value.
+ The component is attached directly to a Chart component by dragging it onto the Chart.
+
+
+
+### Properties  {#ChartData2D-Properties}
+
+{:.properties}
+
+{:id="ChartData2D.Color" .color} *Color*
+: 
+
+{:id="ChartData2D.Colors" .list .bo} *Colors*
+: 
+
+{:id="ChartData2D.DataFileXColumn" .text .wo .do} *DataFileXColumn*
+: 
+
+{:id="ChartData2D.DataFileYColumn" .text .wo .do} *DataFileYColumn*
+: 
+
+{:id="ChartData2D.DataSourceKey" .text .wo .do} *DataSourceKey*
+: 
+
+{:id="ChartData2D.ElementsFromPairs" .text .wo .do} *ElementsFromPairs*
+: 
+
+{:id="ChartData2D.Label" .text} *Label*
+: 
+
+{:id="ChartData2D.LineType" .com.google.appinventor.components.common.LineTypeEnum .wo .do} *LineType*
+: 
+
+{:id="ChartData2D.PointShape" .com.google.appinventor.components.common.PointStyleEnum .wo .do} *PointShape*
+: 
+
+{:id="ChartData2D.Source" .component .wo .do} *Source*
+: 
+
+{:id="ChartData2D.SpreadsheetUseHeaders" .boolean .wo .do} *SpreadsheetUseHeaders*
+: 
+
+{:id="ChartData2D.SpreadsheetXColumn" .text .wo .do} *SpreadsheetXColumn*
+: 
+
+{:id="ChartData2D.SpreadsheetYColumn" .text .wo .do} *SpreadsheetYColumn*
+: 
+
+{:id="ChartData2D.WebXColumn" .text .wo .do} *WebXColumn*
+: 
+
+{:id="ChartData2D.WebYColumn" .text .wo .do} *WebYColumn*
+: 
+
+### Events  {#ChartData2D-Events}
+
+{:.events}
+
+{:id="ChartData2D.EntryClick"} EntryClick(*x*{:.any},*y*{:.number})
+: 
+
+### Methods  {#ChartData2D-Methods}
+
+{:.methods}
+
+{:id="ChartData2D.AddEntry" class="method"} <i/> AddEntry(*x*{:.text},*y*{:.text})
+: 
+
+{:id="ChartData2D.ChangeDataSource" class="method"} <i/> ChangeDataSource(*source*{:.component},*keyValue*{:.text})
+: 
+
+{:id="ChartData2D.Clear" class="method"} <i/> Clear()
+: 
+
+{:id="ChartData2D.DoesEntryExist" class="method returns boolean"} <i/> DoesEntryExist(*x*{:.text},*y*{:.text})
+: 
+
+{:id="ChartData2D.GetAllEntries" class="method returns list"} <i/> GetAllEntries()
+: 
+
+{:id="ChartData2D.GetEntriesWithXValue" class="method returns list"} <i/> GetEntriesWithXValue(*x*{:.text})
+: 
+
+{:id="ChartData2D.GetEntriesWithYValue" class="method returns list"} <i/> GetEntriesWithYValue(*y*{:.text})
+: 
+
+{:id="ChartData2D.ImportFromCloudDB" class="method"} <i/> ImportFromCloudDB(*cloudDB*{:.component},*tag*{:.text})
+: 
+
+{:id="ChartData2D.ImportFromDataFile" class="method"} <i/> ImportFromDataFile(*dataFile*{:.component},*xValueColumn*{:.text},*yValueColumn*{:.text})
+: 
+
+{:id="ChartData2D.ImportFromList" class="method"} <i/> ImportFromList(*list*{:.list})
+: 
+
+{:id="ChartData2D.ImportFromSpreadsheet" class="method"} <i/> ImportFromSpreadsheet(*spreadsheet*{:.component},*xColumn*{:.text},*yColumn*{:.text},*useHeaders*{:.boolean})
+: 
+
+{:id="ChartData2D.ImportFromTinyDB" class="method"} <i/> ImportFromTinyDB(*tinyDB*{:.component},*tag*{:.text})
+: 
+
+{:id="ChartData2D.ImportFromWeb" class="method"} <i/> ImportFromWeb(*web*{:.component},*xValueColumn*{:.text},*yValueColumn*{:.text})
+: 
+
+{:id="ChartData2D.RemoveDataSource" class="method"} <i/> RemoveDataSource()
+: 
+
+{:id="ChartData2D.RemoveEntry" class="method"} <i/> RemoveEntry(*x*{:.text},*y*{:.text})
+: 
