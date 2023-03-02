@@ -47,6 +47,8 @@ const ATTRIBUTES = [
     "Class",
     "Clickable",
     "CloseScreenAnimation",
+    "Color",
+    "Colors",
     "ColorLeft",
     "ColorRight",
     "ColumnNames",
@@ -75,6 +77,7 @@ const ATTRIBUTES = [
     "EastLongitude",
     "ElapsedTime",
     "Elements",
+    "ElementsFromPairs",
     "ElementsFromString",
     "EmailAddress",
     "EmailAddressList",
@@ -105,6 +108,7 @@ const ATTRIBUTES = [
     "FriendTimeline",
     "FullScreen",
     "GoogleVoiceEnabled",
+    "GridEnabled",
     "HTMLContent",
     "HTMLFormat",
     "HasAccuracy",
@@ -139,10 +143,14 @@ const ATTRIBUTES = [
     "ItemBackgroundColor",
     "ItemTextColor",
     "KeepRunningWhenOnPause",
+    "Label",
+    "LabelsFromString",
     "Language",
     "LastMessage",
     "Latitude",
     "LegacyMode",
+    "LegendEnabled",
+    "LineType",
     "LineWidth",
     "ListData",
     "ListViewLayout",
@@ -182,6 +190,7 @@ const ATTRIBUTES = [
     "PlayOnlyInForeground",
     "Points",
     "PointsFromString",
+    "PointShape",
     "PollingRate",
     "PrimaryColor",
     "PrimaryColorDark",
@@ -276,7 +285,7 @@ const ATTRIBUTES = [
     "TrackColorInactive",
     "TransportationMethod",
     "TutorialURL",
-    "Type",
+    "Type",    //this is ONLY set for Charts - other references to TYPE property in other elements are ALL reads so this can be set only for charts without issue
     "Url",
     "UseExternalScanner",
     "UseLegacy",
@@ -299,10 +308,12 @@ const ATTRIBUTES = [
     "X",
     "XAccel",
     "XAngularVelocity",
+    "XFromZero",
     "XStrength",
     "Y",
     "YAccel",
     "YAngularVelocity",
+    "YFromZero",
     "YStrength",
     "Year",
     "Z",
@@ -367,6 +378,7 @@ function setAttribute(key, value, name, descriptor, useQuotes = true) {
         case "DataType":
         case "DataUri":
         case "Description":
+        case "ElementsFromPairs":
         case "ElementsFromString":
         case "ExtraKey":
         case "ExtraValue":
@@ -377,6 +389,8 @@ function setAttribute(key, value, name, descriptor, useQuotes = true) {
         case "Icon":
         case "Image":
         case "ImageAsset":
+        case "Label":
+        case "LabelsFromString":
         case "Language":
         case "Message":
         case "MonthInText":
@@ -444,12 +458,14 @@ function setAttribute(key, value, name, descriptor, useQuotes = true) {
         case "FontItalic":
         case "FullScreen":
         case "GoogleVoiceEnabled":
+        case "GridEnabled":
         case "HighByteFirst":
         case "HighContrast":
         case "HTMLFormat":
         case "IgnoreSslErrors":
         case "KeepRunningWhenOnPause":
         case "LegacyMode":
+        case "LegendEnabled":
         case "Loop":
         case "MultiLine":
         case "NumbersOnly":
@@ -471,6 +487,8 @@ function setAttribute(key, value, name, descriptor, useQuotes = true) {
         case "ShowZoom":
         case "UsesLocation":
         case "WritePermission":
+        case "XFromZero":
+        case "YFromZero":
             return setTrueFalse(key, value, name, descriptor)
             break;
         case "EastLongitude":
@@ -514,6 +532,7 @@ function setAttribute(key, value, name, descriptor, useQuotes = true) {
             break;
         case "AccentColor":
         case "BackgroundColor":
+        case "Color":
         case "ColorLeft":
         case "ColorRight":
         case "FillColor":
@@ -652,6 +671,27 @@ function setAttribute(key, value, name, descriptor, useQuotes = true) {
         case "Sensitivity":
             return fromList(key, value, name, ['weak', 'moderate', 'strong'], "Sensitivity")
             break;
+        case "Type": //for charts
+            value = value.toLowerCase().trim()
+            let typeIndex = ['scatter', 'area', 'bar', 'pie'].indexOf(value)
+            if (typeIndex !== -1) {
+                return `(set-and-coerce-property! '${name} 'Type "${typeIndex + 1}" 'com.google.appinventor.components.common.ChartTypeEnum)`
+            }
+            break;
+        case "LineType": //for charts
+            value = value.toLowerCase().trim()
+            let linetypeIndex = ['curved', 'stepped'].indexOf(value)
+            if (linetypeIndex !== -1) {
+                return `(set-and-coerce-property! '${name} 'LineType "${linetypeIndex + 1}" 'com.google.appinventor.components.common.LineTypeEnum)`
+            }
+            break;
+        case "PointShape": //for charts
+            value = value.toLowerCase().trim()
+            let pointshapeIndex = ['square', 'triangle', 'cross', 'x'].indexOf(value)
+            if (pointshapeIndex !== -1) {
+                return `(set-and-coerce-property! '${name} 'PointShape "${pointIndex + 1}" 'com.google.appinventor.components.common.PointStyleEnum)`
+            }
+            break;
         case "ReceivingEnabled":
             return fromList(key, value, name, ['off', 'foreground', 'always'], "ReceivingEnabled")
             break;
@@ -678,6 +718,7 @@ function setAttribute(key, value, name, descriptor, useQuotes = true) {
         case "Features":            //map
         case "Points":              //linstring
         case "HolePoints":          //polygon
+        case "Colors":              //colors for graph 
             return setFromObject(key, value, name, descriptor)
 
 
