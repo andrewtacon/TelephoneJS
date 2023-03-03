@@ -379,7 +379,7 @@ function traverse(object, parent = '') {
 
     if (object.elements) {
         //determine if object can have children
-        let objectswithChildren = ['screen', "hbox", "vbox", "hscrollbox", 'vscrollbox', 'table', 'canvas', 'map']
+        let objectswithChildren = ['screen', "hbox", "vbox", "hscrollbox", 'vscrollbox', 'table', 'canvas', 'map', "chart"]
         if (objectswithChildren.indexOf(type) !== -1) {
 
             for (let i = 0; i < object.elements.length; i++) {
@@ -410,6 +410,14 @@ function traverse(object, parent = '') {
                         continue
                     }
                 }
+
+                if (type==="chart") {
+                    if (childname!=="chartdata2d") {
+                        console.log("chart can only have 'chartdata2d' as children. Ignoring.")
+                        continue;
+                    }
+                }
+
 
                 if (childname === "screen") {
                     console.log(`Cannot nest "Screen" elements. Ignoring.`)

@@ -787,7 +787,7 @@ function transpileDeclarations(node) {
                                     case "center":              //rectangle on map
                                     case "centroid":            //polygon on maps
                                     case "checkAuthorized":     //twitter
-                                    case "clear":               //canvas
+                                    case "clear":               //canvas, chartline2d
                                     case "clearAll":            //tinydb
                                     case "clearCaches":         //webview
                                     case "clearCookies":        //webview, web
@@ -801,6 +801,7 @@ function transpileDeclarations(node) {
                                     case "doScan":              //barcode scanner
                                     case "hideKeyboard":        //screen
                                     case "get":                 //web
+                                    case "getAllEntries":       //chartline2d
                                     case "getDuration":         //videoplayer
                                     case "getTagList":          //clouddb
                                     case "getTags":             //tinydb
@@ -828,6 +829,7 @@ function transpileDeclarations(node) {
                                     case "recordVideo":         //camcorder
                                     case "refresh":
                                     case "reload":              //webview
+                                    case "removeDataSource":    //chartline2d
                                     case "requestDirectMessages":   //twitter
                                     case "requestDirections":   //navigation
                                     case "requestFocus":        //emailpicker
@@ -861,6 +863,8 @@ function transpileDeclarations(node) {
                                     case "connect":             //bluetoothclient
                                     case "delete":              //file
                                     case "follow":              //twitter
+                                    case "getEntriesWithXValue": //chartline2d
+                                    case "getEntriesWithYValue": //chartline2d
                                     case "getWebValue":         //tinywebdb
                                     case "goToUrl":             //webview
                                     case "isDevicePaired":		//bluetoothclient
@@ -937,6 +941,9 @@ function transpileDeclarations(node) {
                                     case "patchTextWithEncoding":   //web
                                     case "postTextWithEncoding":    //web
                                     case "putTextWithEncoding":     //web
+                                    case "addEntry":                //chartline2d
+                                    case "removeEntry":             //chartline2d
+                                    case "doesEntryExist":          //chartline2d
                                         return (`\n(call-component-method '${elementName} '${uppercaseFirstLetter(methodCalled)}  (*list-for-runtime*  ${transpileDeclarations(args[0])}  ${transpileDeclarations(args[1])})  '(text text))`)
 
                                     //methods with 2 text and an optional true/false (default true) 
@@ -948,6 +955,8 @@ function transpileDeclarations(node) {
                                     case "setLocation":
                                     case "bearingToPoint":          //marker on map
                                     case "setCenter":               //rectangle on map
+                                    case "setDomain":               //chart
+                                    case "setRange":                //chart
                                         return (`(call-component-method '${elementName} '${uppercaseFirstLetter(methodCalled)} (*list-for-runtime*  ${transpileDeclarations(args[0])} ${transpileDeclarations(args[1])} ) '(number number))`)
 
 
@@ -1323,6 +1332,21 @@ function transpileDeclarations(node) {
                                             return ""
                                         }
 
+                                    ////////////////////////////////////////
+                                    /// SPECIAL CHARTLINE 2D METHODS ///////
+                                    ////////////////////////////////////////
+
+                                    case "importFromList":
+                                        return `(call-component-method '${elementName} 'ImportFromList (*list-for-runtime* ${transpileDeclarations(args[0])}) '(list))`
+                                    case "changeDataSource":
+                                    case "importFromCloudDB":
+                                    case "importFromTinyDB":
+                                        return `(call-component-method '${elementName} '${uppercaseFirstLetter(methodCalled)} (*list-for-runtime* ${transpileDeclarations(args[0])} ${transpileDeclarations(args[1])}  ) '(component text))`
+                                    case "importFromDataFile":
+                                    case "importFromWeb":
+                                        return `(call-component-method '${elementName} '${uppercaseFirstLetter(methodCalled)} (*list-for-runtime*  ${transpileDeclarations(args[0])} ${transpileDeclarations(args[1])} ${transpileDeclarations(args[2])} ) '(component text text))`
+                                    case "importFromSpreadSheet":
+                                        return `(call-component-method '${elementName} 'ImportFromSpreadsheet (*list-for-runtime*  ${transpileDeclarations(args[0])} ${transpileDeclarations(args[1])} ${transpileDeclarations(args[2])} ${transpileDeclarations(args[3])}     ) '(component text text boolean))`
 
                                     ///////////////////////////////////////////
                                     // DEFAULT ERROR MESSAGE //////////////////
