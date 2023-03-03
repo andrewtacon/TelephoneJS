@@ -510,7 +510,23 @@ function transpileDeclarations(node) {
                     //(call-component-method 'Web1 'JsonTextDecode (*list-for-runtime* (call-component-method 'Web1 'JsonObjectEncode (*list-for-runtime*  ${transpileDeclarations(node.arguments[0])}) '(text))) '(text))
                     break;
 
+                case "Stat": //new features in app inventor 2.66
+                    let StatMethod = node.callee.property.name
+                    switch (StatMethod) {
+                        case "avg":
+                        case "min": if (StatMethod === "min") { StatMethod = "minl"; }
+                        case "max": if (StatMethod === "max") { StatMethod = "maxl"; }
+                        case "gm":
+                        case "stddev": if (StatMethod === "stddev") { StatMethod = "std-dev"; }
+                        case "stderr": if (StatMethod === "stderr") { StatMethod = "std-err"; }
+                        case "mode":
+                            return `(call-yail-primitive ${StatMethod} (*list-for-runtime* ${transpileDeclarations(node.arguments[0])}) '(list-of-number) "${StatMethod}")`
+                        default:
+                            console.log(`No such method "StatMethod" for Stat. Ignoring.`)
+                            return ""
+                    }
 
+                    break;
                 case "Math":
 
                     let MathOperator = ""
@@ -554,6 +570,8 @@ function transpileDeclarations(node) {
                                 minMaxNumbers += "number "
                             }
                             return `(call-yail-primitive ${MathOperator} (*list-for-runtime* ${minMaxText} ) '(${minMaxNumbers}) "${MathCommandOperator}")`
+                        case "round":
+                            return `(call-yail-primitive yail-round (*list-for-runtime* ${transpileDeclarations(node.arguments[0])}) '(number) "round")`
 
                         case "range":
                         case "atan2":

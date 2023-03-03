@@ -18,22 +18,17 @@ xml hinting dtd template?
 PROBLEM 5
 emulatorUSb needs to have better file on device checking - at moment seems to upload everything each time (which works and is fine but annoying)
 
-PROBLEM 7
-Test twitter
-
-PROBLEM 8 
-Graphs
-
-PROBLEM 9 
+PROBLEM 6
 New functions for math etc
 
-PROBLEM 10 (aspirational)
+PROBLEM 7 (aspirational)
 COMPILATION
 
 
-
-There is no way for me to test the following component properly - they may or may not work
+Testing required:
+Charts 
+Chartline2d
 Barometer
 GyroscopeSensor
 Hygrometer
-Twitter - no account so no testing
+Twitter 
