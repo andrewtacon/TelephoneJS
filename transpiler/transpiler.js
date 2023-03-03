@@ -7,7 +7,7 @@ const { ELEMENTS } = require("../yailMaker/elements")
 const ATTRIBUTES = require("../yailMaker/attributes")
 //const { METHODS } = require("../yailMaker/methods")
 
-let debug = false
+let debug = true
 
 let generatedCode = ""
 let generatedGlobalsCode = ""
@@ -1516,6 +1516,29 @@ function transpileDeclarations(node) {
                                                     (lastIndexOf ${transpileDeclarations(node.callee.object)} ${transpileDeclarations(args[0])}    ) 
                                                     -1
                                                 )`
+
+                                    case "map":
+                                        //here need to look into the function that is called and
+                                        //look at the params 
+                                        //first param becomes $item
+                                        //second param becomes index so will need a counter around the outside
+                                        //third param becomes the original list
+                                        console.log(node.arguments)
+                                        //if node.arguments.type include FunctionExpression (so include ArrowFunctionExpression for future proofing hopefully)
+                                        //first add first, second and third param to lexical scope
+                                        //create a let wrapping for the index counter variable and close at end
+                                        //add an increment for let counter at end of middle args (somehow???) call counter first name plus counterNumberX
+                                        //add let wrapping for third parameter that is equal to the calling array
+                                        //then construct the scheme code
+                                        //the remove the params from the scope
+                                        //then return the computed scheme code
+                                        return `
+                                            (map_nondest $${name-of-first-parameter-given-by-user}   
+                                                ${transpileDeclarations(args[0])} 
+                                                ${transpileDeclarations(node.callee.object)}
+                                            )
+                                        `
+
                                     case "padEnd":
                                         proceduresUsed.add(procedures.padEnd)
                                         return `(if

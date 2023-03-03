@@ -1,7 +1,16 @@
 
-(set-var! g$init (map_nondest $item (get-var g$list) (get-var g$list)))
-(set-var! g$init (filter_nondest $item (get-var g$list) (get-var g$list)))
-(set-var! g$init (reduceovereach (get-var g$init) $answerSoFar $item (get-var g$value) (get-var g$list)))
+(map_nondest $item   //item is the element in the array
+    //input function 
+    //original list
+)
+
+
+
+(filter_nondest $item (get-var g$list) (get-var g$list))
+(reduceovereach (get-var g$init) $answerSoFar $item (get-var g$value) (get-var g$list))
+
+
+
 
 (set-var! g$init (call-yail-primitive yail-list-sort (*list-for-runtime* (get-var g$list) ) '(list) "sort "))
 (set-var! g$init (sortcomparator_nondest $item1 $item2 (get-var g$value) (get-var g$list)))
