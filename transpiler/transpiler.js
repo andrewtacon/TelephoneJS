@@ -1663,10 +1663,7 @@ function transpileDeclarations(node) {
 
                                         return mapOutput
 
-                                        //add an increment for let counter at end of middle args (somehow???) call counter first name plus counterNumberX
-                                        //add let wrapping for third parameter that is equal to the calling array
-                                        //then construct the scheme code
-                                        //the remove the params from the scope
+                                        //official app inventor implementation only gives access to the item, not the index or original array
                                         //then return the computed scheme code
                                         /*return `
                                             (map_nondest $${firstMapIdentifier}   

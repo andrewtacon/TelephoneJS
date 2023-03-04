@@ -24,6 +24,8 @@ New functions for math etc
 PROBLEM 7 (aspirational)
 COMPILATION
 
+PROBLEM 8 
+declaring the correct scope for function declarations - currently defaults to "global" but this is probably not always correct
 
 Testing required:
 Charts 
