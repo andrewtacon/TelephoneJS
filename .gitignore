@@ -1,2 +1,6 @@
 node_modules
 _archive/
+tests
+screen1.js
+screen1.xml
+screen1Helper.js
