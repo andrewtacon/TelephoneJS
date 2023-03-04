@@ -266,7 +266,11 @@ function findVariableInStack(name) {
         if (currentStack[i].identifier === name && currentStack[i].scope === "local") {
             return `(lexical-value $${name})`
         } else if (currentStack[i].identifier === name && currentStack[i].scope === "global") {
-            return `(get-var g$${name})`
+            if (currentStack[i].type === "procedure") {
+                return `(get-var p$${name})`
+            } else {
+                return `(get-var g$${name})`
+            }
 
         } else if (currentStack[i].scope !== "global" && currentStack[i].scope !== "local") {
             return name
@@ -275,6 +279,26 @@ function findVariableInStack(name) {
         }
     }
     console.log(`Variable not found or not in scope: "${name}".`)
+}
+
+function getProcedureVariableCount(name) {
+    let currentStack = variableStack[variableStack.length - 1]
+    for (let i = currentStack.length - 1; i >= 0; i--) {
+        if (currentStack[i].identifier === name && currentStack[i].scope === "local") {
+            return 0
+        } else if (currentStack[i].identifier === name && currentStack[i].scope === "global") {
+            if (currentStack[i].type === "procedure") {
+                return currentStack[i].parameterCount
+            } else {
+                return 0
+            }
+        } else if (currentStack[i].scope !== "global" && currentStack[i].scope !== "local") {
+            return 0
+        } else if (currentStack[i].name === name && currentStack[i].scope === "component") {
+            return 0
+        }
+    }
+    console.log(`Not a procedure - no parameters: "${name}".`)
 }
 
 
@@ -1523,54 +1547,68 @@ function transpileDeclarations(node) {
 
                                         //here need to look into the function that is called and
                                         //look at the params 
-                                        let mapParams = node.arguments[0].params
 
-                                        //first param becomes $item
-                                        let firstMapIdentifier = mapParams[0] ? mapParams[0].name : undefined
-                                        if (firstMapIdentifier === undefined) { console.log("Map method callback function requires at least one argument. Ignoring call to method."); return "" }
-                                        variableStack[variableStack.length - 1].push(
-                                            {
-                                                "scope": "local",
-                                                "identifier": mapParams[0].name,
-                                                "type": "procedureVariable"
-                                            }
-                                        )
-                                        firstMapIdentifier=`$${firstMapIdentifier}`
-
-                                        //second param becomes index so will need a counter around the outside
-                                        //let secondMapIdentifier = mapParams[1] ? mapParams[1].name : undefined
+                                        let firstMapIdentifier = "item"
                                         let secondMapIdentifier = "localIndex"
-                                        if (mapParams[1]) {
-                                            if (mapParams[1].name !== undefined) {
-                                                variableStack[variableStack.length - 1].push(
-                                                    {
-                                                        "scope": "local",
-                                                        "identifier": mapParams[1].name + "",
-                                                        "type": "procedureVariable"
-                                                    }
-                                                )
-                                                secondMapIdentifier = `$${mapParams[1].name}`
-                                            }
-                                        }
-
-                           
-
-                                        //third param becomes the original list
                                         let thirdMapIdentifier = "userArrayName"
-                                        if (mapParams[2]) {
-                                            if (mapParams[2].name !== undefined) {
-                                                variableStack[variableStack.length - 1].push(
-                                                    {
-                                                        "scope": "local",
-                                                        "identifier": mapParams[2].name,
-                                                        "type": "procedureVariable"
-                                                    }
-                                                )
-                                                thirdMapIdentifier = `$${mapParams[2].name}`
+                                        let mapActions = ""
+
+                                        if (node.arguments[0].type === "Identifier") {
+                                            let mapFunctionParameterCount = getProcedureVariableCount(node.arguments[0].name)
+                                            console.log(mapFunctionParameterCount)
+                                            mapActions = `(${transpileDeclarations(node.arguments[0])} `
+                                            if (mapFunctionParameterCount >= 1) { mapActions += ` (lexical-value item) ` }
+                                            if (mapFunctionParameterCount >= 2) { mapActions += ` (lexical-value localIndex) ` }
+                                            if (mapFunctionParameterCount >= 3) { mapActions += ` (lexical-value userArrayName) ` }
+                                            mapActions += ')'
+                                        } else {
+                                            //this case deals with an anonymous function call
+                                            let mapParams = node.arguments[0].params
+
+                                            firstMapIdentifier = mapParams[0] ? mapParams[0].name : undefined
+
+                                            //first param becomes $item
+                                            if (firstMapIdentifier === undefined) { console.log("Map method callback function requires at least one argument. Ignoring call to method."); return "" }
+                                            variableStack[variableStack.length - 1].push(
+                                                {
+                                                    "scope": "local",
+                                                    "identifier": mapParams[0].name,
+                                                    "type": "procedureVariable"
+                                                }
+                                            )
+                                            firstMapIdentifier = `$${firstMapIdentifier}`
+
+                                            //second param becomes index so will need a counter around the outside
+                                            //let secondMapIdentifier = mapParams[1] ? mapParams[1].name : undefined
+                                            if (mapParams[1]) {
+                                                if (mapParams[1].name !== undefined) {
+                                                    variableStack[variableStack.length - 1].push(
+                                                        {
+                                                            "scope": "local",
+                                                            "identifier": mapParams[1].name + "",
+                                                            "type": "procedureVariable"
+                                                        }
+                                                    )
+                                                    secondMapIdentifier = `$${mapParams[1].name}`
+                                                }
                                             }
+
+                                            //third param becomes the original list
+                                            if (mapParams[2]) {
+                                                if (mapParams[2].name !== undefined) {
+                                                    variableStack[variableStack.length - 1].push(
+                                                        {
+                                                            "scope": "local",
+                                                            "identifier": mapParams[2].name,
+                                                            "type": "procedureVariable"
+                                                        }
+                                                    )
+                                                    thirdMapIdentifier = `$${mapParams[2].name}`
+                                                }
+                                            }
+                                            mapActions = `${transpileDeclarations(args[0])}`
                                         }
 
-                            
                                         let mapOutput = `
                                         (let 
                                             (( newList (call-yail-primitive make-yail-list (*list-for-runtime* ) '() "make a list") ))
@@ -1592,7 +1630,7 @@ function transpileDeclarations(node) {
                                                                             (call-yail-primitive yail-list-add-to-list! 
                                                                                 (*list-for-runtime* 
                                                                                     (lexical-value newList) 
-                                                                                    ${transpileDeclarations(args[0])}
+                                                                                    ${mapActions}
                                                                                 ) 
                                                                                 '(list any ) 
                                                                                 "add items to list"
@@ -1624,6 +1662,7 @@ function transpileDeclarations(node) {
                                         }
 
                                         return mapOutput
+
                                         //add an increment for let counter at end of middle args (somehow???) call counter first name plus counterNumberX
                                         //add let wrapping for third parameter that is equal to the calling array
                                         //then construct the scheme code
@@ -1846,12 +1885,15 @@ function transpileDeclarations(node) {
 
         case "FunctionDeclaration":
 
+            //there is a problem here with declaring functions - need to work out properly is they are global or local
+
             //put variables on stack for locals
             variableStack[variableStack.length - 1].push(
                 {
-                    "scope": "local",
+                    "scope": "global",
                     "identifier": node.id.name,
-                    "type": "procedure"
+                    "type": "procedure",
+                    "parameterCount": node.params.length
                 }
             )
             let parameters = ""
