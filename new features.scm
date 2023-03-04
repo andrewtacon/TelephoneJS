@@ -1,4 +1,46 @@
 
+            (let 
+                (( newList (call-yail-primitive make-yail-list (*list-for-runtime* ) '() "make a list") ))
+                (begin   
+                    (let 
+                        (($userArrayName callingArray)  )
+                        (let 
+                            ((fixedIndex 1))
+                            (let 
+                                ((indexLimit (call-yail-primitive yail-list-length (*list-for-runtime* (lexical-value $userArrayName) ) '(list) "length of list"))  )   
+                                (while 
+                                    (call-yail-primitive < (*list-for-runtime* (lexical-value fixedIndex) (lexical-value indexLimit)) '(number number) "<") 
+                                    (begin   
+                                        (let 
+                                            ( ($localIndex (lexical-value fixedIndex))  )   
+                                            (let 
+                                                (($item (call-yail-primitive yail-list-get-item (*list-for-runtime* (lexical-value $userArrayName) (lexical-value fixedIndex)) '(list number) "select list item") ))
+                                                
+                                                (call-yail-primitive yail-list-add-to-list! 
+                                                    (*list-for-runtime* 
+                                                        (lexical-value newList) 
+                                                        //this is where the mapped value is calculated (call-yail-primitive + (*list-for-runtime* (lexical-value $item) (lexical-value $localIndex) ) '(number number ) "+") 
+                                                    ) 
+                                                    '(list any ) 
+                                                    "add items to list"
+                                                ) 
+                                            )
+                                            (set-lexical! fixedIndex (call-yail-primitive + (*list-for-runtime* (lexical-value fixedIndex) 1 ) '(number number ) "+"))
+                                        )
+                                    )
+                                ) 
+                            ) 
+                        ) 
+                    ) 
+                    (lexical-value newList)
+                ) 
+            )
+
+
+
+
+
+//this is simple map from the app inventor source
 (map_nondest $item   //item is the element in the array
     //input function 
     //original list

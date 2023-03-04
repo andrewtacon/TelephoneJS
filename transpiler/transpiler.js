@@ -7,7 +7,7 @@ const { ELEMENTS } = require("../yailMaker/elements")
 const ATTRIBUTES = require("../yailMaker/attributes")
 //const { METHODS } = require("../yailMaker/methods")
 
-let debug = true
+let debug = false
 
 let generatedCode = ""
 let generatedGlobalsCode = ""
@@ -1518,26 +1518,124 @@ function transpileDeclarations(node) {
                                                 )`
 
                                     case "map":
+                                        //need this check
+                                        //if node.arguments.type include FunctionExpression (so include ArrowFunctionExpression for future proofing hopefully)
+
                                         //here need to look into the function that is called and
                                         //look at the params 
+                                        let mapParams = node.arguments[0].params
+
                                         //first param becomes $item
+                                        let firstMapIdentifier = mapParams[0] ? mapParams[0].name : undefined
+                                        if (firstMapIdentifier === undefined) { console.log("Map method callback function requires at least one argument. Ignoring call to method."); return "" }
+                                        variableStack[variableStack.length - 1].push(
+                                            {
+                                                "scope": "local",
+                                                "identifier": mapParams[0].name,
+                                                "type": "procedureVariable"
+                                            }
+                                        )
+                                        firstMapIdentifier=`$${firstMapIdentifier}`
+
                                         //second param becomes index so will need a counter around the outside
+                                        //let secondMapIdentifier = mapParams[1] ? mapParams[1].name : undefined
+                                        let secondMapIdentifier = "localIndex"
+                                        if (mapParams[1]) {
+                                            if (mapParams[1].name !== undefined) {
+                                                variableStack[variableStack.length - 1].push(
+                                                    {
+                                                        "scope": "local",
+                                                        "identifier": mapParams[1].name + "",
+                                                        "type": "procedureVariable"
+                                                    }
+                                                )
+                                                secondMapIdentifier = `$${mapParams[1].name}`
+                                            }
+                                        }
+
+                           
+
                                         //third param becomes the original list
-                                        console.log(node.arguments)
-                                        //if node.arguments.type include FunctionExpression (so include ArrowFunctionExpression for future proofing hopefully)
-                                        //first add first, second and third param to lexical scope
-                                        //create a let wrapping for the index counter variable and close at end
+                                        let thirdMapIdentifier = "userArrayName"
+                                        if (mapParams[2]) {
+                                            if (mapParams[2].name !== undefined) {
+                                                variableStack[variableStack.length - 1].push(
+                                                    {
+                                                        "scope": "local",
+                                                        "identifier": mapParams[2].name,
+                                                        "type": "procedureVariable"
+                                                    }
+                                                )
+                                                thirdMapIdentifier = `$${mapParams[2].name}`
+                                            }
+                                        }
+
+                            
+                                        let mapOutput = `
+                                        (let 
+                                            (( newList (call-yail-primitive make-yail-list (*list-for-runtime* ) '() "make a list") ))
+                                            (begin   
+                                                (let 
+                                                    ((${thirdMapIdentifier} ${transpileDeclarations(node.callee.object)})  )
+                                                    (let 
+                                                        ((fixedIndex 1))
+                                                        (let 
+                                                            ((indexLimit (call-yail-primitive yail-list-length (*list-for-runtime* ${transpileDeclarations(node.callee.object)} ) '(list) "length of list"))  )   
+                                                            (while 
+                                                                (call-yail-primitive <= (*list-for-runtime* (lexical-value fixedIndex) (lexical-value indexLimit)) '(number number) "<=") 
+                                                                (begin   
+                                                                    (let 
+                                                                        ( (${secondMapIdentifier} (- (lexical-value fixedIndex) 1))  )   
+                                                                        (let 
+                                                                            ((${firstMapIdentifier} (call-yail-primitive yail-list-get-item (*list-for-runtime* (lexical-value ${thirdMapIdentifier}) (lexical-value fixedIndex)) '(list number) "select list item") ))
+                                                                            
+                                                                            (call-yail-primitive yail-list-add-to-list! 
+                                                                                (*list-for-runtime* 
+                                                                                    (lexical-value newList) 
+                                                                                    ${transpileDeclarations(args[0])}
+                                                                                ) 
+                                                                                '(list any ) 
+                                                                                "add items to list"
+                                                                            ) 
+                                                                        )
+                                                                        (set-lexical! fixedIndex (call-yail-primitive + (*list-for-runtime* (lexical-value fixedIndex) 1 ) '(number number ) "+"))
+                                                                    )
+                                                                )
+                                                            ) 
+                                                        ) 
+                                                    ) 
+                                                ) 
+                                                (lexical-value newList)
+                                            ) 
+                                        )
+                            
+                                        `
+
+                                        if (thirdMapIdentifier !== undefined) {
+                                            removeFromVariableStack(thirdMapIdentifier, true)
+                                        }
+
+                                        if (secondMapIdentifier !== undefined) {
+                                            removeFromVariableStack(secondMapIdentifier, true)
+                                        }
+
+                                        if (firstMapIdentifier !== undefined) {
+                                            removeFromVariableStack(firstMapIdentifier, true)
+                                        }
+
+                                        return mapOutput
                                         //add an increment for let counter at end of middle args (somehow???) call counter first name plus counterNumberX
                                         //add let wrapping for third parameter that is equal to the calling array
                                         //then construct the scheme code
                                         //the remove the params from the scope
                                         //then return the computed scheme code
-                                        return `
-                                            (map_nondest $${name-of-first-parameter-given-by-user}   
+                                        /*return `
+                                            (map_nondest $${firstMapIdentifier}   
                                                 ${transpileDeclarations(args[0])} 
                                                 ${transpileDeclarations(node.callee.object)}
                                             )
-                                        `
+                                        `*/
+                                        break;
 
                                     case "padEnd":
                                         proceduresUsed.add(procedures.padEnd)
