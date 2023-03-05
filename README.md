@@ -1,21 +1,3 @@
-<style>
-    table{
-        width: 80%;
-    }
-    td {
-        width: 50%;
-    }
-    tr:nth-child(even) {
-        background-color: #EEE;
-    }
-    th {
-        background-color: #DDD;
-    }
-    tr {
-        border: 1px solid black;
-    }    
-</style>
-
 This application takes a subset of Javascript and allows it to be used at the programming langauge for MIT's App Inventor.
 
 ## Why does this exist?
@@ -256,3 +238,21 @@ InstantInTime means milliseconds since epoch (1,1,1970 midnight)
 * Compilation to android app (unlikely)
 
 
+
+<style>
+    table{
+        width: 80%;
+    }
+    td {
+        width: 50%;
+    }
+    tr:nth-child(even) {
+        background-color: #EEE;
+    }
+    th {
+        background-color: #DDD;
+    }
+    tr {
+        border: 1px solid black;
+    }    
+</style>
