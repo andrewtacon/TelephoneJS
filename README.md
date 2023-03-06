@@ -210,17 +210,15 @@ split()|-
     * Add “every component” block (@Vishwas-Adiga) (no idea what this does yet)
     * Add functions to Chart to set domain and range of charts and to fix the origin at 0, 0 (done)
 
-11. Need to hide(?) assets.list and sequence.info files during running
+11. Need to add feature to application to build a template app
 
-12. Need to add feature to application to build a template app
+12. Need to add option to menu to select for iOS device to pick up the correct header info (or do this another way). This implies testing with iOS devices. 
 
-13. Need to add option to menu to select for iOS device to pick up the correct header info (or do this another way). This implies testing with iOS devices. 
+13. Add support for arrow function code style (probably just treat it like a normal function - this will break 'this' scoping for these functions but oh well, some sacrifices need to be made, and as I haven't actually acounted for the 'this' it is not going to be an issue hopefully)
 
-14. Add support for arrow function code style (probably just treat it like a normal function - this will break 'this' scoping for these functions but oh well, some sacrifices need to be made, and as I haven't actually acounted for the 'this' it is not going to be an issue hopefully)
+14. Need to test getting images from subfolders rather than just uploading from root folder and any issues this may have
 
-15. Need to test getting images from subfolders rather than just uploading from root folder and any issues this may have
-
-16. Need an option to upload a pre-made 'file manager' app to device to view and clear out App Inventor App memory.
+15. Need an option to upload a pre-made 'file manager' app to device to view and clear out App Inventor App memory.
 
 (This list keeps growing for some reason. It's like one of those plants that the more you trim it back the better it grows.)
 

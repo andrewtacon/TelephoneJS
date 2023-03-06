@@ -6,6 +6,12 @@ const helperMaker = require("../helpMaker/help")
 const { ATTRIBUTES, setAttribute } = require("./attributes")
 const { ELEMENTS } = require("./elements")
 
+//////////////////////////////////////////////////
+///// SETUP HIDDEN FOLDER ////////////////////////
+//////////////////////////////////////////////////
+
+let hiddenFolder = ".aijs\\"
+
 
 //////////////////////////////////////////////////
 //// INTERFACE ELEMENTS //////////////////////////
@@ -21,9 +27,11 @@ function* getNumber() {
 }
 let generator = getNumber();
 
+
+//constructs the output and logs generated scheme data to a file
 function output(text) {
     if (logFile) {
-        fs.appendFileSync("code.scm", text)
+        fs.appendFileSync(hiddenFolder+"code.scm", text)
     }
     yail += text
 }
@@ -39,7 +47,9 @@ let scripts = []
 let screenName = ""
 
 function main(filename = "temp.xml") {
-    fs.writeFileSync("code.scm", "")
+    //overwrite the content of the backup scm file
+    
+    fs.writeFileSync(hiddenFolder+"code.scm", "")
 
 
 
@@ -52,7 +62,7 @@ function main(filename = "temp.xml") {
 
     //delete base file
     if (logFile) {
-        fs.appendFileSync("code.scm", "")
+        fs.appendFileSync(hiddenFolder+"code.scm", "")
     }
 
     //get input
@@ -375,7 +385,7 @@ function traverse(object, parent = '') {
             }
         }
     }
-    fs.writeFileSync("assets.list", JSON.stringify(assetsList))
+    fs.writeFileSync(hiddenFolder+"assets.list", JSON.stringify(assetsList))
 
     if (object.elements) {
         //determine if object can have children

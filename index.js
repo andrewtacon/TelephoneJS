@@ -4,6 +4,7 @@ let emulatorInterface
 let networkInterface
 const generateYail = require("./yailMaker/yailMaker")
 const fs = require('fs')
+const hidefile = require("hidefile")
 const readline = require("readline")
 const { stdin: input, stdout: output } = require('process');
 const rl = readline.createInterface({ input, output });
@@ -26,9 +27,42 @@ let log = console.log
 const helperMaker = require("./helpMaker/help")
 //let buildTest = helperMaker.buildTest("featurecollection")
 
-/////////////////////////
-// END TEST /////////////
-/////////////////////////
+//////////////////////////
+// END TESTS /////////////
+//////////////////////////
+
+
+///////////////////////////////////
+/// CREATE HIDDEN FILES FOLDER ////
+///////////////////////////////////
+
+//create hidden folder
+if (!fs.existsSync(__dirname+"/.aijs")){
+    fs.mkdirSync(__dirname+"/aijs")
+    hidefile.hideSync(__dirname+"/aijs")
+}
+
+//make VSCode hide the folder using settings (if available)
+if (fs.existsSync(__dirname+"/.vscode/settings.json")){
+    let settings = fs.readFileSync(__dirname+"/.vscode/settings.json", "utf-8").trim()
+    settings = settings.replaceAll("\n","")
+    settings = settings.replaceAll("\r","")
+    while (settings.endsWith(",}")){
+        settings = settings.substring(0, settings.length-2)+"}"
+        console.log(settings)
+    }
+
+    let s = JSON.parse(settings)
+    if (!s["files.exclude"]){
+        s["files.exclude"]={}
+    }
+    s["files.exclude"]["**/.aijs"]=true
+    fs.writeFileSync(__dirname+"/.vscode/settings.json", JSON.stringify(s))
+}
+
+///////////////////////////////////
+/// END HIDDEN FOLDER /////////////
+///////////////////////////////////
 
 
 

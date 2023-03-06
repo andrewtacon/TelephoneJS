@@ -16,6 +16,12 @@ const logger = require("./logger")
 const log = logger.log
 const debug = logger.debug
 
+//////////////////////////////////////////////////
+///// SETUP HIDDEN FOLDER ////////////////////////
+//////////////////////////////////////////////////
+
+let hiddenFolder = ".aijs\\"
+
 /////////////////////////////////////////////
 //// ADB Comms //////////////////////////////
 /////////////////////////////////////////////
@@ -179,16 +185,16 @@ async function deviceReset(device) {
 let seq = 1
 
 function resetSequenceNumber() {
-    fs.writeFileSync("sequence.info", "1")
+    fs.writeFileSync(hiddenfolder+"sequence.info", "1")
     seq = 1
 }
 
 function updateSequenceNumber(value) {
-    fs.writeFileSync("sequence.info", value + "")
+    fs.writeFileSync(hiddenfolder+"sequence.info", value + "")
 }
 
 function loadSequenceNumber() {
-    let value = fs.readFileSync("sequence.info", "utf-8")
+    let value = fs.readFileSync(hiddenfolder+"sequence.info", "utf-8")
     seq = parseInt(value)
 }
 
