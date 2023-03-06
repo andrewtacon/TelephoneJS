@@ -1,3 +1,7 @@
+//THIS IS NO LONGER USED
+//This because it is better to upload the geojson file directly and load it in code
+//than to try and parse it and build all the components here
+
 const fs = require("fs")
 
 
