@@ -1,4 +1,7 @@
 {
+  "bin":{
+    "telephonejs":"./index.js"
+  },
   "dependencies": {
     "abstract-syntax-tree": "^2.20.6",
     "adbkit": "^2.11.1",
@@ -9,9 +12,9 @@
     "wrtc": "^0.4.7",
     "xml-js": "^1.6.11"
   },
-  "name": "appinventorjs",
+  "name": "telephonejs",
   "version": "1.0.0",
-  "description": "MIT App Inventor using nodeJS",
+  "description": "Javascript programming for MIT App Inventor Applications",
   "main": "index.js",
   "directories": {
     "test": "tests"

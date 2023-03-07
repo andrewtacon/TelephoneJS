@@ -9,6 +9,10 @@ This application takes a subset of Javascript and allows it to be used at the pr
 5. I found out that whilst others had attempted to write a text language for App Inventor blocks, they had not really had much success (that I could find). Interesting articles those.
 6. I thought it would be fun (probably the most important reason)
 
+## Installation
+
+See 'packaged' folder for instructions.
+
 ## How to use: (this really needs better notes.)
 
 1. Create XML file for the layout
@@ -19,7 +23,7 @@ This application takes a subset of Javascript and allows it to be used at the pr
 
 ## Information on components - properties, methods and events
 
-Please visit this url - https://appinventorjs.ts.r.appspot.com/ Eventually this will have sample code examples for each of these.
+Please visit this url - https://telephonejs.com/ Eventually this will have sample code examples for each of these.
 
 ## JavaScript General Notes:
 
