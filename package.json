@@ -23,5 +23,5 @@
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "Andrew Tacon",
-  "license": "ISC"
+  "license": "CC BY-NC-SA"
 }

@@ -11,6 +11,9 @@ This application takes a subset of Javascript and allows it to be used at the pr
 
 ## Installation
 
+1. npm install @mapbox/node-pre-gyp
+2. npm install telephonejs
+
 See 'packaged' folder for instructions.
 
 ## How to use: (this really needs better notes.)
