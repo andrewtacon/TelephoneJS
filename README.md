@@ -24,6 +24,14 @@ Or See 'packaged' folder for instructions.
 4. Connect to device 
 5. Hopefully see what you made
 
+## Number convention
+
+a.b.c
+
+a - breaking changes on other versions
+b - new components or other significant improvements
+c - bug fixes (which will turn over a lot in the initial stages i suspect)
+
 ## Information on components - properties, methods and events
 
 Please visit this url - https://telephonejs.com/ Eventually this will have sample code examples for each of these.
