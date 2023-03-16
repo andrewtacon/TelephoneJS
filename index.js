@@ -156,7 +156,7 @@ setInterval(checkForChanges, 2000)
 
 //this section sends off the connection data to the connection manager to instantiate the correct sending pathway
 
-async function main(arg) {
+async function main(arg, system) {
 
     //let args = process.argv
     //for (let i = 0; i < args.length; i++) {
@@ -167,6 +167,9 @@ async function main(arg) {
         //log("Network mode")
         mode = IS_NET
         networkInterface = require("./emulatorInterface/networkConnection")
+        if (system === "apple") {
+            networkInterface.setApple()
+        }
         networkInterface.loadAssetList(assetList, false)
         networkInterface.run()
         networkInterface.load(yail)
@@ -199,7 +202,8 @@ function showMainMenu() {
     console.log("App Inventor JavaScript Tool\n")
     console.log("1. Connect to Emulator")
     console.log("2. Connect via USB")
-    console.log("3. Connect via Wifi")
+    console.log("3. Connect via Wifi - Android Devices")
+    console.log("4. Connect via Wifi - Apple Devices (broken - does not work)")
     console.log("X. Exit")
     console.log()
 }
@@ -211,6 +215,7 @@ async function response(answer) {
     if (answer === "1") { await main() }
     if (answer === "2") { await main('usb') }
     if (answer === "3") { await main('wifi') }
+    if (answer === "4") { await main('wifi', "apple") }
     if (answer.toLowerCase() === 'x') { process.exit(0) }
     //  console.clear()
     //  showMainMenu()
