@@ -200,10 +200,10 @@ async function main(arg, system) {
 function showMainMenu() {
    // console.clear()
     console.log("App Inventor JavaScript Tool\n")
-    console.log("1. Connect to Emulator")
-    console.log("2. Connect via USB")
-    console.log("3. Connect via Wifi - Android Devices")
-    console.log("4. Connect via Wifi - Apple Devices (broken - does not work)")
+    console.log("1. Connect to Emulator (flakey connection)")
+    console.log("2. Connect via USB (no issues)")
+    console.log("3. Connect via Wifi - Android Devices (no issues)")
+    console.log("4. Connect via Wifi - Apple Devices (Partially works - no file upload yet/untested/probable errors)")
     console.log("X. Exit")
     console.log()
 }

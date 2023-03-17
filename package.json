@@ -13,7 +13,7 @@
     "xml-js": "^1.6.11"
   },
   "name": "telephonejs",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "Javascript programming for MIT App Inventor Applications",
   "main": "index.js",
   "directories": {

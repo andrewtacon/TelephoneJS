@@ -9,6 +9,13 @@ This application takes a subset of Javascript and allows it to be used at the pr
 5. I found out that whilst others had attempted to write a text language for App Inventor blocks, they had not really had much success (that I could find). Interesting articles those.
 6. I thought it would be fun (probably the most important reason)
 
+## Device connection status
+
+1. Emulator - flakey - tends to lose sync and drop out
+2. Android over USB - no known issues - works really well
+3. Android over wifi - no known issues - works really well
+4. Apple over wifi - connects, loads files - asset loading not tested - may/will be issues
+
 ## Installation
 
 1. npm install @mapbox/node-pre-gyp

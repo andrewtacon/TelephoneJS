@@ -1,17 +1,1 @@
-{
-    "files.exclude": {
-        "**/.git": true,
-        "**/.svn": true,
-        "**/.hg": true,
-        "**/CVS": true,
-        "**/.DS_Store": true,
-        "**/Thumbs.db": true,
-        "node_modules": true
-    },
-    "editor.acceptSuggestionOnCommitCharacter": false,
-    "editor.snippetSuggestions": "bottom",
-    "emmet.showSuggestionsAsSnippets": false,
-    "editor.showFoldingControls": "always",
-    "editor.folding": true,
-    "editor.foldingStrategy": "indentation"
-}
+{"files.exclude":{"**/.git":true,"**/.svn":true,"**/.hg":true,"**/CVS":true,"**/.DS_Store":true,"**/Thumbs.db":true,"node_modules":true,"**/.aijs":true},"editor.acceptSuggestionOnCommitCharacter":false,"editor.snippetSuggestions":"bottom","emmet.showSuggestionsAsSnippets":false,"editor.showFoldingControls":"always","editor.folding":true,"editor.foldingStrategy":"indentation"}

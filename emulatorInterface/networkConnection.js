@@ -29,6 +29,19 @@ const webRTC = require('wrtc')
 let RTCPeerConnection = webRTC.RTCPeerConnection
 
 
+const PROTECT_ENUM_ANDROID = "(define-syntax protect-enum " +
+    "  (lambda (x) " +
+    "    (syntax-case x () " +
+    "      ((_ enum-value number-value) " +
+    "        (if (< com.google.appinventor.components.common.YaVersion:BLOCKS_LANGUAGE_VERSION 34) " +
+    "          #'number-value " +
+    "          #'enum-value)))))";
+const PROTECT_ENUM_IOS = "#f))(define-syntax protect-enum " +
+    "(syntax-rules () ((_ enum-value number-value) " +
+    "(if (equal? \"\" (yail:invoke (yail:invoke AIComponentKit.Form 'getActiveForm) 'VersionName)) " +
+    "#'number-value #'enum-value))))(begin (begin #f";
+
+
 ////////////////////////////////////////////
 ///// Logging //////////////////////////////
 ////////////////////////////////////////////
@@ -308,6 +321,7 @@ webrtcpeer.createOffer().then(function (desc) {
 let isAndroid = true
 function setApple() {
     isAndroid = false
+    console.log("set as apple")
 }
 
 
@@ -316,40 +330,32 @@ function setApple() {
 let sentMacros = false
 function senddata(yailPayload) {
     log("Sending network data.")
-    var PROTECT_ENUM_ANDROID = "(define-syntax protect-enum " +
-        "  (lambda (x) " +
-        "    (syntax-case x () " +
-        "      ((_ enum-value number-value) " +
-        "        (if (< com.google.appinventor.components.common.YaVersion:BLOCKS_LANGUAGE_VERSION 34) " +
-        "          #'number-value " +
-        "          #'enum-value)))))";
-    var PROTECT_ENUM_IOS = "#f))(define-syntax protect-enum " +
-        "(syntax-rules () ((_ enum-value number-value) " +
-        "(if (equal? \"\" (yail:invoke (yail:invoke AIComponentKit.Form 'getActiveForm) 'VersionName)) " +
-        "#'number-value #'enum-value))))(begin (begin #f";
 
+
+    let blockid = -2
+    let item = ""
 
     if (!sentMacros) {
         if (isAndroid) {
-            webrtcdata.send(PROTECT_ENUM_ANDROID);
+            transmit(PROTECT_ENUM_ANDROID);
+            item = `(clear-current-form)` + yailPayload
+            item = "(begin (require <com.google.youngandroid.runtime>) (process-repl-input " +
+                blockid + " (begin " + item + ")))";
+
         } else {
-            webrtcdata.send(PROTECT_ENUM_IOS);
+            item = PROTECT_ENUM_IOS + `(clear-current-form)` + yailPayload
+            item = "(begin (require <com.google.youngandroid.runtime>) (process-repl-input " +
+                blockid + " (begin " + item + ")))";
+
+
         }
         sentMacros = true;
     }
 
-    let item = `(clear-current-form)` + yailPayload
-
-    let blockid = -2
-    item = "(begin (require <com.google.youngandroid.runtime>) (process-repl-input " +
-        blockid + " (begin " + item + ")))";
-
-    if (!isAndroid){
-        item = `(begin (require <com.google.youngandroid.runtime>) (process-repl-input -1 (begin (AssetFetcher:loadExtensions "[]"))))`+item
-    }
 
 
-    webrtcdata.send(item);
+
+    transmit(item);
 }
 
 
@@ -387,6 +393,12 @@ function startListener() {
 }
 
 
+function transmit(data) {
+ //   console.log(data)
+    webrtcdata.send(data)
+}
+
+
 
 
 /////////////////////////////////////////////////////
@@ -404,33 +416,39 @@ function loadAssetList(sentAssets, deleteAll = false) {
 }
 
 async function loadAssets() {
+
     loadingAssets = true
 
     //to get the list of file on the device, you need to load a form and then run a "do it" to get the repl to spit out file list
+    //change this line for apple devices
     let message1 = `(begin (require <com.google.youngandroid.runtime>) (process-repl-input -1 (begin (define-syntax protect-enum   (lambda (x)     (syntax-case x ()       ((_ enum-value number-value)         (if (< com.google.appinventor.components.common.YaVersion:BLOCKS_LANGUAGE_VERSION 34)           #'number-value           #'enum-value)))))(clear-current-form))))`
+    if (!isAndroid) {
+        return
+    }
+  
+
     let message2 = `(begin (require <com.google.youngandroid.runtime>) (process-repl-input -1 (begin (try-catch (let ((attempt (delay (set-form-name "Screen2")))) (force attempt)) (exception java.lang.Throwable 'notfound)))))`
     let message3 = `(begin (require <com.google.youngandroid.runtime>) (process-repl-input -1 (begin (rename-component "Screen1" "Screen2")(do-after-form-creation (set-and-coerce-property! 'Screen2 'AppName "loopback" 'text)(set-and-coerce-property! 'Screen2 'ShowListsAsJson #t 'boolean)(set-and-coerce-property! 'Screen2 'Sizing "Responsive" 'text)(set-and-coerce-property! 'Screen2 'Title "Screen2" 'text))(add-component Screen2 com.google.appinventor.components.runtime.File File1 ))))`
     let message4 = `(begin (require <com.google.youngandroid.runtime>) (process-repl-input -1 (begin (init-runtime))))`
     let message5 = `(begin (require <com.google.youngandroid.runtime>) (process-repl-input "{L1w@aaK%_8!!9_altvx" (begin (def g$name ""))))`
     let message6 = `(begin (require <com.google.youngandroid.runtime>) (process-repl-input -1 (begin (call-Initialize-of-components 'Screen2 'File1))))`
 
-    webrtcdata.send(message1);
+    transmit(message1);
     await new Promise(resolve => dataReceived.once("ok", resolve))
-    webrtcdata.send(message2);
+    transmit(message2);
     await new Promise(resolve => dataReceived.once("ok", resolve))
-    webrtcdata.send(message3);
+    transmit(message3);
     await new Promise(resolve => dataReceived.once("ok", resolve))
-    webrtcdata.send(message4);
+    transmit(message4);
     await new Promise(resolve => dataReceived.once("ok", resolve))
-    webrtcdata.send(message5);
+    transmit(message5);
     await new Promise(resolve => dataReceived.once("ok", resolve))
-    webrtcdata.send(message6);
+    transmit(message6);
     await new Promise(resolve => dataReceived.once("ok", resolve))
 
     let requestFileList = `(begin (require <com.google.youngandroid.runtime>) (process-repl-input "requestFileList" (begin (call-component-method-with-blocking-continuation 'File1 'ListDirectory (*list-for-runtime* (protect-enum (static-field com.google.appinventor.components.common.FileScope "App") "App")  "/assets/") '(com.google.appinventor.components.common.FileScopeEnum text)))))`
-    webrtcdata.send(requestFileList);
+    transmit(requestFileList);
     await new Promise(resolve => dataReceived.once("ok", resolve))
-
 
     let files = JSON.parse(deviceFileList.values[0].value)
 
@@ -446,7 +464,7 @@ async function loadAssets() {
 
         for (let i = 0; i < files.length; i++) {
             let deleteFileCode = `(begin (require <com.google.youngandroid.runtime>) (process-repl-input "G1a[)k3GA/Z(n$R=;eZP" (begin (call-component-method 'File1 'Delete (*list-for-runtime* "/assets/${files[i]}") '(text)))))`
-            webrtcdata.send(deleteFileCode);
+            transmit(deleteFileCode);
             await new Promise(resolve => dataReceived.once("ok", resolve))
         }
         files.length = 0
@@ -470,7 +488,7 @@ async function loadAssets() {
         console.log("Asset: " + assetList[i])
         let schemeFragments = assetSideLoader.run(assetList[i])
         for (let j = 0; j < schemeFragments.length; j++) {
-            webrtcdata.send(schemeFragments[j]);
+            transmit(schemeFragments[j]);
         }
 
         await new Promise(resolve => dataReceived.once("screenok", resolve))
