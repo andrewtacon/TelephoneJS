@@ -1,0 +1,4 @@
+<screen script="screen1.js" name="screen1" AppName="yail" Title="Great Title!" TitleVisible="false" ShowStatusBar="false" Scrollable="true">
+    <textbox name="testbox" width="parent" height="parent" multiLine="true" />
+    <notifier name="testnote" />
+</screen>
