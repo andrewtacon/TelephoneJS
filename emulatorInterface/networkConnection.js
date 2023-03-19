@@ -353,6 +353,12 @@ function senddata(yailPayload) {
 
         }
         sentMacros = true;
+    } else {
+        item = `(clear-current-form)` + yailPayload
+
+        item = "(begin (require <com.google.youngandroid.runtime>) (process-repl-input " +
+        blockid + " (begin " + item + ")))";
+    
     }
 
 
