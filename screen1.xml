@@ -1,0 +1,7 @@
+
+<screen script="screen1.js" name="screen1" AppName="myApp" Title="Great Title!" Scrollable="true" backgroundImage="red.png">
+    <button name="button" text="Press me again!" />
+    <label name="label" text="Hello World!" visible="false"/>
+    <textbox name="testbox" width="parent" height="parent" text="hello input"/>
+</screen>
+    

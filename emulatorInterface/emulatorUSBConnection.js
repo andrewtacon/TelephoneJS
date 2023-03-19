@@ -185,16 +185,16 @@ async function deviceReset(device) {
 let seq = 1
 
 function resetSequenceNumber() {
-    fs.writeFileSync(hiddenfolder+"sequence.info", "1")
+    fs.writeFileSync(hiddenFolder+"sequence.info", "1")
     seq = 1
 }
 
 function updateSequenceNumber(value) {
-    fs.writeFileSync(hiddenfolder+"sequence.info", value + "")
+    fs.writeFileSync(hiddenFolder+"sequence.info", value + "")
 }
 
 function loadSequenceNumber() {
-    let value = fs.readFileSync(hiddenfolder+"sequence.info", "utf-8")
+    let value = fs.readFileSync(hiddenFolder+"sequence.info", "utf-8")
     seq = parseInt(value)
 }
 
@@ -210,6 +210,7 @@ function buildMessage(message) {
     encoder.add('seq', seq++);
     encoder.add('code', message);
     encoder.add('blockid', blockid);
+    //console.log("buildmessage sequence: "+seq)
     return encoder.toString();
 }
 
@@ -439,14 +440,15 @@ async function listener() {
         //check sequence sent versus adb emulator required and match up. if out of sync then resend last message as probably failed
         //if (!ableToSend || (ableToSend && adb.sequence.incoming !== adb.sequence.computed)) {
         if (adb.sequence.incoming !== adb.sequence.computed) {
-            console.log("sequence error correction")
-            seq = adb.sequence.computed
+
+            debug(`Sequence error correction::  Sent: ${adb.sequence.incoming} Computed: ${adb.sequence.computed}`)
+            seq = adb.sequence.computed 
             adb.sequence.incoming = adb.sequence.computed
             updateSequenceNumber(seq)
 
             debug(seq)
             //      ableToSend = true
-            messageQueue.unshift(lastMessageSent)
+       //     messageQueue.unshift(lastMessageSent)
         }
         //}
 

@@ -16,7 +16,7 @@ let assetList = []
 const IS_EMULATOR = "emulator"
 const IS_USB = "usb"
 const IS_NET = 'net'
-let mode = IS_NET
+let mode = undefined
 
 let log = console.log
 
@@ -39,8 +39,8 @@ const helperMaker = require("./helpMaker/help")
 
 //create hidden folder
 if (!fs.existsSync(__dirname+"/.aijs")){
-    fs.mkdirSync(__dirname+"/aijs")
-    hidefile.hideSync(__dirname+"/aijs")
+    fs.mkdirSync(__dirname+"/.aijs")
+    hidefile.hideSync(__dirname+"/.aijs")
 }
 
 //make VSCode hide the folder using settings (if available)
@@ -57,7 +57,7 @@ if (fs.existsSync(__dirname+"/.vscode/settings.json")){
     if (!s["files.exclude"]){
         s["files.exclude"]={}
     }
-    s["files.exclude"]["**/.aijs"]=true
+    ["files.exclude"]["**/.aijs"]=true
     fs.writeFileSync(__dirname+"/.vscode/settings.json", JSON.stringify(s))
 }
 
@@ -147,6 +147,9 @@ function checkForChanges() {
             emulatorInterface.update(yail)
         } else if (mode === IS_NET && networkInterface) {
             networkInterface.update(yail)
+        } else {
+            console.clear()
+            showMainMenu();
         }
     }
 }
@@ -175,6 +178,7 @@ async function main(arg, system) {
         networkInterface.load(yail)
 
     } else {
+
         console.log(assetList)
         emulatorInterface = require("./emulatorInterface/emulatorUSBConnection")
         emulatorInterface.load(yail, assetList)
@@ -198,20 +202,23 @@ async function main(arg, system) {
 //main()
 
 function showMainMenu() {
-   // console.clear()
     console.log("App Inventor JavaScript Tool\n")
-    console.log("1. Connect to Emulator (flakey connection)")
+    console.log("0. Initialize new project")
+    console.log("1. Connect to Emulator (working OK)")
     console.log("2. Connect via USB (no issues)")
     console.log("3. Connect via Wifi - Android Devices (no issues)")
-    console.log("4. Connect via Wifi - Apple Devices (Partially works - no file upload yet/untested/probable errors)")
+    console.log("4. Connect via Wifi - Apple Devices (has lots of issues - expect significant problems)")
     console.log("X. Exit")
     console.log()
+    rl.question("Enter selection: ", response)
+
 }
 
+console.clear()
 showMainMenu()
-rl.question("Enter selection: ", response)
 
 async function response(answer) {
+    if (answer === "0") { initProject();  }    
     if (answer === "1") { await main() }
     if (answer === "2") { await main('usb') }
     if (answer === "3") { await main('wifi') }
@@ -220,6 +227,48 @@ async function response(answer) {
     //  console.clear()
     //  showMainMenu()
     //  rl.question("Enter selection: ", response)
-    rl.close()
+
 }
+
+
+
+
+
+
+
+function initProject(){
+    let xml = `
+<screen script="screen1.js" name="screen1" AppName="myApp" Title="Great Title!" Scrollable="true">
+    <button name="button" text="Press me!" />
+    <label name="label" text="Hello World!" visible="false"/>
+</screen>
+    `
+    fs.writeFileSync("screen1.xml", xml)
+
+let js = `
+require("../screen1Helper")
+
+screen1.addEventListener(
+    "initialize",
+    function(){
+        testbox.text = "Text Loaded 13."
+
+    }
+)
+
+button.addEventListener(
+    "click",
+    function(){
+        label.visible = true
+    }
+)
+`
+
+fs.writeFileSync("screen1.js", js)
+
+let helperFile = helperMaker.run("screen1.xml", [])
+
+}
+
+
 

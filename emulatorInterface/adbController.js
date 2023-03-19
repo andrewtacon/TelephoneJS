@@ -29,6 +29,10 @@ async function startMonitorLog(device) {
 
   logcat.on('entry', entry => {
 
+    //if (entry.tag ==="AppInvHTTPD") {
+    //  console.log(entry)
+   // }
+
     if (entry.tag === "System.err") {
       let printError = true
       for (let i = 0; i < excludeErrors.length; i++) {

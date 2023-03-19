@@ -1,4 +1,6 @@
-<screen script="screen1.js" name="screen1" AppName="yail" Title="Great Title!" TitleVisible="false" ShowStatusBar="false" Scrollable="true">
+<screen script="screen1.js" name="screen1" AppName="yail" Title="Great Title!" TitleVisible="false" ShowStatusBar="false" Scrollable="true" backgroundImage="cat.png">
     <textbox name="testbox" width="parent" height="parent" multiLine="true" />
     <notifier name="testnote" />
+    <label name="label" text="This is a label here ok - 17" backgroundColor="00FFFFFF" visible="false"/>
+    <button name="button" text="press me 4"/>
 </screen>

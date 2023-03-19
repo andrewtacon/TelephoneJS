@@ -11,12 +11,15 @@ This application takes a subset of Javascript and allows it to be used at the pr
 
 ## Device connection status
 
-1. Emulator - flakey - tends to lose sync and drop out
+1. Emulator - works reasonably well
 2. Android over USB - no known issues - works really well
 3. Android over wifi - no known issues - works really well
-4. Apple over wifi - connects, loads files - asset loading not tested - may/will be issues
+4. Apple over wifi - significant issues - expect problems
 
 ## Installation
+
+Emulator and Android over USB reqquire MIT App Inventor AIStarter https://appinventor.mit.edu/explore/ai2/setup-emulator.html
+Android device and Apple device require MIT App Inventor companion app installed
 
 1. npm install @mapbox/node-pre-gyp
 2. npm install telephonejs
