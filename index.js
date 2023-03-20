@@ -38,9 +38,13 @@ const helperMaker = require("./helpMaker/help")
 ///////////////////////////////////
 
 //create hidden folder
-if (!fs.existsSync(__dirname+"/.aijs")){
-    fs.mkdirSync(__dirname+"/.aijs")
-    hidefile.hideSync(__dirname+"/.aijs")
+if (!fs.existsSync(".aijs")){
+    fs.mkdirSync(".aijs")
+    hidefile.hideSync(".aijs")
+}
+
+if (!fs.existsSync("screen1.xml")){
+    placeholderProject()
 }
 
 //make VSCode hide the folder using settings (if available)
@@ -231,6 +235,15 @@ async function response(answer) {
 }
 
 
+
+function placeholderProject(){
+    let xml = `
+<screen name="screen1">
+</screen>
+        `
+        fs.writeFileSync("screen1.xml", xml)
+    
+}
 
 
 

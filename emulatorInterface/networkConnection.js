@@ -230,8 +230,8 @@ webrtcdata.onopen = async function () {
     webrtcdata.onmessage = async function (ev) {
 
         let json = JSON.parse(ev.data);
-        console.log("event data")
-        console.log(json)
+       // console.log("event data")
+       // console.log(json)
         let values = json.values[0]
         if (json.status == 'OK') {
 
